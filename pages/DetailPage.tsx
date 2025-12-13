@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams } from '../context/LanguageContext';
 import { MOCK_CONTENT } from '../constants';
 import { ThumbsUp, Share2, Bookmark, Eye, Calendar, User, PlayCircle } from 'lucide-react';
 import { Sidebar } from '../components/Sidebar';
@@ -8,7 +8,7 @@ import { QuizCard } from '../components/QuizCard';
 import { useUserPreferences } from '../context/UserPreferencesContext';
 
 export const DetailPage: React.FC = () => {
-  const { id } = useParams<{ id: string }>();
+  const { id } = useParams();
   const { t, language } = useLanguage();
   const { trackView } = useUserPreferences();
   const isEn = language === 'en';

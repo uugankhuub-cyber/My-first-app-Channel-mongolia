@@ -4,7 +4,7 @@ import { KnowledgeCard } from '../components/KnowledgeCard';
 import { Sidebar } from '../components/Sidebar';
 import { DailyKnowledge } from '../components/DailyKnowledge';
 import { ArrowRight, Sparkles } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link } from '../context/LanguageContext';
 import { useLanguage } from '../context/LanguageContext';
 import { useUserPreferences } from '../context/UserPreferencesContext';
 

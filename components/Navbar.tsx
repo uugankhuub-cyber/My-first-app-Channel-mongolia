@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Menu, X, Search, User, Moon, Sun } from 'lucide-react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from '../context/LanguageContext';
 import { useLanguage } from '../context/LanguageContext';
 import { useTheme } from '../context/ThemeContext';
 import { CATEGORIES } from '../constants';

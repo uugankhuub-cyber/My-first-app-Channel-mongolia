@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams } from '../../context/LanguageContext';
 import { useAdmin } from '../../context/AdminContext';
 import { Save, ArrowLeft, Image as ImageIcon, Eye } from 'lucide-react';
 import { CATEGORIES } from '../../constants';
 import { ContentItem } from '../../types';
 
 export const AdminEditor: React.FC = () => {
-  const { id } = useParams<{ id: string }>();
+  const { id } = useParams();
   const navigate = useNavigate();
   const { adminContent, saveContent } = useAdmin();
   const [formData, setFormData] = useState<Partial<ContentItem>>({});

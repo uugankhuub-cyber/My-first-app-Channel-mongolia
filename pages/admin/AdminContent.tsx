@@ -1,7 +1,7 @@
 import React from 'react';
 import { useAdmin } from '../../context/AdminContext';
 import { Edit, Trash2, Eye, FileText, CheckCircle } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link } from '../../context/LanguageContext';
 
 export const AdminContent: React.FC = () => {
   const { adminContent, deleteContent } = useAdmin();

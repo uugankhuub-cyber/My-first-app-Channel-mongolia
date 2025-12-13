@@ -3,7 +3,7 @@ import { CATEGORIES, MOCK_CONTENT } from '../constants';
 import { KnowledgeCard } from '../components/KnowledgeCard';
 import { Filter } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from '../context/LanguageContext';
 
 interface CategoriesPageProps {
     categorySlug?: string;

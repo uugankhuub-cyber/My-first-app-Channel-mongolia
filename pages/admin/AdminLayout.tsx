@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
+import { Outlet, NavLink, useNavigate, useLocation } from '../../context/LanguageContext';
 import { 
   LayoutDashboard, FileText, Sparkles, MessageSquare, 
   Settings, LogOut, Menu, X, ShieldCheck 
