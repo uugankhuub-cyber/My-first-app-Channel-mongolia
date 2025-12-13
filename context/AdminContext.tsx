@@ -19,7 +19,7 @@ export interface UploadedImage {
 
 interface AdminContextType {
   isAuthenticated: boolean;
-  login: (password: string) => boolean;
+  login: (password: string) => Promise<boolean>;
   logout: () => void;
   
   // AI & Content
