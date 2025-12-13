@@ -37,7 +37,9 @@ export const Navbar: React.FC = () => {
   return (
     <nav className="sticky top-0 z-50 transition-all duration-300">
        
-       {/* Background with blur and gradient - Wraps both rows */}
+       {/* Background with blur and gradient - Wraps both rows 
+           Ensuring bg-white/95 renders clearly in light mode 
+       */}
        <div className="absolute inset-0 bg-white/95 dark:bg-[#020617]/90 backdrop-blur-xl border-b border-gray-200 dark:border-white/5 shadow-lg transition-colors duration-300">
           {/* Subtle gradient overlay */}
           <div className="absolute inset-0 bg-gradient-to-r from-brand-purple/5 via-transparent to-brand-orange/5 pointer-events-none"></div>
@@ -64,7 +66,7 @@ export const Navbar: React.FC = () => {
                       value={searchValue}
                       onChange={(e) => setSearchValue(e.target.value)}
                       placeholder={t('search_placeholder')}
-                      className="w-full pl-11 pr-4 py-2.5 rounded-xl bg-gray-100 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-slate-800 dark:text-slate-200 placeholder-slate-500 focus:bg-white dark:focus:bg-[#0F172A] focus:border-brand-purple/50 focus:ring-1 focus:ring-brand-purple/50 outline-none transition-all duration-300 group-hover:border-gray-300 dark:group-hover:border-white/20"
+                      className="w-full pl-11 pr-4 py-2.5 rounded-xl bg-gray-100 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-gray-900 dark:text-slate-200 placeholder-slate-500 focus:bg-white dark:focus:bg-[#0F172A] focus:border-brand-purple/50 focus:ring-1 focus:ring-brand-purple/50 outline-none transition-all duration-300 group-hover:border-gray-300 dark:group-hover:border-white/20"
                     />
                     <Search size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500 group-hover:text-brand-purple transition-colors" />
                 </form>
@@ -101,7 +103,7 @@ export const Navbar: React.FC = () => {
                 {/* Mobile menu button */}
                 <button
                   onClick={() => setIsOpen(!isOpen)}
-                  className="lg:hidden p-2 rounded-md text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white focus:outline-none"
+                  className="lg:hidden p-2 rounded-md text-slate-700 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white focus:outline-none"
                 >
                   {isOpen ? <X size={24} /> : <Menu size={24} />}
                 </button>
@@ -120,7 +122,7 @@ export const Navbar: React.FC = () => {
                       key={item.label}
                       to={item.path}
                       data-active={active ? "true" : "false"}
-                      className="px-4 py-2 text-sm rounded-full font-medium whitespace-nowrap text-slate-600 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-brand-purple dark:hover:text-white active:bg-gray-200 dark:active:bg-white/10 data-[active=true]:bg-gradient-to-r data-[active=true]:from-brand-purple data-[active=true]:to-brand-orange data-[active=true]:text-white data-[active=true]:shadow-md transition-all duration-200"
+                      className="px-4 py-2 text-sm rounded-full font-medium whitespace-nowrap text-gray-700 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-brand-purple dark:hover:text-white active:bg-gray-200 dark:active:bg-white/10 data-[active=true]:bg-gradient-to-r data-[active=true]:from-brand-purple data-[active=true]:to-brand-orange data-[active=true]:text-white data-[active=true]:shadow-md transition-all duration-200"
                     >
                       {item.label}
                     </Link>
@@ -130,13 +132,13 @@ export const Navbar: React.FC = () => {
           </div>
        </div>
 
-      {/* Mobile Menu Drawer - Z-Index 100 to stay above GlobalInfoBar (Z-60) */}
+      {/* Mobile Menu Drawer */}
       {isOpen && (
         <div className="lg:hidden fixed inset-0 z-[100] bg-white dark:bg-[#020617] flex flex-col animate-fade-in">
            {/* Header of Drawer */}
            <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-white/10 bg-white dark:bg-[#0B1120]">
               <span className="font-bold text-xl text-gradient">Channel Mongolia</span>
-              <button onClick={() => setIsOpen(false)} className="p-2 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white">
+              <button onClick={() => setIsOpen(false)} className="p-2 text-slate-700 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white">
                  <X size={24} />
               </button>
            </div>
@@ -148,7 +150,7 @@ export const Navbar: React.FC = () => {
                   value={searchValue}
                   onChange={(e) => setSearchValue(e.target.value)}
                   placeholder={t('search_placeholder')}
-                  className="w-full pl-11 pr-4 py-3.5 rounded-xl bg-gray-100 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-slate-800 dark:text-slate-200 text-base focus:border-brand-purple/50 focus:bg-white dark:focus:bg-[#0F172A]"
+                  className="w-full pl-11 pr-4 py-3.5 rounded-xl bg-gray-100 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-gray-900 dark:text-slate-200 text-base focus:border-brand-purple/50 focus:bg-white dark:focus:bg-[#0F172A]"
                 />
                 <Search size={20} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500" />
             </form>
@@ -164,7 +166,7 @@ export const Navbar: React.FC = () => {
                     className={`block px-4 py-3.5 rounded-xl text-base font-medium transition-all ${
                       active
                         ? 'bg-gradient-brand text-white shadow-glow'
-                        : 'text-slate-600 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-brand-purple dark:hover:text-white'
+                        : 'text-gray-800 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-brand-purple dark:hover:text-white'
                     }`}
                   >
                     {item.label}
@@ -174,8 +176,8 @@ export const Navbar: React.FC = () => {
             </div>
             
             <div className="border-t border-gray-200 dark:border-white/10 pt-4">
-               <Link to="/bidnii-tukhai" onClick={() => setIsOpen(false)} className="block px-4 py-3 text-slate-600 dark:text-slate-400 hover:text-brand-purple dark:hover:text-white">{t('nav_about')}</Link>
-               <Link to="/holboo-barikh" onClick={() => setIsOpen(false)} className="block px-4 py-3 text-slate-600 dark:text-slate-400 hover:text-brand-purple dark:hover:text-white">{t('contact')}</Link>
+               <Link to="/bidnii-tukhai" onClick={() => setIsOpen(false)} className="block px-4 py-3 text-gray-700 dark:text-slate-400 hover:text-brand-purple dark:hover:text-white">{t('nav_about')}</Link>
+               <Link to="/holboo-barikh" onClick={() => setIsOpen(false)} className="block px-4 py-3 text-gray-700 dark:text-slate-400 hover:text-brand-purple dark:hover:text-white">{t('contact')}</Link>
             </div>
           </div>
 
@@ -187,10 +189,10 @@ export const Navbar: React.FC = () => {
               </button>
               
               <div className="flex items-center justify-between px-2 pt-2">
-                 <button onClick={() => setLanguage(language === 'mn' ? 'en' : 'mn')} className="text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-brand-purple dark:hover:text-white">
+                 <button onClick={() => setLanguage(language === 'mn' ? 'en' : 'mn')} className="text-sm font-medium text-slate-700 dark:text-slate-400 hover:text-brand-purple dark:hover:text-white">
                     {language === 'mn' ? 'Монгол хэл' : 'English'}
                  </button>
-                 <button onClick={toggleTheme} className="flex items-center gap-2 text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-brand-purple dark:hover:text-white">
+                 <button onClick={toggleTheme} className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-400 hover:text-brand-purple dark:hover:text-white">
                     {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
                     <span>{theme === 'dark' ? t('theme_light') : t('theme_dark')}</span>
                  </button>

@@ -2,17 +2,16 @@ import React, { useState } from 'react';
 import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { 
   LayoutDashboard, FileText, Sparkles, MessageSquare, 
-  Settings, LogOut, Menu, X, ShieldCheck 
+  Settings, LogOut, Menu, X, ShieldCheck, Image as ImageIcon 
 } from 'lucide-react';
 import { useAdmin } from '../../context/AdminContext';
 
 export const AdminLayout: React.FC = () => {
-  const { isAuthenticated, logout } = useAdmin();
+  const { isAuthenticated, logout, login } = useAdmin();
   const navigate = useNavigate();
   const location = useLocation();
   const [isSidebarOpen, setSidebarOpen] = useState(true);
   const [password, setPassword] = useState('');
-  const { login } = useAdmin();
 
   // Simple Login Screen Component inside Layout
   if (!isAuthenticated) {
@@ -59,8 +58,9 @@ export const AdminLayout: React.FC = () => {
   const navItems = [
     { label: 'Хянах самбар', path: '/admin/dashboard', icon: <LayoutDashboard size={20} /> },
     { label: 'Контент', path: '/admin/content', icon: <FileText size={20} /> },
+    { label: 'Зургийн сан', path: '/admin/images', icon: <ImageIcon size={20} /> },
     { label: 'AI Санал', path: '/admin/ai-suggestions', icon: <Sparkles size={20} /> },
-    { label: 'Санал хүсэлт', path: '/admin/feedback', icon: <MessageSquare size={20} /> },
+    { label: 'Чатбот', path: '/admin/chat-settings', icon: <MessageSquare size={20} /> },
     { label: 'Тохиргоо', path: '/admin/settings', icon: <Settings size={20} /> },
   ];
 

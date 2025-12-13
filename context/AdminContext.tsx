@@ -1,17 +1,41 @@
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { AISuggestion, ContentItem, FeedbackSummary } from '../types';
 import { MOCK_CONTENT } from '../constants';
+
+// --- Types ---
+export interface ChatSettings {
+  systemPrompt: string;
+  suggestedQuestions: string[];
+  isEnabled: boolean;
+}
+
+export interface UploadedImage {
+  id: string;
+  url: string;
+  name: string;
+  size: number;
+  uploadedAt: string;
+}
 
 interface AdminContextType {
   isAuthenticated: boolean;
   login: (password: string) => boolean;
   logout: () => void;
+  
+  // AI & Content
   aiSuggestions: AISuggestion[];
   generateDraftFromAI: (suggestionId: string) => Promise<ContentItem>;
   adminContent: ContentItem[];
   saveContent: (content: ContentItem) => void;
   deleteContent: (id: string) => void;
   feedbackSummary: FeedbackSummary;
+
+  // New Features
+  chatSettings: ChatSettings;
+  updateChatSettings: (settings: ChatSettings) => void;
+  uploadedImages: UploadedImage[];
+  addImage: (image: UploadedImage) => void;
+  deleteImage: (id: string) => void;
 }
 
 const AdminContext = createContext<AdminContextType | undefined>(undefined);
@@ -41,10 +65,17 @@ const MOCK_SUGGESTIONS: AISuggestion[] = [
   }
 ];
 
+const DEFAULT_CHAT_SETTINGS: ChatSettings = {
+  systemPrompt: "You are a helpful, knowledgeable assistant for Channel Mongolia. You explain complex topics simply. You answer in the same language the user asks.",
+  suggestedQuestions: ["Шинжлэх ухааны сонин хачин?", "Өнөөдрийн тренд?", "Хамгийн их уншсан нийтлэл?"],
+  isEnabled: true
+};
+
 export const AdminProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [aiSuggestions, setAiSuggestions] = useState<AISuggestion[]>(MOCK_SUGGESTIONS);
-  // Initialize with MOCK_CONTENT marked as published, plus a dummy draft
+  
+  // Content State
   const [adminContent, setAdminContent] = useState<ContentItem[]>([
     ...MOCK_CONTENT.map(c => ({ ...c, status: 'published' as const })),
     {
@@ -68,6 +99,27 @@ export const AdminProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     }
   ]);
 
+  // Chat Settings State (Persisted)
+  const [chatSettings, setChatSettings] = useState<ChatSettings>(() => {
+    const saved = localStorage.getItem('cm_admin_chat');
+    return saved ? JSON.parse(saved) : DEFAULT_CHAT_SETTINGS;
+  });
+
+  // Uploaded Images State (Persisted for demo)
+  const [uploadedImages, setUploadedImages] = useState<UploadedImage[]>(() => {
+    const saved = localStorage.getItem('cm_admin_images');
+    return saved ? JSON.parse(saved) : [];
+  });
+
+  // Persistence Effects
+  useEffect(() => {
+    localStorage.setItem('cm_admin_chat', JSON.stringify(chatSettings));
+  }, [chatSettings]);
+
+  useEffect(() => {
+    localStorage.setItem('cm_admin_images', JSON.stringify(uploadedImages));
+  }, [uploadedImages]);
+
   const feedbackSummary: FeedbackSummary = {
     totalRatings: 1240,
     averageRating: 4.6,
@@ -75,7 +127,6 @@ export const AdminProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   };
 
   const login = (password: string) => {
-    // Simple mock auth - In production, use real backend auth
     if (password === 'admin123') {
       setIsAuthenticated(true);
       return true;
@@ -86,16 +137,12 @@ export const AdminProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   const logout = () => setIsAuthenticated(false);
 
   const generateDraftFromAI = async (suggestionId: string): Promise<ContentItem> => {
-    // Simulate AI generation delay
     await new Promise(resolve => setTimeout(resolve, 1500));
-
     const suggestion = aiSuggestions.find(s => s.id === suggestionId);
     if (!suggestion) throw new Error("Suggestion not found");
 
-    // Mark as used
     setAiSuggestions(prev => prev.map(s => s.id === suggestionId ? { ...s, isUsed: true } : s));
 
-    // Create Draft Object
     const newDraft: ContentItem = {
       id: `draft-${Date.now()}`,
       title: suggestion.topic,
@@ -113,7 +160,7 @@ export const AdminProvider: React.FC<{ children: ReactNode }> = ({ children }) =
       tags: ['AI Draft'],
       tags_en: ['AI Draft'],
       status: 'draft',
-      contentBody: `### ${suggestion.topic}\n\n(Энд AI систем нийтлэлийн дэлгэрэнгүйг үүсгэх болно. Редактор та хянан засварлана уу.)\n\n1. Оршил\n2. Үндсэн хэсэг\n3. Дүгнэлт`
+      contentBody: `### ${suggestion.topic}\n\n(AI generated content...)\n\n1. Оршил\n2. Үндсэн хэсэг\n3. Дүгнэлт`
     };
 
     setAdminContent(prev => [newDraft, ...prev]);
@@ -134,6 +181,18 @@ export const AdminProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     setAdminContent(prev => prev.filter(c => c.id !== id));
   };
 
+  const updateChatSettings = (settings: ChatSettings) => {
+    setChatSettings(settings);
+  };
+
+  const addImage = (image: UploadedImage) => {
+    setUploadedImages(prev => [image, ...prev]);
+  };
+
+  const deleteImage = (id: string) => {
+    setUploadedImages(prev => prev.filter(img => img.id !== id));
+  };
+
   return (
     <AdminContext.Provider value={{
       isAuthenticated,
@@ -144,7 +203,12 @@ export const AdminProvider: React.FC<{ children: ReactNode }> = ({ children }) =
       adminContent,
       saveContent,
       deleteContent,
-      feedbackSummary
+      feedbackSummary,
+      chatSettings,
+      updateChatSettings,
+      uploadedImages,
+      addImage,
+      deleteImage
     }}>
       {children}
     </AdminContext.Provider>

@@ -20,6 +20,8 @@ import { AdminDashboard } from './pages/admin/AdminDashboard';
 import { AdminContent } from './pages/admin/AdminContent';
 import { AdminAISuggestions } from './pages/admin/AdminAISuggestions';
 import { AdminEditor } from './pages/admin/AdminEditor';
+import { AdminImages } from './pages/admin/AdminImages';
+import { AdminChatSettings } from './pages/admin/AdminChatSettings';
 
 import { LanguageProvider } from './context/LanguageContext';
 import { ThemeProvider } from './context/ThemeContext';
@@ -63,7 +65,9 @@ const App: React.FC = () => {
                    <Route index element={<AdminDashboard />} />
                    <Route path="dashboard" element={<AdminDashboard />} />
                    <Route path="content" element={<AdminContent />} />
+                   <Route path="images" element={<AdminImages />} />
                    <Route path="ai-suggestions" element={<AdminAISuggestions />} />
+                   <Route path="chat-settings" element={<AdminChatSettings />} />
                    <Route path="content/edit/:id" element={<AdminEditor />} />
                    <Route path="feedback" element={<div className="p-8 text-white">Санал хүсэлтийн хэсэг удахгүй нээгдэнэ...</div>} />
                    <Route path="settings" element={<div className="p-8 text-white">Тохиргоо хэсэг удахгүй нээгдэнэ...</div>} />
