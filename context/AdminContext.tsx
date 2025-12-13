@@ -72,7 +72,20 @@ const DEFAULT_CHAT_SETTINGS: ChatSettings = {
 };
 
 export const AdminProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  // Auth State with Persistence
+  const [isAuthenticated, setIsAuthenticated] = useState(() => {
+    return localStorage.getItem('cm_admin_auth') === 'true';
+  });
+
+  // Persist Auth State
+  useEffect(() => {
+    if (isAuthenticated) {
+      localStorage.setItem('cm_admin_auth', 'true');
+    } else {
+      localStorage.removeItem('cm_admin_auth');
+    }
+  }, [isAuthenticated]);
+
   const [aiSuggestions, setAiSuggestions] = useState<AISuggestion[]>(MOCK_SUGGESTIONS);
   
   // Content State
@@ -127,7 +140,15 @@ export const AdminProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   };
 
   const login = (password: string) => {
-    if (password === 'admin123') {
+    // Check environment variable (Vite uses import.meta.env, Node uses process.env)
+    const secret = (import.meta as any).env?.VITE_ADMIN_SECRET || process.env.ADMIN_SECRET;
+    
+    if (!secret) {
+      console.error("ADMIN_SECRET is not set in environment variables.");
+      return false; 
+    }
+
+    if (password === secret) {
       setIsAuthenticated(true);
       return true;
     }

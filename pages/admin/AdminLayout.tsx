@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { 
   LayoutDashboard, FileText, Sparkles, MessageSquare, 
-  Settings, LogOut, Menu, X, ShieldCheck, Image as ImageIcon 
+  Settings, LogOut, Menu, X, ShieldCheck, Image as ImageIcon, ScrollText
 } from 'lucide-react';
 import { useAdmin } from '../../context/AdminContext';
 
@@ -12,15 +12,24 @@ export const AdminLayout: React.FC = () => {
   const location = useLocation();
   const [isSidebarOpen, setSidebarOpen] = useState(true);
   const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
 
   // Simple Login Screen Component inside Layout
   if (!isAuthenticated) {
     const handleLogin = (e: React.FormEvent) => {
       e.preventDefault();
+      setError('');
+      
+      const secret = (import.meta as any).env?.VITE_ADMIN_SECRET || process.env.ADMIN_SECRET;
+      if (!secret) {
+        setError('Warning: ADMIN_SECRET env var is missing. Login disabled.');
+        return;
+      }
+
       if (login(password)) {
         navigate('/admin/dashboard');
       } else {
-        alert('Нууц үг буруу байна! (Hint: admin123)');
+        setError('Нууц үг буруу байна!');
       }
     };
 
@@ -28,7 +37,7 @@ export const AdminLayout: React.FC = () => {
       <div className="min-h-screen bg-[#0F172A] flex items-center justify-center px-4">
         <div className="max-w-md w-full bg-[#1E293B] p-8 rounded-2xl border border-white/10 shadow-2xl">
           <div className="flex justify-center mb-6">
-             <div className="w-16 h-16 bg-gradient-brand rounded-2xl flex items-center justify-center">
+             <div className="w-16 h-16 bg-gradient-brand rounded-2xl flex items-center justify-center shadow-glow">
                 <ShieldCheck className="text-white w-8 h-8" />
              </div>
           </div>
@@ -42,13 +51,25 @@ export const AdminLayout: React.FC = () => {
                 type="password" 
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-3 bg-[#0F172A] border border-white/10 rounded-xl text-white focus:border-brand-purple outline-none"
+                className="w-full px-4 py-3 bg-[#0F172A] border border-white/10 rounded-xl text-white focus:border-brand-purple outline-none transition-colors"
                 placeholder="••••••••"
               />
             </div>
-            <button type="submit" className="w-full py-3 bg-gradient-brand text-white font-bold rounded-xl hover:opacity-90 transition-opacity">
+            
+            {error && (
+              <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-lg">
+                <p className="text-red-400 text-sm text-center font-medium">{error}</p>
+              </div>
+            )}
+
+            <button type="submit" className="w-full py-3 bg-gradient-brand text-white font-bold rounded-xl hover:opacity-90 transition-opacity shadow-md">
               Нэвтрэх
             </button>
+            <div className="text-center mt-4">
+               <button type="button" onClick={() => navigate('/')} className="text-slate-500 text-xs hover:text-slate-300">
+                  Буцах
+               </button>
+            </div>
           </form>
         </div>
       </div>
@@ -61,6 +82,7 @@ export const AdminLayout: React.FC = () => {
     { label: 'Зургийн сан', path: '/admin/images', icon: <ImageIcon size={20} /> },
     { label: 'AI Санал', path: '/admin/ai-suggestions', icon: <Sparkles size={20} /> },
     { label: 'Чатбот', path: '/admin/chat-settings', icon: <MessageSquare size={20} /> },
+    { label: 'Систем лог', path: '/admin/logs', icon: <ScrollText size={20} /> },
     { label: 'Тохиргоо', path: '/admin/settings', icon: <Settings size={20} /> },
   ];
 

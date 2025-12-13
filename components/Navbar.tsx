@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { Menu, X, Search, User, Moon, Sun } from 'lucide-react';
+import { Menu, X, Search, User, Moon, Sun, ShieldCheck } from 'lucide-react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext';
 import { useTheme } from '../context/ThemeContext';
+import { useAdmin } from '../context/AdminContext';
 import { CATEGORIES } from '../constants';
 
 export const Navbar: React.FC = () => {
@@ -12,6 +13,7 @@ export const Navbar: React.FC = () => {
   const navigate = useNavigate();
   const { t, language, setLanguage } = useLanguage();
   const { theme, toggleTheme } = useTheme();
+  const { isAuthenticated } = useAdmin();
 
   const isActive = (path: string) => location.pathname === path;
 
@@ -21,6 +23,11 @@ export const Navbar: React.FC = () => {
       navigate(`/search?q=${encodeURIComponent(searchValue)}`);
       setIsOpen(false);
     }
+  };
+
+  const handleAdminClick = () => {
+    navigate('/admin');
+    setIsOpen(false);
   };
 
   // Main navigation items for desktop (Row 2)
@@ -94,10 +101,13 @@ export const Navbar: React.FC = () => {
                   {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
                 </button>
 
-                {/* Login Button */}
-                <button className="hidden md:flex items-center gap-2 px-5 py-2 bg-gradient-brand text-white rounded-full text-sm font-semibold hover:opacity-90 shadow-md hover:shadow-glow transition-all hover:-translate-y-0.5">
-                  <User size={18} />
-                  <span>{t('login')}</span>
+                {/* Login/Admin Button */}
+                <button 
+                  onClick={handleAdminClick}
+                  className={`hidden md:flex items-center gap-2 px-5 py-2 rounded-full text-sm font-semibold hover:opacity-90 shadow-md hover:shadow-glow transition-all hover:-translate-y-0.5 ${isAuthenticated ? 'bg-gray-800 text-white border border-gray-700' : 'bg-gradient-brand text-white'}`}
+                >
+                  {isAuthenticated ? <ShieldCheck size={18} /> : <User size={18} />}
+                  <span>{isAuthenticated ? 'Admin Panel' : t('login')}</span>
                 </button>
 
                 {/* Mobile menu button */}
@@ -183,9 +193,9 @@ export const Navbar: React.FC = () => {
 
           {/* Footer of Drawer */}
           <div className="p-4 border-t border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-[#0B1120] space-y-3">
-             <button className="w-full flex items-center justify-center gap-2 px-4 py-3.5 bg-gradient-brand text-white rounded-xl text-sm font-bold shadow-md">
-                <User size={18} />
-                <span>{t('login')}</span>
+             <button onClick={handleAdminClick} className={`w-full flex items-center justify-center gap-2 px-4 py-3.5 rounded-xl text-sm font-bold shadow-md ${isAuthenticated ? 'bg-gray-800 text-white' : 'bg-gradient-brand text-white'}`}>
+                {isAuthenticated ? <ShieldCheck size={18} /> : <User size={18} />}
+                <span>{isAuthenticated ? 'Admin Panel' : t('login')}</span>
               </button>
               
               <div className="flex items-center justify-between px-2 pt-2">
