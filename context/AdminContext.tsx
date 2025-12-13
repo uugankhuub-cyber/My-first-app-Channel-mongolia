@@ -139,21 +139,23 @@ export const AdminProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     topRequestedTopics: ['Сансар огторгуй', 'Хиймэл оюун ухаан', 'Монголын түүх']
   };
 
-  const login = (password: string) => {
-    // Check environment variable (Vite uses import.meta.env, Node uses process.env)
-    const secret = (import.meta as any).env?.VITE_ADMIN_SECRET || process.env.ADMIN_SECRET;
-    
-    if (!secret) {
-      console.error("ADMIN_SECRET is not set in environment variables.");
-      return false; 
-    }
+  const login = async (password: string) => {
+  const res = await fetch("/api/admin-login", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ password }),
+  });
 
-    if (password === secret) {
-      setIsAuthenticated(true);
-      return true;
-    }
-    return false;
-  };
+  const data = await res.json();
+
+  if (data.success) {
+    setIsAuthenticated(true);
+    return true;
+  }
+
+  return false;
+};
+
 
   const logout = () => setIsAuthenticated(false);
 
