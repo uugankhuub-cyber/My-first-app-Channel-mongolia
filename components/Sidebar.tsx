@@ -1,23 +1,22 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Flame, Eye, Bookmark, Clock, Quote as QuoteIcon } from 'lucide-react';
-import { MOCK_CONTENT, CATEGORIES, QUOTES } from '../constants';
+import { CATEGORIES, QUOTES } from '../constants';
+import { useContent } from '../context/ContentContext';
 import { useLanguage } from '../context/LanguageContext';
 import { DailyKnowledge } from './DailyKnowledge';
 import { ContentItem } from '../types';
 
 export const Sidebar: React.FC = () => {
   const { t, language } = useLanguage();
+  const { content } = useContent(); // Dynamic Content
   const isEn = language === 'en';
 
   // --- DATA PROCESSING ---
-  const mostViewed = [...MOCK_CONTENT].sort((a, b) => b.views - a.views).slice(0, 5);
-  const trending = MOCK_CONTENT.filter(c => c.isTrending).slice(0, 5);
-  const editorsPick = MOCK_CONTENT.filter(c => c.isEditorPick).slice(0, 3);
-  const latest = [...MOCK_CONTENT].sort((a, b) => new Date(b.publishedDate).getTime() - new Date(a.publishedDate).getTime()).slice(0, 4);
+  const mostViewed = [...content].sort((a, b) => b.views - a.views).slice(0, 5);
+  const trending = content.filter(c => c.isTrending).slice(0, 5);
+  const editorsPick = content.filter(c => c.isEditorPick).slice(0, 3);
   const todaysQuote = QUOTES[0];
-
-  // --- SUB-COMPONENTS ---
 
   const SidebarHeader: React.FC<{ title: string; icon?: React.ReactNode }> = ({ title, icon }) => (
     <h3 className="flex items-center gap-2 font-bold text-gray-900 dark:text-white mb-5 text-sm uppercase tracking-wider pl-1">
@@ -37,7 +36,6 @@ export const Sidebar: React.FC = () => {
           <div className={`relative flex-shrink-0 overflow-hidden rounded-lg border border-gray-100 dark:border-white/5 ${rank === 1 ? 'w-24 h-16 shadow-md' : 'w-16 h-12'}`}>
             <img src={item.thumbnailUrl} alt={title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
             
-            {/* TOP Badge for #1 */}
             {rank === 1 && (
                <div className="absolute top-0 left-0 px-1.5 py-0.5 bg-gradient-brand rounded-br-lg text-[10px] font-bold text-white shadow-sm">
                  TOP
@@ -66,7 +64,6 @@ export const Sidebar: React.FC = () => {
   return (
     <aside className="space-y-10 sticky top-24">
       
-      {/* FEATURE 2: DAILY KNOWLEDGE (Replaces FactBox) */}
       <div>
          <DailyKnowledge />
       </div>

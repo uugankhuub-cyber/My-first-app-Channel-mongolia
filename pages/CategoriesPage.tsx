@@ -1,5 +1,6 @@
 import React from 'react';
-import { CATEGORIES, MOCK_CONTENT } from '../constants';
+import { CATEGORIES } from '../constants';
+import { useContent } from '../context/ContentContext';
 import { KnowledgeCard } from '../components/KnowledgeCard';
 import { Filter } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
@@ -7,15 +8,14 @@ import { useNavigate } from 'react-router-dom';
 
 interface CategoriesPageProps {
     categorySlug?: string;
-    filter?: string; // For 'video' or 'all'
+    filter?: string; 
 }
 
 export const CategoriesPage: React.FC<CategoriesPageProps> = ({ categorySlug, filter }) => {
   const { t, language } = useLanguage();
   const navigate = useNavigate();
-  const isEn = language === 'en';
-  
-  // Determine active slug from props
+  const { content } = useContent(); // Dynamic Content
+
   const activeSlug = categorySlug || filter || 'all';
 
   const handleFilterChange = (slug: string) => {
@@ -30,25 +30,23 @@ export const CategoriesPage: React.FC<CategoriesPageProps> = ({ categorySlug, fi
   })();
 
   const filteredContent = (() => {
-      if (activeSlug === 'all') return MOCK_CONTENT;
-      if (activeSlug === 'video') return MOCK_CONTENT.filter(c => c.isVideo);
+      if (activeSlug === 'all') return content;
+      if (activeSlug === 'video') return content.filter(c => c.isVideo);
       
       const catObj = CATEGORIES.find(cat => cat.slug === activeSlug);
       return catObj 
-         ? MOCK_CONTENT.filter(c => c.category === catObj.label || c.category_en === catObj.label_en)
-         : MOCK_CONTENT;
+         ? content.filter(c => c.category === catObj.label || c.category_en === catObj.label_en)
+         : content;
   })();
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
       
       <div className="flex flex-col md:flex-row md:items-center justify-between mb-8">
-        {/* FIX: Use gray-900 for light mode instead of slate-100 */}
         <h1 className="text-3xl font-extrabold text-gray-900 dark:text-white mb-4 md:mb-0 drop-shadow-sm dark:drop-shadow-md">
           {activeCategoryLabel}
         </h1>
         
-        {/* Simple Sort Dropdown (Visual only) */}
         <div className="flex items-center gap-3">
             <span className="text-sm text-slate-500 font-medium">{t('sort_by')}</span>
             <button className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-brand-surface border border-gray-200 dark:border-white/10 rounded-lg text-sm font-medium hover:bg-gray-50 dark:hover:bg-white/5 text-gray-700 dark:text-slate-300 transition-colors">
@@ -60,9 +58,7 @@ export const CategoriesPage: React.FC<CategoriesPageProps> = ({ categorySlug, fi
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
         
-        {/* Sidebar Filters */}
         <div className="lg:col-span-1">
-            {/* FIX: Adaptive background */}
             <div className="bg-white dark:bg-brand-surface p-4 rounded-xl shadow-lg border border-gray-200 dark:border-white/5 sticky top-24">
                 <h3 className="font-bold text-gray-900 dark:text-slate-200 mb-4 px-2">{t('nav_categories')}</h3>
                 <div className="space-y-1">
@@ -93,7 +89,6 @@ export const CategoriesPage: React.FC<CategoriesPageProps> = ({ categorySlug, fi
             </div>
         </div>
 
-        {/* Content Grid */}
         <div className="lg:col-span-3">
             {filteredContent.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8">

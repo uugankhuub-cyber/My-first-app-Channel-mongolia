@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Search as SearchIcon } from 'lucide-react';
-import { MOCK_CONTENT } from '../constants';
+import { useContent } from '../context/ContentContext';
 import { KnowledgeCard } from '../components/KnowledgeCard';
 import { useSearchParams } from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext';
@@ -10,6 +10,7 @@ export const SearchPage: React.FC = () => {
   const query = searchParams.get('q') || '';
   const [searchTerm, setSearchTerm] = useState(query);
   const { t, language } = useLanguage();
+  const { content } = useContent(); // Dynamic
   const isEn = language === 'en';
 
   useEffect(() => {
@@ -17,11 +18,11 @@ export const SearchPage: React.FC = () => {
   }, [query]);
 
   const filtered = searchTerm 
-    ? MOCK_CONTENT.filter(c => {
+    ? content.filter(c => {
         const title = isEn ? c.title_en : c.title;
         const desc = isEn ? c.description_en : c.description;
-        return title.toLowerCase().includes(searchTerm.toLowerCase()) || 
-               desc.toLowerCase().includes(searchTerm.toLowerCase());
+        return (title || '').toLowerCase().includes(searchTerm.toLowerCase()) || 
+               (desc || '').toLowerCase().includes(searchTerm.toLowerCase());
       })
     : [];
 

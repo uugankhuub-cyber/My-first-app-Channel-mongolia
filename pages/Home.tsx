@@ -1,5 +1,5 @@
 import React from 'react';
-import { CATEGORIES, MOCK_CONTENT } from '../constants';
+import { CATEGORIES } from '../constants';
 import { KnowledgeCard } from '../components/KnowledgeCard';
 import { Sidebar } from '../components/Sidebar';
 import { DailyKnowledge } from '../components/DailyKnowledge';
@@ -7,23 +7,23 @@ import { ArrowRight, Sparkles } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext';
 import { useUserPreferences } from '../context/UserPreferencesContext';
+import { useContent } from '../context/ContentContext';
 
 export const Home: React.FC = () => {
   const { t } = useLanguage();
   const { getRecommendedCategory } = useUserPreferences();
+  const { content: ALL_CONTENT } = useContent(); // Fetch from Context
   
   // Logic for feeds
   const recommendedSlug = getRecommendedCategory();
   
-  // If we have a recommendation, we show that content first
   const recommendedContent = recommendedSlug 
-    ? MOCK_CONTENT.filter(c => c.category === CATEGORIES.find(cat => cat.slug === recommendedSlug)?.label)
+    ? ALL_CONTENT.filter(c => c.category === CATEGORIES.find(cat => cat.slug === recommendedSlug)?.label)
     : [];
     
-  // Fallback or "Latest"
-  const latestContent = MOCK_CONTENT.filter(c => !recommendedContent.includes(c)).slice(0, 4);
-  const featuredContent = MOCK_CONTENT[0];
-  const trendingContent = MOCK_CONTENT.slice(3, 6);
+  const latestContent = ALL_CONTENT.filter(c => !recommendedContent.includes(c)).slice(0, 4);
+  const featuredContent = ALL_CONTENT[0];
+  const trendingContent = ALL_CONTENT.slice(3, 6);
   
   return (
     <div className="pb-12">
@@ -52,7 +52,6 @@ export const Home: React.FC = () => {
                 <span className="absolute inset-0 rounded-full border border-gray-200 dark:border-white/10 group-hover:border-transparent transition-colors"></span>
                 <span className="absolute inset-0 rounded-full bg-gradient-brand opacity-0 group-hover:opacity-10 transition-opacity"></span>
                 <span className="absolute inset-0 rounded-full border border-transparent group-hover:border-gradient-brand mask-linear transition-all"></span>
-                {/* Fallback border implementation for hover gradient effect */}
                 <div className="absolute inset-0 rounded-full p-[1px] bg-transparent group-hover:bg-gradient-brand -z-10 opacity-0 group-hover:opacity-100 transition-opacity">
                     <div className="w-full h-full bg-white dark:bg-[#020617] rounded-full"></div>
                 </div>
@@ -68,25 +67,26 @@ export const Home: React.FC = () => {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-16">
         
-        {/* Daily Knowledge Mobile (Visible only on small screens) */}
         <div className="lg:hidden mb-12">
              <DailyKnowledge />
         </div>
 
         {/* Featured Section */}
-        <section className="mb-24">
-          <div className="flex items-center gap-3 mb-8">
-            <div className="w-1 h-8 bg-gradient-brand rounded-full"></div>
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white tracking-wide">{t('featured')}</h2>
-          </div>
-          <KnowledgeCard item={featuredContent} featured={true} />
-        </section>
+        {featuredContent && (
+          <section className="mb-24">
+            <div className="flex items-center gap-3 mb-8">
+              <div className="w-1 h-8 bg-gradient-brand rounded-full"></div>
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white tracking-wide">{t('featured')}</h2>
+            </div>
+            <KnowledgeCard item={featuredContent} featured={true} />
+          </section>
+        )}
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
           {/* Main Feed */}
           <div className="lg:col-span-2 space-y-20">
             
-            {/* PERSONALIZED FEED (Feature 1) */}
+            {/* PERSONALIZED FEED */}
             {recommendedContent.length > 0 && (
                 <section>
                   <div className="flex items-center gap-3 mb-8">
@@ -144,7 +144,6 @@ export const Home: React.FC = () => {
 
           </div>
 
-          {/* Sidebar */}
           <div className="lg:col-span-1">
              <Sidebar />
           </div>

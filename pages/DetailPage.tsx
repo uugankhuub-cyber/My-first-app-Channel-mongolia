@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { MOCK_CONTENT } from '../constants';
+import { useContent } from '../context/ContentContext';
 import { ThumbsUp, Share2, Bookmark, Eye, Calendar, User, PlayCircle } from 'lucide-react';
 import { Sidebar } from '../components/Sidebar';
 import { useLanguage } from '../context/LanguageContext';
@@ -11,9 +11,10 @@ export const DetailPage: React.FC = () => {
   const { id } = useParams();
   const { t, language } = useLanguage();
   const { trackView } = useUserPreferences();
+  const { content: allContent } = useContent();
   const isEn = language === 'en';
   
-  const content = MOCK_CONTENT.find(c => c.id === id) || MOCK_CONTENT[0];
+  const content = allContent.find(c => c.id === id) || allContent[0];
   
   const title = isEn ? content.title_en : content.title;
   const description = isEn ? content.description_en : content.description;
@@ -21,7 +22,6 @@ export const DetailPage: React.FC = () => {
   const category = isEn ? content.category_en : content.category;
   const tags = isEn ? content.tags_en : content.tags;
 
-  // Track the view when component mounts
   useEffect(() => {
      if(content.category) {
          trackView(content.category);
@@ -32,10 +32,8 @@ export const DetailPage: React.FC = () => {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
         
-        {/* Main Content Column */}
         <div className="lg:col-span-2">
           
-          {/* Breadcrumb */}
           <div className="flex items-center text-sm text-gray-500 dark:text-slate-500 mb-6">
              <span className="hover:text-primary-600 dark:hover:text-primary-400 cursor-pointer transition-colors">{t('nav_home')}</span>
              <span className="mx-2 text-gray-400 dark:text-slate-600">/</span>
@@ -46,7 +44,6 @@ export const DetailPage: React.FC = () => {
             {title}
           </h1>
 
-          {/* Metadata Bar */}
           <div className="flex items-center justify-between border-b border-gray-100 dark:border-white/10 pb-6 mb-8">
             <div className="flex items-center gap-4">
                 <div className="w-10 h-10 bg-gray-100 dark:bg-[#151E32] rounded-full flex items-center justify-center border border-gray-200 dark:border-white/5">
@@ -66,7 +63,6 @@ export const DetailPage: React.FC = () => {
             </div>
           </div>
 
-          {/* Media Player / Hero Image */}
           <div className="relative aspect-video bg-black rounded-xl overflow-hidden mb-10 shadow-lg dark:shadow-2xl border border-gray-100 dark:border-white/5 group">
              <img src={content.thumbnailUrl} alt={title} className="w-full h-full object-cover opacity-90 dark:opacity-80" />
              {content.isVideo && (
@@ -81,7 +77,6 @@ export const DetailPage: React.FC = () => {
              </div>
           </div>
 
-          {/* Action Buttons */}
           <div className="flex items-center gap-4 mb-10">
             <button className="flex items-center gap-2 px-6 py-3 bg-primary-600 text-white rounded-xl font-medium hover:bg-primary-700 dark:hover:bg-primary-500 transition-all shadow-sm dark:shadow-glow hover:scale-105">
                 <PlayCircle size={18} />
@@ -100,31 +95,23 @@ export const DetailPage: React.FC = () => {
             </button>
           </div>
 
-          {/* Content Body */}
           <div className="prose prose-lg prose-gray dark:prose-invert max-w-none text-gray-700 dark:text-slate-300">
              <p className="font-medium text-xl text-gray-900 dark:text-slate-100 mb-6 leading-relaxed border-l-4 border-primary-500 pl-4">{description}</p>
-             <p className="mb-6 leading-relaxed">
+             <div className="mb-6 leading-relaxed whitespace-pre-wrap">
                  {body || 'Content not available in this language.'}
-             </p>
+             </div>
              
-             {/* FEATURE 3: QUIZ */}
              {content.quiz && <QuizCard quiz={content.quiz} />}
-
-             <p>
-                 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-             </p>
           </div>
 
-          {/* Tags */}
           <div className="flex flex-wrap gap-2 mt-10 pt-8 border-t border-gray-100 dark:border-white/10">
-             {tags.map((tag, i) => (
+             {(tags || []).map((tag, i) => (
                  <span key={i} className="px-4 py-1.5 bg-gray-50 dark:bg-[#151E32] border border-gray-200 dark:border-white/5 text-gray-600 dark:text-slate-400 rounded-lg text-sm font-medium hover:text-primary-600 dark:hover:text-primary-300 hover:border-primary-200 dark:hover:border-primary-500/30 transition-colors cursor-pointer">#{tag}</span>
              ))}
           </div>
 
         </div>
 
-        {/* Sidebar Column */}
         <div className="lg:col-span-1">
              <Sidebar />
         </div>
