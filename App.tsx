@@ -14,7 +14,7 @@ import { ChatAssistant } from './components/ChatAssistant';
 import { GlobalInfoBar } from './components/GlobalInfoBar';
 
 // Admin Imports
-import { AdminProvider } from './context/AdminContext';
+import { AdminProvider, useAdmin } from './context/AdminContext';
 import { AdminLayout } from './pages/admin/AdminLayout';
 import { AdminDashboard } from './pages/admin/AdminDashboard';
 import { AdminContent } from './pages/admin/AdminContent';
@@ -23,6 +23,8 @@ import { AdminEditor } from './pages/admin/AdminEditor';
 import { AdminImages } from './pages/admin/AdminImages';
 import { AdminChatSettings } from './pages/admin/AdminChatSettings';
 import { AdminLogs } from './pages/admin/AdminLogs';
+import { AdminAppearance } from './pages/admin/AdminAppearance';
+import { AdminMedia } from './pages/admin/AdminMedia';
 
 import { LanguageProvider } from './context/LanguageContext';
 import { ThemeProvider } from './context/ThemeContext';
@@ -39,9 +41,28 @@ const ScrollToTop = () => {
   return null;
 };
 
+// Component to apply admin appearance settings to global styles
+const SiteAppearanceManager: React.FC = () => {
+  const { siteAppearance } = useAdmin();
+
+  useEffect(() => {
+    const root = document.documentElement;
+    root.style.setProperty('--cm-font-family', siteAppearance.fontFamily);
+    root.style.setProperty('--cm-base-size', `${siteAppearance.baseFontSize}px`);
+    root.style.setProperty('--cm-letter-spacing', `${siteAppearance.letterSpacing}px`);
+  }, [siteAppearance]);
+
+  return null;
+};
+
 // Layout Wrapper for Public Pages to include Nav/Footer and GlobalInfoBar
 const PublicLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-  <div className="min-h-screen font-sans flex flex-col relative bg-slate-50 dark:bg-[#020617] transition-colors duration-300">
+  <div className="min-h-screen font-sans flex flex-col relative bg-slate-50 dark:bg-[#020617] transition-colors duration-300"
+       style={{ 
+         fontFamily: 'var(--cm-font-family, Inter)', 
+         fontSize: 'var(--cm-base-size, 16px)', 
+         letterSpacing: 'var(--cm-letter-spacing, 0px)' 
+       }}>
     <GlobalInfoBar />
     <Navbar />
     <main className="flex-grow">
@@ -58,6 +79,7 @@ const App: React.FC = () => {
       <LanguageProvider>
         <UserPreferencesProvider>
           <AdminProvider>
+            <SiteAppearanceManager />
             <Router>
               <ScrollToTop />
               <Routes>
@@ -67,6 +89,8 @@ const App: React.FC = () => {
                    <Route path="dashboard" element={<AdminDashboard />} />
                    <Route path="content" element={<AdminContent />} />
                    <Route path="images" element={<AdminImages />} />
+                   <Route path="media" element={<AdminMedia />} />
+                   <Route path="appearance" element={<AdminAppearance />} />
                    <Route path="ai-suggestions" element={<AdminAISuggestions />} />
                    <Route path="chat-settings" element={<AdminChatSettings />} />
                    <Route path="logs" element={<AdminLogs />} />

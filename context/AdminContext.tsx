@@ -17,9 +17,19 @@ export interface UploadedImage {
   uploadedAt: string;
 }
 
+export interface SiteAppearance {
+  fontFamily: string;
+  baseFontSize: number;
+  letterSpacing: number;
+}
+
+export interface SiteImages {
+  [key: string]: string; // key (e.g., 'hero_bg') -> url
+}
+
 interface AdminContextType {
   isAuthenticated: boolean;
-  login: (password: string) => Promise<boolean>;
+  login: (password: string) => boolean;
   logout: () => void;
   
   // AI & Content
@@ -30,12 +40,21 @@ interface AdminContextType {
   deleteContent: (id: string) => void;
   feedbackSummary: FeedbackSummary;
 
-  // New Features
+  // Chat Settings
   chatSettings: ChatSettings;
   updateChatSettings: (settings: ChatSettings) => void;
+
+  // Image Gallery
   uploadedImages: UploadedImage[];
   addImage: (image: UploadedImage) => void;
   deleteImage: (id: string) => void;
+
+  // Site Settings (New)
+  siteAppearance: SiteAppearance;
+  updateSiteAppearance: (appearance: SiteAppearance) => void;
+  siteImages: SiteImages;
+  updateSiteImage: (key: string, url: string) => void;
+  resetSiteAppearance: () => void;
 }
 
 const AdminContext = createContext<AdminContextType | undefined>(undefined);
@@ -69,6 +88,12 @@ const DEFAULT_CHAT_SETTINGS: ChatSettings = {
   systemPrompt: "You are a helpful, knowledgeable assistant for Channel Mongolia. You explain complex topics simply. You answer in the same language the user asks.",
   suggestedQuestions: ["Шинжлэх ухааны сонин хачин?", "Өнөөдрийн тренд?", "Хамгийн их уншсан нийтлэл?"],
   isEnabled: true
+};
+
+const DEFAULT_APPEARANCE: SiteAppearance = {
+  fontFamily: 'Inter',
+  baseFontSize: 16,
+  letterSpacing: 0
 };
 
 export const AdminProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
@@ -118,10 +143,22 @@ export const AdminProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     return saved ? JSON.parse(saved) : DEFAULT_CHAT_SETTINGS;
   });
 
-  // Uploaded Images State (Persisted for demo)
+  // Uploaded Images State (Persisted)
   const [uploadedImages, setUploadedImages] = useState<UploadedImage[]>(() => {
     const saved = localStorage.getItem('cm_admin_images');
     return saved ? JSON.parse(saved) : [];
+  });
+
+  // Site Appearance (Persisted)
+  const [siteAppearance, setSiteAppearance] = useState<SiteAppearance>(() => {
+    const saved = localStorage.getItem('cm_site_appearance');
+    return saved ? JSON.parse(saved) : DEFAULT_APPEARANCE;
+  });
+
+  // Site Images Map (Persisted)
+  const [siteImages, setSiteImages] = useState<SiteImages>(() => {
+    const saved = localStorage.getItem('cm_site_images_map');
+    return saved ? JSON.parse(saved) : {};
   });
 
   // Persistence Effects
@@ -133,31 +170,41 @@ export const AdminProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     localStorage.setItem('cm_admin_images', JSON.stringify(uploadedImages));
   }, [uploadedImages]);
 
+  useEffect(() => {
+    localStorage.setItem('cm_site_appearance', JSON.stringify(siteAppearance));
+  }, [siteAppearance]);
+
+  useEffect(() => {
+    localStorage.setItem('cm_site_images_map', JSON.stringify(siteImages));
+  }, [siteImages]);
+
+
   const feedbackSummary: FeedbackSummary = {
     totalRatings: 1240,
     averageRating: 4.6,
     topRequestedTopics: ['Сансар огторгуй', 'Хиймэл оюун ухаан', 'Монголын түүх']
   };
 
-  const login = async (password: string) => {
-  const res = await fetch("/api/admin-login", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ password }),
-  });
+  const login = (password: string) => {
+    // Check environment variable (Vite uses import.meta.env, Node uses process.env)
+    const secret = (import.meta as any).env?.VITE_ADMIN_SECRET || process.env.ADMIN_SECRET;
+    
+    if (!secret) {
+      console.error("ADMIN_SECRET is not set in environment variables.");
+      return false; 
+    }
 
-  const data = await res.json();
+    if (password === secret) {
+      setIsAuthenticated(true);
+      return true;
+    }
+    return false;
+  };
 
-  if (data.success) {
-    setIsAuthenticated(true);
-    return true;
-  }
-
-  return false;
-};
-
-
-  const logout = () => setIsAuthenticated(false);
+  const logout = () => {
+    setIsAuthenticated(false);
+    localStorage.removeItem('cm_admin_auth');
+  };
 
   const generateDraftFromAI = async (suggestionId: string): Promise<ContentItem> => {
     await new Promise(resolve => setTimeout(resolve, 1500));
@@ -216,6 +263,18 @@ export const AdminProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     setUploadedImages(prev => prev.filter(img => img.id !== id));
   };
 
+  const updateSiteAppearance = (appearance: SiteAppearance) => {
+    setSiteAppearance(appearance);
+  };
+
+  const resetSiteAppearance = () => {
+    setSiteAppearance(DEFAULT_APPEARANCE);
+  };
+
+  const updateSiteImage = (key: string, url: string) => {
+    setSiteImages(prev => ({ ...prev, [key]: url }));
+  };
+
   return (
     <AdminContext.Provider value={{
       isAuthenticated,
@@ -231,7 +290,12 @@ export const AdminProvider: React.FC<{ children: ReactNode }> = ({ children }) =
       updateChatSettings,
       uploadedImages,
       addImage,
-      deleteImage
+      deleteImage,
+      siteAppearance,
+      updateSiteAppearance,
+      resetSiteAppearance,
+      siteImages,
+      updateSiteImage
     }}>
       {children}
     </AdminContext.Provider>
