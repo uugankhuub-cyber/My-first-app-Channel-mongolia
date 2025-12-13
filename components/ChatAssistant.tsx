@@ -2,6 +2,9 @@ import React, { useState, useRef, useEffect } from 'react';
 import { MessageCircle, X, Send, Sparkles, User, Bot } from 'lucide-react';
 import { GoogleGenAI, Content } from "@google/genai";
 
+// Fix for missing types in some environments
+declare const process: any;
+
 const SYSTEM_INSTRUCTION = `
 You are the official AI assistant of the website “Channel Mongolia”.
 
@@ -127,12 +130,9 @@ export const ChatAssistant: React.FC = () => {
   const handleSend = async () => {
     if (!input.trim() || isLoading) return;
 
-    // FIX: Use Vite env with fallback to ensure string type
-    // This fixes the TS2322 error by guaranteeing a string value
-    const apiKey: string = import.meta.env.VITE_API_KEY ?? "";
-
-    if (!apiKey) {
-      console.warn("ChatAssistant: VITE_API_KEY is missing in environment variables.");
+    // Check if API key is available
+    if (!process.env.API_KEY) {
+      console.warn("ChatAssistant: API_KEY is missing in environment variables.");
       const errorMessage: Message = {
         id: Date.now().toString(),
         role: 'model',
@@ -153,8 +153,8 @@ export const ChatAssistant: React.FC = () => {
     setIsLoading(true);
 
     try {
-      // Initialize with the strictly typed apiKey string
-      const ai = new GoogleGenAI({ apiKey });
+      // Use process.env.API_KEY directly as per guidelines
+      const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
       
       // Convert current messages to history format expected by SDK
       const history: Content[] = messages.map(m => ({

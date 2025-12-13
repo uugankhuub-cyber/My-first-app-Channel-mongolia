@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Search as SearchIcon } from 'lucide-react';
 import { MOCK_CONTENT } from '../constants';
 import { KnowledgeCard } from '../components/KnowledgeCard';
-import { useSearchParams } from '../context/LanguageContext';
+import { useSearchParams } from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext';
 
 export const SearchPage: React.FC = () => {

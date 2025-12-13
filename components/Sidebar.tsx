@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link } from '../context/LanguageContext';
+import { Link } from 'react-router-dom';
 import { Flame, Eye, Bookmark, Clock, Quote as QuoteIcon } from 'lucide-react';
 import { MOCK_CONTENT, CATEGORIES, QUOTES } from '../constants';
 import { useLanguage } from '../context/LanguageContext';

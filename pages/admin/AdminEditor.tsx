@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useParams } from '../../context/LanguageContext';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useAdmin } from '../../context/AdminContext';
 import { Save, ArrowLeft, Image as ImageIcon, Eye } from 'lucide-react';
 import { CATEGORIES } from '../../constants';

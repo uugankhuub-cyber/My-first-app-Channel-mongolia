@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { CATEGORIES, MOCK_CONTENT } from '../constants';
 import { KnowledgeCard } from '../components/KnowledgeCard';
 import { Filter } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
-import { useNavigate } from '../context/LanguageContext';
+import { useNavigate } from 'react-router-dom';
 
 interface CategoriesPageProps {
     categorySlug?: string;

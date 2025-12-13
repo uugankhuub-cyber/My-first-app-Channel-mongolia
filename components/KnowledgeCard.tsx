@@ -1,6 +1,6 @@
 import React from 'react';
 import { PlayCircle, Clock, Eye } from 'lucide-react';
-import { Link } from '../context/LanguageContext';
+import { Link } from 'react-router-dom';
 import { ContentItem } from '../types';
 import { useLanguage } from '../context/LanguageContext';
 

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Menu, X, Search, User, Moon, Sun } from 'lucide-react';
-import { Link, useLocation, useNavigate } from '../context/LanguageContext';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext';
 import { useTheme } from '../context/ThemeContext';
 import { CATEGORIES } from '../constants';
@@ -119,7 +119,7 @@ export const Navbar: React.FC = () => {
                     <Link
                       key={item.label}
                       to={item.path}
-                      data-active={active}
+                      data-active={active ? "true" : "false"}
                       className="px-4 py-2 text-sm rounded-full font-medium whitespace-nowrap text-slate-400 hover:bg-white/5 hover:text-white active:bg-white/10 active:text-white data-[active=true]:bg-gradient-to-r data-[active=true]:from-brand-purple data-[active=true]:to-brand-orange data-[active=true]:text-white data-[active=true]:shadow-md transition-all duration-200"
                     >
                       {item.label}
@@ -130,9 +130,9 @@ export const Navbar: React.FC = () => {
           </div>
        </div>
 
-      {/* Mobile Menu Drawer */}
+      {/* Mobile Menu Drawer - Z-Index 100 to stay above GlobalInfoBar (Z-60) */}
       {isOpen && (
-        <div className="lg:hidden fixed inset-0 z-50 bg-[#020617] flex flex-col animate-fade-in">
+        <div className="lg:hidden fixed inset-0 z-[100] bg-[#020617] flex flex-col animate-fade-in">
            {/* Header of Drawer */}
            <div className="flex items-center justify-between p-4 border-b border-white/10 bg-[#0B1120]">
               <span className="font-bold text-xl text-gradient">Channel Mongolia</span>

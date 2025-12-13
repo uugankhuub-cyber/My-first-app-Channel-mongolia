@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useAdmin } from '../../context/AdminContext';
 import { Sparkles, ArrowRight, Loader, CheckCircle } from 'lucide-react';
-import { useNavigate } from '../../context/LanguageContext';
+import { useNavigate } from 'react-router-dom';
 
 export const AdminAISuggestions: React.FC = () => {
   const { aiSuggestions, generateDraftFromAI } = useAdmin();

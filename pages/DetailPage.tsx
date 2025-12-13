@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { useParams } from '../context/LanguageContext';
+import { useParams } from 'react-router-dom';
 import { MOCK_CONTENT } from '../constants';
 import { ThumbsUp, Share2, Bookmark, Eye, Calendar, User, PlayCircle } from 'lucide-react';
 import { Sidebar } from '../components/Sidebar';
@@ -14,8 +14,7 @@ export const DetailPage: React.FC = () => {
   const isEn = language === 'en';
   
   const content = MOCK_CONTENT.find(c => c.id === id) || MOCK_CONTENT[0];
-  const relatedContent = MOCK_CONTENT.filter(c => c.id !== content.id).slice(0, 3);
-
+  
   const title = isEn ? content.title_en : content.title;
   const description = isEn ? content.description_en : content.description;
   const body = isEn ? content.contentBody_en : content.contentBody;

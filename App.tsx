@@ -1,5 +1,5 @@
-import React from 'react';
-import { HashRouter as Router, Routes, Route } from './context/LanguageContext';
+import React, { useEffect } from 'react';
+import { HashRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { Navbar } from './components/Navbar';
 import { Footer } from './components/Footer';
 import { Home } from './pages/Home';
@@ -28,10 +28,9 @@ import { UserPreferencesProvider } from './context/UserPreferencesContext';
 import { CATEGORIES } from './constants';
 
 const ScrollToTop = () => {
-  // Simple check using hash from window since we use HashRouter
-  const { pathname } = React.useMemo(() => ({ pathname: window.location.hash }), []);
+  const { pathname } = useLocation();
   
-  React.useEffect(() => {
+  useEffect(() => {
     window.scrollTo(0, 0);
   }, [pathname]);
 
@@ -64,13 +63,13 @@ const App: React.FC = () => {
               <Routes>
                 {/* ADMIN ROUTES */}
                 <Route path="/admin" element={<AdminLayout />}>
-                   <Route index element={<AdminDashboard />} /> {/* Default to dashboard logic in layout if auth */}
-                   <Route path="/admin/dashboard" element={<AdminDashboard />} />
-                   <Route path="/admin/content" element={<AdminContent />} />
-                   <Route path="/admin/ai-suggestions" element={<AdminAISuggestions />} />
-                   <Route path="/admin/content/edit/:id" element={<AdminEditor />} />
-                   <Route path="/admin/feedback" element={<div className="p-8 text-white">Санал хүсэлтийн хэсэг удахгүй нээгдэнэ...</div>} />
-                   <Route path="/admin/settings" element={<div className="p-8 text-white">Тохиргоо хэсэг удахгүй нээгдэнэ...</div>} />
+                   <Route index element={<AdminDashboard />} />
+                   <Route path="dashboard" element={<AdminDashboard />} />
+                   <Route path="content" element={<AdminContent />} />
+                   <Route path="ai-suggestions" element={<AdminAISuggestions />} />
+                   <Route path="content/edit/:id" element={<AdminEditor />} />
+                   <Route path="feedback" element={<div className="p-8 text-white">Санал хүсэлтийн хэсэг удахгүй нээгдэнэ...</div>} />
+                   <Route path="settings" element={<div className="p-8 text-white">Тохиргоо хэсэг удахгүй нээгдэнэ...</div>} />
                 </Route>
 
                 {/* PUBLIC ROUTES */}
