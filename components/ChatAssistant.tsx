@@ -176,7 +176,7 @@ export const ChatAssistant: React.FC = () => {
       const botMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: 'model',
-        text: responseText = result.text ?? "";
+        text: responseText
       };
 
       setMessages(prev => [...prev, botMessage]);
