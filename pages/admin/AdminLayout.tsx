@@ -26,14 +26,16 @@ export const AdminLayout: React.FC = () => {
         return;
       }
 
-      const handleLogin = async () => {
-  const success = await login(password);
+      const AdminLayout = () => {
+  const handleLogin = async () => {
+    const success = await login(password);
 
-  if (success) {
-    navigate("/admin/dashboard");
-  }
-};
-    return (
+    if (success) {
+      navigate("/admin/dashboard");
+    }
+  };
+
+  return (
       <div className="min-h-screen bg-[#0F172A] flex items-center justify-center px-4">
         <div className="max-w-md w-full bg-[#1E293B] p-8 rounded-2xl border border-white/10 shadow-2xl">
           <div className="flex justify-center mb-6">
