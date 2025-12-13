@@ -21,15 +21,16 @@ export interface SiteAppearance {
   fontFamily: string;
   baseFontSize: number;
   letterSpacing: number;
+  lineHeight: number;
 }
 
 export interface SiteImages {
-  [key: string]: string; // key (e.g., 'hero_bg') -> url
+  [key: string]: string;
 }
 
 interface AdminContextType {
   isAuthenticated: boolean;
-  login: (password: string) => boolean;
+  login: (password: string) => Promise<boolean>;
   logout: () => void;
   
   // AI & Content
@@ -49,39 +50,21 @@ interface AdminContextType {
   addImage: (image: UploadedImage) => void;
   deleteImage: (id: string) => void;
 
-  // Site Settings (New)
+  // Site Appearance & Media
   siteAppearance: SiteAppearance;
   updateSiteAppearance: (appearance: SiteAppearance) => void;
+  resetSiteAppearance: () => void;
   siteImages: SiteImages;
   updateSiteImage: (key: string, url: string) => void;
-  resetSiteAppearance: () => void;
 }
 
 const AdminContext = createContext<AdminContextType | undefined>(undefined);
 
-// Mock AI Suggestions
+// Mock Data
 const MOCK_SUGGESTIONS: AISuggestion[] = [
-  {
-    id: 'ai-1',
-    topic: 'Монголын эртний нүүдэлчдийн одон орон судлал',
-    reason: 'Түүх болон Шинжлэх ухааны ангилалд хэрэглэгчдийн сонирхол их байна.',
-    suggestedCategory: 'Түүх, газарзүй',
-    isUsed: false,
-  },
-  {
-    id: 'ai-2',
-    topic: 'Квант компьютерийн ирээдүй ба Монгол улс',
-    reason: 'Технологийн сүүлийн үеийн мэдээлэл хайсан илэрц нэмэгдсэн.',
-    suggestedCategory: 'Шинжлэх ухаан',
-    isUsed: false,
-  },
-  {
-    id: 'ai-3',
-    topic: 'Стресс менежмент ба тархины эрүүл мэнд',
-    reason: '"Хүмүүс" ангилалд сэтгэл зүйн зөвлөгөө эрэлттэй байна.',
-    suggestedCategory: 'Хүмүүс',
-    isUsed: false,
-  }
+  { id: 'ai-1', topic: 'Монголын эртний нүүдэлчдийн одон орон судлал', reason: 'Түүх болон Шинжлэх ухааны ангилалд хэрэглэгчдийн сонирхол их байна.', suggestedCategory: 'Түүх, газарзүй', isUsed: false },
+  { id: 'ai-2', topic: 'Квант компьютерийн ирээдүй ба Монгол улс', reason: 'Технологийн сүүлийн үеийн мэдээлэл хайсан илэрц нэмэгдсэн.', suggestedCategory: 'Шинжлэх ухаан', isUsed: false },
+  { id: 'ai-3', topic: 'Стресс менежмент ба тархины эрүүл мэнд', reason: '"Хүмүүс" ангилалд сэтгэл зүйн зөвлөгөө эрэлттэй байна.', suggestedCategory: 'Хүмүүс', isUsed: false }
 ];
 
 const DEFAULT_CHAT_SETTINGS: ChatSettings = {
@@ -93,27 +76,19 @@ const DEFAULT_CHAT_SETTINGS: ChatSettings = {
 const DEFAULT_APPEARANCE: SiteAppearance = {
   fontFamily: 'Inter',
   baseFontSize: 16,
-  letterSpacing: 0
+  letterSpacing: 0,
+  lineHeight: 1.6
 };
 
 export const AdminProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  // Auth State with Persistence
+  // --- Auth State ---
   const [isAuthenticated, setIsAuthenticated] = useState(() => {
-    return localStorage.getItem('cm_admin_auth') === 'true';
+    return typeof window !== 'undefined' && localStorage.getItem('cm_admin_auth') === 'true';
   });
 
-  // Persist Auth State
-  useEffect(() => {
-    if (isAuthenticated) {
-      localStorage.setItem('cm_admin_auth', 'true');
-    } else {
-      localStorage.removeItem('cm_admin_auth');
-    }
-  }, [isAuthenticated]);
-
+  // --- Feature States ---
   const [aiSuggestions, setAiSuggestions] = useState<AISuggestion[]>(MOCK_SUGGESTIONS);
   
-  // Content State
   const [adminContent, setAdminContent] = useState<ContentItem[]>([
     ...MOCK_CONTENT.map(c => ({ ...c, status: 'published' as const })),
     {
@@ -137,31 +112,27 @@ export const AdminProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     }
   ]);
 
-  // Chat Settings State (Persisted)
   const [chatSettings, setChatSettings] = useState<ChatSettings>(() => {
     const saved = localStorage.getItem('cm_admin_chat');
     return saved ? JSON.parse(saved) : DEFAULT_CHAT_SETTINGS;
   });
 
-  // Uploaded Images State (Persisted)
   const [uploadedImages, setUploadedImages] = useState<UploadedImage[]>(() => {
     const saved = localStorage.getItem('cm_admin_images');
     return saved ? JSON.parse(saved) : [];
   });
 
-  // Site Appearance (Persisted)
   const [siteAppearance, setSiteAppearance] = useState<SiteAppearance>(() => {
     const saved = localStorage.getItem('cm_site_appearance');
     return saved ? JSON.parse(saved) : DEFAULT_APPEARANCE;
   });
 
-  // Site Images Map (Persisted)
   const [siteImages, setSiteImages] = useState<SiteImages>(() => {
-    const saved = localStorage.getItem('cm_site_images_map');
+    const saved = localStorage.getItem('cm_site_images');
     return saved ? JSON.parse(saved) : {};
   });
 
-  // Persistence Effects
+  // --- Effects for Persistence ---
   useEffect(() => {
     localStorage.setItem('cm_admin_chat', JSON.stringify(chatSettings));
   }, [chatSettings]);
@@ -175,9 +146,8 @@ export const AdminProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   }, [siteAppearance]);
 
   useEffect(() => {
-    localStorage.setItem('cm_site_images_map', JSON.stringify(siteImages));
+    localStorage.setItem('cm_site_images', JSON.stringify(siteImages));
   }, [siteImages]);
-
 
   const feedbackSummary: FeedbackSummary = {
     totalRatings: 1240,
@@ -185,20 +155,31 @@ export const AdminProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     topRequestedTopics: ['Сансар огторгуй', 'Хиймэл оюун ухаан', 'Монголын түүх']
   };
 
-  const login = (password: string) => {
-    // Check environment variable (Vite uses import.meta.env, Node uses process.env)
-    const secret = (import.meta as any).env?.VITE_ADMIN_SECRET || process.env.ADMIN_SECRET;
-    
-    if (!secret) {
-      console.error("ADMIN_SECRET is not set in environment variables.");
-      return false; 
-    }
+  // --- Auth Methods ---
+  const login = async (password: string): Promise<boolean> => {
+    try {
+      const response = await fetch('/api/admin-login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password })
+      });
 
-    if (password === secret) {
-      setIsAuthenticated(true);
-      return true;
+      if (!response.ok) {
+        return false;
+      }
+
+      const data = await response.json();
+      
+      if (data.success) {
+        setIsAuthenticated(true);
+        localStorage.setItem('cm_admin_auth', 'true');
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error('Login error:', error);
+      return false;
     }
-    return false;
   };
 
   const logout = () => {
@@ -206,6 +187,7 @@ export const AdminProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     localStorage.removeItem('cm_admin_auth');
   };
 
+  // --- Feature Methods ---
   const generateDraftFromAI = async (suggestionId: string): Promise<ContentItem> => {
     await new Promise(resolve => setTimeout(resolve, 1500));
     const suggestion = aiSuggestions.find(s => s.id === suggestionId);

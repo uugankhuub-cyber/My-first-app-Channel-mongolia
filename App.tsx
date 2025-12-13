@@ -50,19 +50,23 @@ const SiteAppearanceManager: React.FC = () => {
     root.style.setProperty('--cm-font-family', siteAppearance.fontFamily);
     root.style.setProperty('--cm-base-size', `${siteAppearance.baseFontSize}px`);
     root.style.setProperty('--cm-letter-spacing', `${siteAppearance.letterSpacing}px`);
+    root.style.setProperty('--cm-line-height', `${siteAppearance.lineHeight}`);
   }, [siteAppearance]);
 
   return null;
 };
 
-// Layout Wrapper for Public Pages to include Nav/Footer and GlobalInfoBar
+// Layout Wrapper for Public Pages
 const PublicLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-  <div className="min-h-screen font-sans flex flex-col relative bg-slate-50 dark:bg-[#020617] transition-colors duration-300"
-       style={{ 
-         fontFamily: 'var(--cm-font-family, Inter)', 
-         fontSize: 'var(--cm-base-size, 16px)', 
-         letterSpacing: 'var(--cm-letter-spacing, 0px)' 
-       }}>
+  <div 
+    className="min-h-screen font-sans flex flex-col relative bg-slate-50 dark:bg-[#020617] transition-colors duration-300"
+    style={{ 
+       fontFamily: 'var(--cm-font-family, Inter)', 
+       fontSize: 'var(--cm-base-size, 16px)', 
+       letterSpacing: 'var(--cm-letter-spacing, 0px)',
+       lineHeight: 'var(--cm-line-height, 1.6)'
+    }}
+  >
     <GlobalInfoBar />
     <Navbar />
     <main className="flex-grow">
@@ -83,7 +87,7 @@ const App: React.FC = () => {
             <Router>
               <ScrollToTop />
               <Routes>
-                {/* ADMIN ROUTES */}
+                {/* ADMIN ROUTES - Protected by AdminLayout Guard */}
                 <Route path="/admin" element={<AdminLayout />}>
                    <Route index element={<AdminDashboard />} />
                    <Route path="dashboard" element={<AdminDashboard />} />
@@ -95,8 +99,7 @@ const App: React.FC = () => {
                    <Route path="chat-settings" element={<AdminChatSettings />} />
                    <Route path="logs" element={<AdminLogs />} />
                    <Route path="content/edit/:id" element={<AdminEditor />} />
-                   <Route path="feedback" element={<div className="p-8 text-white">Санал хүсэлтийн хэсэг удахгүй нээгдэнэ...</div>} />
-                   <Route path="settings" element={<div className="p-8 text-white">Тохиргоо хэсэг удахгүй нээгдэнэ...</div>} />
+                   <Route path="settings" element={<div className="p-8 text-white">Settings Coming Soon...</div>} />
                 </Route>
 
                 {/* PUBLIC ROUTES */}

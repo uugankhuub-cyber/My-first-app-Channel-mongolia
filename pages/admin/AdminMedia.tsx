@@ -1,34 +1,21 @@
 import React, { useState } from 'react';
 import { useAdmin } from '../../context/AdminContext';
-import { MonitorPlay, Upload, Check } from 'lucide-react';
-import { ImageUploader } from '../../components/ImageUploader';
+import { MonitorPlay, Save } from 'lucide-react';
 
 const SLOTS = [
-  { key: 'hero_bg', label: 'Hero Background (Optional)', default: '' },
-  { key: 'about_img', label: 'About Page Image', default: '' },
+  { key: 'hero_bg', label: 'Hero Section Background', desc: 'Main image on homepage' },
+  { key: 'about_img', label: 'About Us Image', desc: 'Featured image on About page' },
 ];
 
 export const AdminMedia: React.FC = () => {
-  const { siteImages, updateSiteImage, addImage } = useAdmin();
-  const [activeSlot, setActiveSlot] = useState<string | null>(null);
-
-  // We reuse ImageUploader, but catch the upload via Context changes
-  // Ideally ImageUploader would take an onUpload callback, but to keep changes small
-  // we will create a small wrapper or just instruct admin to upload then paste URL.
-  // UPDATE: Given the constraints, let's make a simple input wrapper that works with "Uploaded Images" gallery or direct URL.
-
-  const [tempUrl, setTempUrl] = useState('');
-
-  const handleSave = () => {
-    if (activeSlot && tempUrl) {
-      updateSiteImage(activeSlot, tempUrl);
-      setActiveSlot(null);
-      setTempUrl('');
-    }
-  };
+  const { siteImages, updateSiteImage } = useAdmin();
+  
+  // Local state to manage inputs before saving? 
+  // For this MVP, we bind directly to context but show save confirmation could be nice.
+  // Actually, direct binding is easiest for MVP "Config Store" requirement.
 
   return (
-    <div className="max-w-4xl">
+    <div className="max-w-4xl mx-auto">
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-white mb-2 flex items-center gap-2">
            <MonitorPlay className="text-brand-purple" />
@@ -45,34 +32,40 @@ export const AdminMedia: React.FC = () => {
              <div key={slot.key} className="bg-[#1E293B] p-6 rounded-xl border border-white/5 flex flex-col md:flex-row gap-6 items-start">
                 
                 {/* Preview */}
-                <div className="w-full md:w-1/3 aspect-video bg-black/20 rounded-lg overflow-hidden border border-white/10 relative">
+                <div className="w-full md:w-1/3 aspect-video bg-black/20 rounded-lg overflow-hidden border border-white/10 relative group">
                    {currentUrl ? (
                       <img src={currentUrl} alt={slot.label} className="w-full h-full object-cover" />
                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-slate-500 text-xs">No Custom Image</div>
+                      <div className="w-full h-full flex flex-col items-center justify-center text-slate-500 gap-2">
+                         <span className="text-xs">No Custom Image</span>
+                         <span className="text-[10px] opacity-50">Using Default</span>
+                      </div>
                    )}
-                   <div className="absolute top-2 left-2 bg-black/50 text-white text-[10px] px-2 py-1 rounded">
-                      {slot.key}
+                   <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                      <span className="text-white text-xs font-bold">{slot.key}</span>
                    </div>
                 </div>
 
                 {/* Controls */}
                 <div className="flex-1 w-full">
-                   <h3 className="font-bold text-white mb-2">{slot.label}</h3>
-                   <p className="text-xs text-slate-400 mb-4">Paste an image URL below to replace the default image.</p>
+                   <h3 className="font-bold text-white mb-1">{slot.label}</h3>
+                   <p className="text-xs text-slate-400 mb-4">{slot.desc}</p>
                    
-                   <div className="flex gap-2">
-                      <input 
-                         type="text" 
-                         placeholder="https://..."
-                         className="flex-1 bg-[#0F172A] border border-white/10 rounded-lg px-4 py-2 text-white outline-none focus:border-brand-purple"
-                         defaultValue={currentUrl}
-                         onChange={(e) => updateSiteImage(slot.key, e.target.value)} 
-                      />
+                   <div className="space-y-3">
+                      <div>
+                         <label className="block text-xs font-bold text-slate-500 mb-1">Image URL</label>
+                         <input 
+                            type="text" 
+                            placeholder="https://example.com/image.jpg"
+                            className="w-full bg-[#0F172A] border border-white/10 rounded-lg px-4 py-2 text-white outline-none focus:border-brand-purple transition-colors text-sm"
+                            value={currentUrl || ''}
+                            onChange={(e) => updateSiteImage(slot.key, e.target.value)} 
+                         />
+                      </div>
+                      <p className="text-[10px] text-slate-500">
+                         Note: You can upload an image in the "Image Gallery" section, copy its URL, and paste it here.
+                      </p>
                    </div>
-                   <p className="text-[10px] text-slate-500 mt-2">
-                      Tip: Upload image in "Image Gallery" first, then copy URL here.
-                   </p>
                 </div>
              </div>
            );

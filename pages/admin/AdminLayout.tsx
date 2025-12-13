@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { 
   LayoutDashboard, FileText, Sparkles, MessageSquare, 
-  Settings, LogOut, Menu, X, ShieldCheck, Image as ImageIcon, ScrollText, Palette, MonitorPlay
+  Settings, LogOut, Menu, X, ShieldCheck, Image as ImageIcon, 
+  ScrollText, Palette, MonitorPlay, Loader2
 } from 'lucide-react';
 import { useAdmin } from '../../context/AdminContext';
 
@@ -11,43 +12,38 @@ export const AdminLayout: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [isSidebarOpen, setSidebarOpen] = useState(true);
+  
+  // Login State
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  // Protect Admin Routes: Redirect to /admin if not authenticated on sub-routes
-  useEffect(() => {
-    if (!isAuthenticated && location.pathname !== '/admin') {
-      navigate('/admin');
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
+    
+    // Call Context login which calls API
+    const success = await login(password);
+    
+    setLoading(false);
+    if (success) {
+      navigate('/admin/dashboard');
+    } else {
+      setError('Нууц үг буруу байна!');
     }
-  }, [isAuthenticated, location.pathname, navigate]);
+  };
 
   const handleLogout = () => {
     logout();
     navigate('/admin');
   };
 
-  // Simple Login Screen Component inside Layout
+  // --- 1. LOGIN SCREEN (GUARD) ---
   if (!isAuthenticated) {
-    const handleLogin = (e: React.FormEvent) => {
-      e.preventDefault();
-      setError('');
-      
-      const secret = (import.meta as any).env?.VITE_ADMIN_SECRET || process.env.ADMIN_SECRET;
-      if (!secret) {
-        setError('Warning: ADMIN_SECRET env var is missing. Login disabled.');
-        return;
-      }
-
-      if (login(password)) {
-        navigate('/admin/dashboard');
-      } else {
-        setError('Нууц үг буруу байна!');
-      }
-    };
-
     return (
       <div className="min-h-screen bg-[#0F172A] flex items-center justify-center px-4">
-        <div className="max-w-md w-full bg-[#1E293B] p-8 rounded-2xl border border-white/10 shadow-2xl">
+        <div className="max-w-md w-full bg-[#1E293B] p-8 rounded-2xl border border-white/10 shadow-2xl animate-fade-in">
           <div className="flex justify-center mb-6">
              <div className="w-16 h-16 bg-gradient-brand rounded-2xl flex items-center justify-center shadow-glow">
                 <ShieldCheck className="text-white w-8 h-8" />
@@ -65,6 +61,7 @@ export const AdminLayout: React.FC = () => {
                 onChange={(e) => setPassword(e.target.value)}
                 className="w-full px-4 py-3 bg-[#0F172A] border border-white/10 rounded-xl text-white focus:border-brand-purple outline-none transition-colors"
                 placeholder="••••••••"
+                autoFocus
               />
             </div>
             
@@ -74,8 +71,12 @@ export const AdminLayout: React.FC = () => {
               </div>
             )}
 
-            <button type="submit" className="w-full py-3 bg-gradient-brand text-white font-bold rounded-xl hover:opacity-90 transition-opacity shadow-md">
-              Нэвтрэх
+            <button 
+              type="submit" 
+              disabled={loading}
+              className="w-full py-3 bg-gradient-brand text-white font-bold rounded-xl hover:opacity-90 transition-all shadow-md disabled:opacity-50 flex items-center justify-center gap-2"
+            >
+              {loading ? <Loader2 className="animate-spin" size={20} /> : 'Нэвтрэх'}
             </button>
             <div className="text-center mt-4">
                <button type="button" onClick={() => navigate('/')} className="text-slate-500 text-xs hover:text-slate-300">
@@ -88,6 +89,7 @@ export const AdminLayout: React.FC = () => {
     );
   }
 
+  // --- 2. AUTHENTICATED LAYOUT ---
   const navItems = [
     { label: 'Хянах самбар', path: '/admin/dashboard', icon: <LayoutDashboard size={20} /> },
     { label: 'Контент', path: '/admin/content', icon: <FileText size={20} /> },
@@ -97,6 +99,7 @@ export const AdminLayout: React.FC = () => {
     { label: 'AI Санал', path: '/admin/ai-suggestions', icon: <Sparkles size={20} /> },
     { label: 'Чатбот', path: '/admin/chat-settings', icon: <MessageSquare size={20} /> },
     { label: 'Систем лог', path: '/admin/logs', icon: <ScrollText size={20} /> },
+    { label: 'Тохиргоо', path: '/admin/settings', icon: <Settings size={20} /> },
   ];
 
   return (
@@ -113,7 +116,7 @@ export const AdminLayout: React.FC = () => {
             </button>
           </div>
 
-          <nav className="flex-1 px-3 py-6 space-y-1">
+          <nav className="flex-1 px-3 py-6 space-y-1 overflow-y-auto">
             {navItems.map((item) => {
               const isActive = location.pathname.startsWith(item.path);
               return (

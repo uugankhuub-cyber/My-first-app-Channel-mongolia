@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
-import { useAdmin } from '../../context/AdminContext';
-import { Palette, RefreshCcw, Save, Type } from 'lucide-react';
+import { useAdmin, SiteAppearance } from '../../context/AdminContext';
+import { Palette, RefreshCcw, Save, Type, Monitor } from 'lucide-react';
 
 export const AdminAppearance: React.FC = () => {
   const { siteAppearance, updateSiteAppearance, resetSiteAppearance } = useAdmin();
-  const [formData, setFormData] = useState(siteAppearance);
+  const [formData, setFormData] = useState<SiteAppearance>(siteAppearance);
   const [saved, setSaved] = useState(false);
 
-  const handleChange = (key: keyof typeof siteAppearance, value: any) => {
+  const handleChange = (key: keyof SiteAppearance, value: any) => {
     setFormData(prev => ({ ...prev, [key]: value }));
   };
 
@@ -22,12 +22,13 @@ export const AdminAppearance: React.FC = () => {
     setFormData({
       fontFamily: 'Inter',
       baseFontSize: 16,
-      letterSpacing: 0
+      letterSpacing: 0,
+      lineHeight: 1.6
     });
   };
 
   return (
-    <div className="max-w-3xl">
+    <div className="max-w-4xl mx-auto">
       <div className="flex items-center justify-between mb-8">
         <div>
            <h1 className="text-2xl font-bold text-white mb-2 flex items-center gap-2">
@@ -52,10 +53,11 @@ export const AdminAppearance: React.FC = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-         {/* Settings Form */}
-         <div className="bg-[#1E293B] p-6 rounded-xl border border-white/5 space-y-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+         {/* Settings Panel */}
+         <div className="bg-[#1E293B] p-6 rounded-xl border border-white/5 space-y-8">
             
+            {/* Font Family */}
             <div>
                <label className="block text-slate-400 text-sm font-bold mb-3 flex items-center gap-2">
                   <Type size={16} /> Font Family
@@ -65,37 +67,38 @@ export const AdminAppearance: React.FC = () => {
                   onChange={(e) => handleChange('fontFamily', e.target.value)}
                   className="w-full bg-[#0F172A] border border-white/10 rounded-lg px-4 py-3 text-white outline-none focus:border-brand-purple"
                >
-                  <option value="Inter">Inter (Default)</option>
-                  <option value="Roboto">Roboto</option>
-                  <option value="Arial">Arial</option>
-                  <option value="Georgia">Georgia</option>
-                  <option value="Courier New">Courier New</option>
+                  <option value="Inter">Inter (Modern)</option>
+                  <option value="Roboto">Roboto (Clean)</option>
+                  <option value="Georgia">Georgia (Serif)</option>
+                  <option value="Courier New">Courier New (Monospace)</option>
+                  <option value="Arial">Arial (Classic)</option>
                </select>
             </div>
 
+            {/* Font Size */}
             <div>
-               <label className="block text-slate-400 text-sm font-bold mb-3 flex items-center gap-2">
+               <label className="block text-slate-400 text-sm font-bold mb-3 flex items-center justify-between">
                   <span>Base Font Size</span>
                   <span className="text-xs bg-brand-purple px-2 py-0.5 rounded text-white">{formData.baseFontSize}px</span>
                </label>
                <input 
                   type="range" 
                   min="12" 
-                  max="20" 
+                  max="24" 
                   step="1"
                   value={formData.baseFontSize}
                   onChange={(e) => handleChange('baseFontSize', parseInt(e.target.value))}
-                  className="w-full accent-brand-purple"
+                  className="w-full accent-brand-purple cursor-pointer"
                />
                <div className="flex justify-between text-xs text-slate-500 mt-2">
-                  <span>12px</span>
-                  <span>16px</span>
-                  <span>20px</span>
+                  <span>Small (12px)</span>
+                  <span>Large (24px)</span>
                </div>
             </div>
 
+            {/* Letter Spacing */}
             <div>
-               <label className="block text-slate-400 text-sm font-bold mb-3 flex items-center gap-2">
+               <label className="block text-slate-400 text-sm font-bold mb-3 flex items-center justify-between">
                   <span>Letter Spacing</span>
                   <span className="text-xs bg-brand-purple px-2 py-0.5 rounded text-white">{formData.letterSpacing}px</span>
                </label>
@@ -106,38 +109,55 @@ export const AdminAppearance: React.FC = () => {
                   step="0.5"
                   value={formData.letterSpacing}
                   onChange={(e) => handleChange('letterSpacing', parseFloat(e.target.value))}
-                  className="w-full accent-brand-purple"
+                  className="w-full accent-brand-purple cursor-pointer"
                />
-               <div className="flex justify-between text-xs text-slate-500 mt-2">
-                  <span>-2px</span>
-                  <span>0px</span>
-                  <span>5px</span>
-               </div>
+            </div>
+
+             {/* Line Height */}
+             <div>
+               <label className="block text-slate-400 text-sm font-bold mb-3 flex items-center justify-between">
+                  <span>Line Height</span>
+                  <span className="text-xs bg-brand-purple px-2 py-0.5 rounded text-white">{formData.lineHeight}</span>
+               </label>
+               <input 
+                  type="range" 
+                  min="1" 
+                  max="2.5" 
+                  step="0.1"
+                  value={formData.lineHeight}
+                  onChange={(e) => handleChange('lineHeight', parseFloat(e.target.value))}
+                  className="w-full accent-brand-purple cursor-pointer"
+               />
             </div>
 
          </div>
 
-         {/* Live Preview */}
-         <div className="bg-white dark:bg-[#020617] p-6 rounded-xl border border-gray-200 dark:border-white/10 shadow-lg">
-            <h3 className="text-xs font-bold text-brand-purple uppercase tracking-widest mb-4">Live Preview</h3>
-            
-            <div style={{ 
-               fontFamily: formData.fontFamily, 
-               fontSize: `${formData.baseFontSize}px`,
-               letterSpacing: `${formData.letterSpacing}px`,
-               lineHeight: 1.6
-            }} className="text-gray-900 dark:text-slate-200">
-               <h2 className="text-2xl font-bold mb-4">Гарчиг жишээ</h2>
-               <p className="mb-4">
-                  Энэ бол таны сайтын текстийн тохиргоог харуулах жишээ бичвэр юм. Та зүүн талын цонхонд өөрчлөлт оруулахад энд шууд харагдах болно.
-               </p>
-               <p className="text-sm opacity-80">
-                  Жижиг хэмжээтэй бичвэр нь иймэрхүү харагдана.
-               </p>
-               <button className="mt-4 px-4 py-2 bg-gradient-brand text-white rounded-lg font-bold text-sm">
-                  Товчлуур
-               </button>
-            </div>
+         {/* Preview Panel */}
+         <div className="space-y-4">
+             <div className="flex items-center gap-2 text-sm text-slate-400">
+                <Monitor size={16} /> Live Preview
+             </div>
+             <div className="bg-white dark:bg-[#020617] p-8 rounded-xl border border-gray-200 dark:border-white/10 shadow-lg min-h-[400px]">
+                <div style={{ 
+                   fontFamily: formData.fontFamily, 
+                   fontSize: `${formData.baseFontSize}px`,
+                   letterSpacing: `${formData.letterSpacing}px`,
+                   lineHeight: formData.lineHeight
+                }} className="text-gray-900 dark:text-slate-200 transition-all duration-300">
+                   <h2 className="text-2xl font-bold mb-4 border-b border-gray-100 dark:border-white/10 pb-4">Гарчиг жишээ</h2>
+                   <p className="mb-4">
+                      Энэ бол таны сайтын текстийн тохиргоог харуулах жишээ бичвэр юм. Та зүүн талын цонхонд өөрчлөлт оруулахад энд шууд харагдах болно.
+                   </p>
+                   <ul className="list-disc pl-5 mb-6 space-y-2 opacity-90">
+                      <li>Үндсэн фонт: {formData.fontFamily}</li>
+                      <li>Текстийн хэмжээ: {formData.baseFontSize}px</li>
+                      <li>Мөр хоорондын зай: {formData.lineHeight}</li>
+                   </ul>
+                   <button className="px-6 py-2 bg-gradient-brand text-white rounded-lg font-bold text-sm">
+                      Товчлуур жишээ
+                   </button>
+                </div>
+             </div>
          </div>
       </div>
     </div>
