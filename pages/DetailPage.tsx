@@ -14,11 +14,17 @@ export const DetailPage: React.FC = () => {
   const { content: allContent } = useContent();
   const isEn = language === 'en';
   
-  const content = allContent.find(c => c.id === id) || allContent[0];
+  const content = allContent.find(c => c.id === id);
+  
+  // Fallback if not found (or still loading)
+  if (!content) {
+      return <div className="p-20 text-center text-slate-500">Loading or not found...</div>;
+  }
   
   const title = isEn ? content.title_en : content.title;
   const description = isEn ? content.description_en : content.description;
-  const body = isEn ? content.contentBody_en : content.contentBody;
+  // Prefer contentBody (HTML) if available, otherwise fallback
+  const body = isEn ? content.contentBody_en : (content.contentBody || content.description);
   const category = isEn ? content.category_en : content.category;
   const tags = isEn ? content.tags_en : content.tags;
 
@@ -72,34 +78,20 @@ export const DetailPage: React.FC = () => {
                      </div>
                  </div>
              )}
-             <div className="absolute bottom-0 left-0 right-0 h-1 bg-white dark:bg-[#151E32]">
-                <div className="w-1/3 h-full bg-primary-500 shadow-sm dark:shadow-[0_0_10px_#3b82f6]"></div>
-             </div>
-          </div>
-
-          <div className="flex items-center gap-4 mb-10">
-            <button className="flex items-center gap-2 px-6 py-3 bg-primary-600 text-white rounded-xl font-medium hover:bg-primary-700 dark:hover:bg-primary-500 transition-all shadow-sm dark:shadow-glow hover:scale-105">
-                <PlayCircle size={18} />
-                <span>{t('watch')}</span>
-            </button>
-            <button className="flex items-center gap-2 px-5 py-3 bg-white dark:bg-[#151E32] border border-gray-200 dark:border-white/10 text-gray-600 dark:text-slate-300 rounded-xl font-medium hover:bg-gray-50 dark:hover:bg-white/5 transition-colors hover:text-gray-900 dark:hover:text-white">
-                <ThumbsUp size={18} />
-                <span>{t('like')}</span>
-            </button>
-            <button className="flex items-center gap-2 px-5 py-3 bg-white dark:bg-[#151E32] border border-gray-200 dark:border-white/10 text-gray-600 dark:text-slate-300 rounded-xl font-medium hover:bg-gray-50 dark:hover:bg-white/5 transition-colors hover:text-gray-900 dark:hover:text-white">
-                <Share2 size={18} />
-                <span className="hidden sm:inline">{t('share')}</span>
-            </button>
-             <button className="p-3 bg-white dark:bg-[#151E32] border border-gray-200 dark:border-white/10 text-gray-600 dark:text-slate-300 rounded-xl hover:bg-gray-50 dark:hover:bg-white/5 ml-auto transition-colors hover:text-gray-900 dark:hover:text-white">
-                <Bookmark size={18} />
-            </button>
           </div>
 
           <div className="prose prose-lg prose-gray dark:prose-invert max-w-none text-gray-700 dark:text-slate-300">
-             <p className="font-medium text-xl text-gray-900 dark:text-slate-100 mb-6 leading-relaxed border-l-4 border-primary-500 pl-4">{description}</p>
-             <div className="mb-6 leading-relaxed whitespace-pre-wrap">
-                 {body || 'Content not available in this language.'}
-             </div>
+             {/* Description Intro */}
+             <p className="font-medium text-xl text-gray-900 dark:text-slate-100 mb-6 leading-relaxed border-l-4 border-primary-500 pl-4">
+                {description}
+             </p>
+             
+             {/* Render HTML Content Safely */}
+             {/* In a real production app, use DOMPurify here. For this demo we trust Admin content. */}
+             <div 
+                className="mb-6 leading-relaxed whitespace-pre-wrap"
+                dangerouslySetInnerHTML={{ __html: body || '' }}
+             />
              
              {content.quiz && <QuizCard quiz={content.quiz} />}
           </div>

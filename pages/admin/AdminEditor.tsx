@@ -1,19 +1,20 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAdmin } from '../../context/AdminContext';
-import { Save, ArrowLeft, Image as ImageIcon, Sparkles, Languages, RefreshCw, Wand2 } from 'lucide-react';
+import { Save, ArrowLeft, Image as ImageIcon, Sparkles, Wand2, UploadCloud, RefreshCw, Type, List, Quote } from 'lucide-react';
 import { CATEGORIES } from '../../constants';
 import { ContentItem } from '../../types';
 
 export const AdminEditor: React.FC = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { adminContent, saveContent, askAI } = useAdmin();
+  const { adminContent, saveContent, askAI, uploadImage } = useAdmin();
   
   const [formData, setFormData] = useState<Partial<ContentItem>>({});
   const [loading, setLoading] = useState(true);
-  const [lang, setLang] = useState<'mn' | 'en'>('mn'); // Editor Language State
   const [aiLoading, setAiLoading] = useState(false);
+  const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
     if (id) {
@@ -45,67 +46,67 @@ export const AdminEditor: React.FC = () => {
            status: status,
            publishedDate: status === 'published' ? new Date().toISOString().split('T')[0] : formData.publishedDate || ''
         });
-        if (success) navigate('/admin/content');
-        else alert('Failed to save. Check network or auth.');
+        if (success) {
+            navigate('/admin/content');
+        } else {
+            alert('Failed to save. Check network or auth.');
+        }
      }
   };
 
-  // AI Helper Function
-  const handleAI = async (action: string, targetField: 'contentBody' | 'description' | 'title') => {
-      // Determine source text based on current language
-      const sourceField = lang === 'mn' 
-          ? (targetField) 
-          : (targetField + '_en') as keyof ContentItem;
-      
-      const text = formData[sourceField] as string;
-      
-      if (!text) {
-          alert('Please enter some text first.');
-          return;
-      }
+  const handleAI = async (action: string, targetField: 'contentBody' | 'description') => {
+      const text = formData[targetField] as string;
+      if (!text) return alert('Please enter some text first.');
 
       setAiLoading(true);
-      const result = await askAI(action, text, lang);
+      const result = await askAI(action, text);
       setAiLoading(false);
 
-      if (result) {
-          if (confirm('AI Generated Suggestion:\n\n' + result + '\n\nApply this change?')) {
-              // Apply to the specific language field
-              handleChange(sourceField, result);
+      if (result && result !== "AI Error") {
+          if (confirm('AI Suggestion:\n\n' + result + '\n\nApply?')) {
+              handleChange(targetField, result);
+          }
+      } else {
+          alert('AI request failed.');
+      }
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+      if (e.target.files && e.target.files[0]) {
+          setUploading(true);
+          const url = await uploadImage(e.target.files[0]);
+          setUploading(false);
+          if (url) {
+              handleChange('thumbnailUrl', url);
+          } else {
+              alert('Upload failed');
           }
       }
   };
 
-  const handleTranslate = async () => {
-      // Translate all fields from current lang to other lang
-      const sourceSuffix = lang === 'mn' ? '' : '_en';
-      const targetSuffix = lang === 'mn' ? '_en' : '';
+  // Simple Rich Text Insert
+  const insertTag = (tag: string) => {
+      const textarea = document.getElementById('bodyEditor') as HTMLTextAreaElement;
+      if (!textarea) return;
       
-      const title = formData[`title${sourceSuffix}` as keyof ContentItem] as string;
-      const desc = formData[`description${sourceSuffix}` as keyof ContentItem] as string;
+      const start = textarea.selectionStart;
+      const end = textarea.selectionEnd;
+      const text = textarea.value;
+      const before = text.substring(0, start);
+      const after = text.substring(end, text.length);
+      const selection = text.substring(start, end);
       
-      if (!title) return;
-
-      setAiLoading(true);
-      const newTitle = await askAI('translate', title, lang);
-      const newDesc = await askAI('translate', desc, lang);
-      setAiLoading(false);
-
-      setFormData(prev => ({
-          ...prev,
-          [`title${targetSuffix}`]: newTitle,
-          [`description${targetSuffix}`]: newDesc
-      }));
+      let newText = '';
+      if (tag === 'b') newText = `<b>${selection}</b>`;
+      if (tag === 'i') newText = `<i>${selection}</i>`;
+      if (tag === 'h2') newText = `<h2>${selection}</h2>`;
+      if (tag === 'ul') newText = `<ul>\n<li>${selection}</li>\n</ul>`;
+      
+      handleChange('contentBody', before + newText + after);
   };
 
   if (loading) return <div className="p-8 text-white">Loading...</div>;
   if (!formData.id) return <div className="p-8 text-white">Content not found</div>;
-
-  // Dynamic field names based on selected language
-  const titleField = lang === 'mn' ? 'title' : 'title_en';
-  const descField = lang === 'mn' ? 'description' : 'description_en';
-  const bodyField = lang === 'mn' ? 'contentBody' : 'contentBody_en';
-  const catField = lang === 'mn' ? 'category' : 'category_en';
 
   return (
     <div className="max-w-6xl mx-auto pb-20">
@@ -119,31 +120,10 @@ export const AdminEditor: React.FC = () => {
                 <h1 className="text-xl font-bold text-white">
                    {formData.status === 'draft' ? 'Draft Editor' : 'Edit Article'}
                 </h1>
-                <div className="flex items-center gap-2 mt-1">
-                   <button 
-                      onClick={() => setLang('mn')}
-                      className={`text-xs px-2 py-0.5 rounded transition-colors ${lang === 'mn' ? 'bg-brand-purple text-white' : 'text-slate-500 hover:text-white'}`}
-                   >
-                      Mongolian
-                   </button>
-                   <button 
-                      onClick={() => setLang('en')}
-                      className={`text-xs px-2 py-0.5 rounded transition-colors ${lang === 'en' ? 'bg-brand-purple text-white' : 'text-slate-500 hover:text-white'}`}
-                   >
-                      English
-                   </button>
-                </div>
+                <span className="text-xs text-slate-500">ID: {formData.id}</span>
              </div>
           </div>
           <div className="flex items-center gap-3">
-             <button 
-               onClick={handleTranslate}
-               disabled={aiLoading}
-               className="p-2 text-slate-400 hover:text-white hover:bg-white/10 rounded-lg"
-               title="Translate to other language"
-             >
-                <Languages size={20} />
-             </button>
              <button 
                onClick={() => handleSave('draft')}
                className="px-4 py-2 bg-white/5 hover:bg-white/10 text-white rounded-lg font-medium text-sm transition-colors"
@@ -167,60 +147,64 @@ export const AdminEditor: React.FC = () => {
              
              {/* Title */}
              <div className="bg-[#1E293B] p-6 rounded-xl border border-white/5 group relative">
-                <label className="block text-slate-400 text-xs font-bold mb-2 uppercase tracking-wider flex justify-between">
-                    Title ({lang.toUpperCase()})
-                    <button onClick={() => handleAI('improve', 'title')} className="text-brand-purple hover:text-white transition-colors opacity-0 group-hover:opacity-100 flex items-center gap-1">
-                        <Sparkles size={12} /> Improve
-                    </button>
-                </label>
+                <label className="block text-slate-400 text-xs font-bold mb-2 uppercase tracking-wider">Title</label>
                 <input 
                    type="text" 
-                   value={formData[titleField] || ''} 
-                   onChange={(e) => handleChange(titleField, e.target.value)}
+                   value={formData.title || ''} 
+                   onChange={(e) => handleChange('title', e.target.value)}
                    className="w-full bg-[#0F172A] border border-white/10 rounded-lg px-4 py-3 text-white font-bold text-lg focus:border-brand-purple outline-none"
-                   placeholder={lang === 'mn' ? 'Гарчиг оруулах...' : 'Enter title...'}
+                   placeholder="Enter article title..."
                 />
              </div>
 
-             {/* Description */}
+             {/* Description with AI */}
              <div className="bg-[#1E293B] p-6 rounded-xl border border-white/5 group relative">
-                <label className="block text-slate-400 text-xs font-bold mb-2 uppercase tracking-wider flex justify-between">
-                    Description ({lang.toUpperCase()})
-                    <div className="opacity-0 group-hover:opacity-100 flex gap-2">
-                        <button onClick={() => handleAI('summarize', 'description')} className="text-brand-purple hover:text-white transition-colors flex items-center gap-1">
+                <div className="flex justify-between mb-2">
+                    <label className="block text-slate-400 text-xs font-bold uppercase tracking-wider">Description</label>
+                    <div className="flex gap-2">
+                        <button onClick={() => handleAI('improve', 'description')} className="text-brand-purple hover:text-white text-xs flex items-center gap-1 transition-colors">
+                            <Sparkles size={12} /> Improve
+                        </button>
+                        <button onClick={() => handleAI('summarize', 'description')} className="text-brand-purple hover:text-white text-xs flex items-center gap-1 transition-colors">
                             <Wand2 size={12} /> Summarize
                         </button>
-                        <button onClick={() => handleAI('improve', 'description')} className="text-brand-purple hover:text-white transition-colors flex items-center gap-1">
-                            <Sparkles size={12} /> Improve
-                        </button>
                     </div>
-                </label>
+                </div>
                 <textarea 
                    rows={3}
-                   value={formData[descField] || ''} 
-                   onChange={(e) => handleChange(descField, e.target.value)}
+                   value={formData.description || ''} 
+                   onChange={(e) => handleChange('description', e.target.value)}
                    className="w-full bg-[#0F172A] border border-white/10 rounded-lg px-4 py-3 text-slate-300 focus:border-brand-purple outline-none resize-none"
+                   placeholder="Short summary for SEO and cards..."
                 />
              </div>
 
-             {/* Body */}
+             {/* Body Editor */}
              <div className="bg-[#1E293B] p-6 rounded-xl border border-white/5 min-h-[500px] group relative">
-                <label className="block text-slate-400 text-xs font-bold mb-4 uppercase tracking-wider flex justify-between">
-                    Content Body ({lang.toUpperCase()})
-                    <div className="opacity-0 group-hover:opacity-100 flex gap-2">
-                         <button onClick={() => handleAI('expand', 'contentBody')} className="text-brand-purple hover:text-white transition-colors flex items-center gap-1">
+                <div className="flex justify-between mb-4">
+                    <div className="flex items-center gap-2">
+                        <label className="block text-slate-400 text-xs font-bold uppercase tracking-wider">Content Body (HTML)</label>
+                        <div className="h-4 w-[1px] bg-white/10 mx-2"></div>
+                        <button onClick={() => insertTag('b')} className="p-1 hover:bg-white/10 rounded" title="Bold"><strong className="text-white">B</strong></button>
+                        <button onClick={() => insertTag('i')} className="p-1 hover:bg-white/10 rounded" title="Italic"><em className="text-white">I</em></button>
+                        <button onClick={() => insertTag('h2')} className="p-1 hover:bg-white/10 rounded" title="Header"><Type size={14} className="text-white"/></button>
+                        <button onClick={() => insertTag('ul')} className="p-1 hover:bg-white/10 rounded" title="List"><List size={14} className="text-white"/></button>
+                    </div>
+                    <div className="flex gap-2">
+                         <button onClick={() => handleAI('expand', 'contentBody')} className="text-brand-purple hover:text-white text-xs flex items-center gap-1 transition-colors">
                             <Wand2 size={12} /> Expand
                         </button>
-                        <button onClick={() => handleAI('improve', 'contentBody')} className="text-brand-purple hover:text-white transition-colors flex items-center gap-1">
+                        <button onClick={() => handleAI('improve', 'contentBody')} className="text-brand-purple hover:text-white text-xs flex items-center gap-1 transition-colors">
                             <Sparkles size={12} /> Improve
                         </button>
                     </div>
-                </label>
+                </div>
                 <textarea 
-                   value={formData[bodyField] || ''} 
-                   onChange={(e) => handleChange(bodyField, e.target.value)}
+                   id="bodyEditor"
+                   value={formData.contentBody || ''} 
+                   onChange={(e) => handleChange('contentBody', e.target.value)}
                    className="w-full h-[600px] bg-[#0F172A] border border-white/10 rounded-lg px-4 py-4 text-slate-300 font-mono text-sm focus:border-brand-purple outline-none leading-relaxed"
-                   placeholder="Write your article content here (Markdown supported)..."
+                   placeholder="Write content here. HTML tags allowed (<b>, <i>, <p>)..."
                 />
              </div>
 
@@ -229,46 +213,72 @@ export const AdminEditor: React.FC = () => {
           {/* Sidebar Settings */}
           <div className="space-y-6">
              
-             <div className="bg-[#1E293B] p-6 rounded-xl border border-white/5">
-                <h3 className="font-bold text-white mb-4">Meta Data</h3>
+             <div className="bg-[#1E293B] p-6 rounded-xl border border-white/5 space-y-4">
+                <h3 className="font-bold text-white">Settings</h3>
                 
-                <div className="space-y-4">
-                   <div>
-                      <label className="block text-slate-400 text-xs font-bold mb-2">Category ({lang.toUpperCase()})</label>
-                      <select 
-                         value={formData[catField] || ''}
-                         onChange={(e) => handleChange(catField, e.target.value)}
-                         className="w-full bg-[#0F172A] border border-white/10 rounded-lg px-3 py-2 text-white text-sm outline-none"
-                      >
-                         <option value="">Select...</option>
-                         {CATEGORIES.map(cat => (
-                            <option key={cat.id} value={lang === 'mn' ? cat.label : cat.label_en}>
-                                {lang === 'mn' ? cat.label : cat.label_en}
-                            </option>
-                         ))}
-                      </select>
-                   </div>
-
-                   <div>
-                      <label className="block text-slate-400 text-xs font-bold mb-2">Thumbnail URL</label>
-                      <div className="flex gap-2">
-                         <input 
-                            type="text" 
-                            value={formData.thumbnailUrl || ''} 
-                            onChange={(e) => handleChange('thumbnailUrl', e.target.value)}
-                            className="flex-1 bg-[#0F172A] border border-white/10 rounded-lg px-3 py-2 text-white text-xs outline-none truncate"
-                         />
-                         <button className="p-2 bg-white/5 rounded-lg hover:bg-white/10">
-                            <ImageIcon size={16} className="text-slate-400" />
-                         </button>
-                      </div>
-                      {formData.thumbnailUrl && (
-                         <div className="mt-2 rounded-lg overflow-hidden border border-white/10 aspect-video">
-                            <img src={formData.thumbnailUrl} alt="Preview" className="w-full h-full object-cover" />
-                         </div>
-                      )}
-                   </div>
+                {/* Category */}
+                <div>
+                  <label className="block text-slate-400 text-xs font-bold mb-2">Category</label>
+                  <select 
+                     value={formData.category || ''}
+                     onChange={(e) => handleChange('category', e.target.value)}
+                     className="w-full bg-[#0F172A] border border-white/10 rounded-lg px-3 py-2 text-white text-sm outline-none"
+                  >
+                     <option value="">Select...</option>
+                     {CATEGORIES.map(cat => (
+                        <option key={cat.id} value={cat.label}>{cat.label}</option>
+                     ))}
+                  </select>
                 </div>
+
+                {/* Read Time */}
+                <div>
+                   <label className="block text-slate-400 text-xs font-bold mb-2">Read Time (min)</label>
+                   <input 
+                      type="number" 
+                      value={formData.readTimeValue || 5} 
+                      onChange={(e) => handleChange('readTimeValue', parseInt(e.target.value))}
+                      className="w-full bg-[#0F172A] border border-white/10 rounded-lg px-3 py-2 text-white text-sm outline-none"
+                   />
+                </div>
+
+                {/* Tags */}
+                <div>
+                   <label className="block text-slate-400 text-xs font-bold mb-2">Tags (comma separated)</label>
+                   <input 
+                      type="text" 
+                      value={formData.tags?.join(', ') || ''} 
+                      onChange={(e) => handleChange('tags', e.target.value.split(',').map(t => t.trim()))}
+                      className="w-full bg-[#0F172A] border border-white/10 rounded-lg px-3 py-2 text-white text-sm outline-none"
+                   />
+                </div>
+
+             </div>
+
+             {/* Image Upload */}
+             <div className="bg-[#1E293B] p-6 rounded-xl border border-white/5 space-y-4">
+                <h3 className="font-bold text-white">Thumbnail</h3>
+                <div className="relative aspect-video bg-[#0F172A] rounded-lg border border-white/10 overflow-hidden flex items-center justify-center group">
+                    {formData.thumbnailUrl ? (
+                        <img src={formData.thumbnailUrl} alt="Thumb" className="w-full h-full object-cover" />
+                    ) : (
+                        <ImageIcon className="text-slate-600" />
+                    )}
+                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                        <label className="cursor-pointer px-3 py-1 bg-white text-black rounded-lg text-xs font-bold flex items-center gap-1">
+                            <UploadCloud size={12} />
+                            {uploading ? 'Uploading...' : 'Replace'}
+                            <input type="file" className="hidden" onChange={handleImageUpload} accept="image/*" />
+                        </label>
+                    </div>
+                </div>
+                <input 
+                   type="text" 
+                   value={formData.thumbnailUrl || ''} 
+                   onChange={(e) => handleChange('thumbnailUrl', e.target.value)}
+                   className="w-full bg-[#0F172A] border border-white/10 rounded-lg px-3 py-2 text-white text-xs outline-none"
+                   placeholder="https://..."
+                />
              </div>
 
              {/* AI Status */}

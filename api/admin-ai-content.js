@@ -29,29 +29,21 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'Gemini API Key missing' });
   }
 
-  const { action, text, language, context } = req.body;
+  const { action, text } = req.body;
   const ai = new GoogleGenAI({ apiKey });
 
   // 3. Construct Prompt
   let prompt = "";
-  const langName = language === 'mn' ? 'Mongolian' : 'English';
-
+  
   switch (action) {
     case 'improve':
-      prompt = `Improve the following ${langName} text to be more engaging and professional, keeping the same meaning:\n\n"${text}"`;
+      prompt = `Rewrite the following text to be more engaging, professional, and clear. Keep the same meaning. \n\nText: "${text}"`;
       break;
     case 'summarize':
-      prompt = `Summarize the following text in ${langName} into 2-3 sentences:\n\n"${text}"`;
+      prompt = `Summarize the following text into a concise paragraph. \n\nText: "${text}"`;
       break;
     case 'expand':
-      prompt = `Expand on the following ${langName} text with more details and explanation, suitable for an educational article:\n\n"${text}"`;
-      break;
-    case 'translate':
-      const targetLang = language === 'mn' ? 'English' : 'Mongolian';
-      prompt = `Translate the following text to ${targetLang}. Return ONLY the translated text:\n\n"${text}"`;
-      break;
-    case 'generate':
-      prompt = `Write a detailed, engaging blog post section in ${langName} about: "${text}". Use a professional yet accessible tone.`;
+      prompt = `Expand the following text with more details, examples, and depth suitable for a blog post. \n\nText: "${text}"`;
       break;
     default:
       return res.status(400).json({ error: 'Invalid action' });

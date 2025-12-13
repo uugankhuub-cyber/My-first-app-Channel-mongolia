@@ -40,9 +40,10 @@ interface AdminContextType {
   adminContent: ContentItem[];
   saveContent: (content: ContentItem) => Promise<boolean>;
   deleteContent: (id: string) => void;
+  uploadImage: (file: File) => Promise<string | null>;
   
   // New AI Helper
-  askAI: (action: string, text: string, language: 'mn' | 'en') => Promise<string>;
+  askAI: (action: string, text: string) => Promise<string>;
 
   feedbackSummary: FeedbackSummary;
   chatSettings: ChatSettings;
@@ -64,23 +65,24 @@ const DEFAULT_APPEARANCE: SiteAppearance = { fontFamily: 'Inter', baseFontSize: 
 const DEFAULT_CHAT_SETTINGS: ChatSettings = { systemPrompt: "You are a helpful assistant.", suggestedQuestions: ["Trend?", "News?"], isEnabled: true };
 
 export const AdminProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  // Use Global Content Context
   const { content: globalContent, refreshContent } = useContent();
 
   // Auth State
-  const [token, setToken] = useState<string | null>(() => localStorage.getItem('cm_admin_token'));
+  const [token, setToken] = useState<string | null>(() => {
+      // Check local storage for persistence
+      if (typeof window !== 'undefined') {
+          return localStorage.getItem('cm_admin_token');
+      }
+      return null;
+  });
   const [isAuthenticated, setIsAuthenticated] = useState(!!token);
 
   // Local Admin State
-  const [aiSuggestions, setAiSuggestions] = useState<AISuggestion[]>([]); // simplified for demo
+  const [aiSuggestions, setAiSuggestions] = useState<AISuggestion[]>([]); 
   const [chatSettings, setChatSettings] = useState<ChatSettings>(DEFAULT_CHAT_SETTINGS);
   const [uploadedImages, setUploadedImages] = useState<UploadedImage[]>([]);
   const [siteAppearance, setSiteAppearance] = useState<SiteAppearance>(DEFAULT_APPEARANCE);
   const [siteImages, setSiteImages] = useState<SiteImages>({});
-
-  // Sync Global Content to Admin State (so admin sees what public sees + drafts)
-  // In a real app, admin might fetch ALL (including drafts), public only published.
-  // Our API/Context handles this mixing for now.
 
   const login = async (password: string): Promise<boolean> => {
     try {
@@ -130,7 +132,7 @@ export const AdminProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     }
   };
 
-  const askAI = async (action: string, text: string, language: 'mn' | 'en'): Promise<string> => {
+  const askAI = async (action: string, text: string): Promise<string> => {
     if (!token) return "Unauthorized";
     try {
       const res = await fetch('/api/admin-ai-content', {
@@ -139,7 +141,7 @@ export const AdminProvider: React.FC<{ children: ReactNode }> = ({ children }) =
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({ action, text, language })
+        body: JSON.stringify({ action, text })
       });
       const data = await res.json();
       return data.result || "No response";
@@ -148,7 +150,50 @@ export const AdminProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     }
   };
 
-  // Mocks/Placeholders for other functions to keep TS happy and app running
+  const uploadImage = async (file: File): Promise<string | null> => {
+      if (!token) return null;
+      try {
+          // Convert file to base64
+          const reader = new FileReader();
+          return new Promise((resolve) => {
+              reader.onload = async () => {
+                  const base64 = (reader.result as string).split(',')[1];
+                  const res = await fetch('/api/admin-upload', {
+                      method: 'POST',
+                      headers: {
+                          'Content-Type': 'application/json',
+                          'Authorization': `Bearer ${token}`
+                      },
+                      body: JSON.stringify({ 
+                          fileName: file.name,
+                          fileType: file.type,
+                          fileBase64: base64
+                      })
+                  });
+                  if (res.ok) {
+                      const data = await res.json();
+                      // Add to local gallery too
+                      addImage({
+                          id: Date.now().toString(),
+                          url: data.url,
+                          name: file.name,
+                          size: file.size,
+                          uploadedAt: new Date().toISOString()
+                      });
+                      resolve(data.url);
+                  } else {
+                      resolve(null);
+                  }
+              };
+              reader.readAsDataURL(file);
+          });
+      } catch (e) {
+          console.error(e);
+          return null;
+      }
+  };
+
+  // Mocks/Placeholders
   const generateDraftFromAI = async (id: string) => { 
       return { id: 'new', title: 'New', title_en: 'New', description: '', description_en: '', category: 'Tech', category_en: 'Tech', views: 0, publishedDate: '', readTime: '5', readTimeValue: 5, isVideo: false, tags: [], tags_en: [], thumbnailUrl: '' } as ContentItem; 
   };
@@ -171,8 +216,8 @@ export const AdminProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   return (
     <AdminContext.Provider value={{
       isAuthenticated, login, logout, token,
-      adminContent: globalContent, // Expose global content as admin content
-      saveContent, deleteContent,
+      adminContent: globalContent,
+      saveContent, deleteContent, uploadImage,
       aiSuggestions, generateDraftFromAI,
       askAI,
       feedbackSummary: { totalRatings: 0, averageRating: 0, topRequestedTopics: [] },

@@ -16,25 +16,21 @@ export const ContentProvider: React.FC<{ children: ReactNode }> = ({ children })
 
   const fetchContent = async () => {
     try {
+      // Fetch from our API route which queries Supabase
       const res = await fetch('/api/content');
       if (res.ok) {
         const json = await res.json();
         if (json.data && json.data.length > 0) {
-          // Merge API content with MOCK content (API takes precedence)
-          // validIds tracks IDs from API to avoid duplicates if we want to keep some mocks
-          // For now, let's replace mocks if API returns data, or append/merge.
-          // Strategy: Use API data. If API has data, use it. 
-          // If we want to strictly keep MOCKs for demo when API empty:
-          
+          // Merge API content. In a real app, you might replace MOCK entirely.
+          // For safety/demo, we use API data if available.
           setContent(json.data);
         } else {
-          // Fallback to mocks if DB empty
-          setContent(MOCK_CONTENT);
+          // Keep MOCK_CONTENT if DB is empty or connection fails
+          console.log('Using fallback/mock content');
         }
       }
     } catch (e) {
       console.error("Failed to fetch content, using mocks", e);
-      setContent(MOCK_CONTENT);
     } finally {
       setLoading(false);
     }

@@ -1,105 +1,95 @@
 
 import { createClient } from '@supabase/supabase-js';
 
-// Initialize Supabase Client (Server-side)
+// Initialize Supabase (Server-side)
+// We use SERVICE_ROLE_KEY for writes to bypass RLS policies if needed, 
+// or ensure we have admin privileges.
 const supabaseUrl = process.env.SUPABASE_URL;
-const supabaseKey = process.env.SUPABASE_ANON_KEY;
-const supabase = (supabaseUrl && supabaseKey) 
-  ? createClient(supabaseUrl, supabaseKey) 
-  : null;
+const supabaseAnonKey = process.env.SUPABASE_ANON_KEY;
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 export default async function handler(req, res) {
   const { method } = req;
 
-  // --- GET: Fetch Content (Public) ---
+  // --- GET: Public Fetch ---
   if (method === 'GET') {
-    if (!supabase) {
-      // Fallback to empty if no DB (Client will use Mock)
+    if (!supabaseUrl || !supabaseAnonKey) {
+      // Return empty list if DB not configured (prevents crash)
       return res.status(200).json({ data: [] });
     }
+
+    const supabase = createClient(supabaseUrl, supabaseAnonKey);
     
+    // Fetch published content
     const { data, error } = await supabase
       .from('content')
       .select('*')
+      .eq('status', 'published')
       .order('updated_at', { ascending: false });
 
-    if (error) return res.status(500).json({ error: error.message });
-    
-    // Map snake_case DB to camelCase frontend
+    if (error) {
+      return res.status(500).json({ error: error.message });
+    }
+
+    // Map DB Snake_case to CamelCase for Frontend
     const mappedData = data.map(item => ({
       id: item.id,
       title: item.title,
-      title_en: item.title_en,
       description: item.description,
-      description_en: item.description_en,
-      contentBody: item.content_body,
-      contentBody_en: item.content_body_en,
+      contentBody: item.body_html, // HTML body
       category: item.category,
-      category_en: item.category_en,
       thumbnailUrl: item.thumbnail_url,
-      views: item.views,
-      publishedDate: item.published_date,
-      readTime: item.read_time,
       readTimeValue: item.read_time_value,
-      isVideo: item.is_video,
       tags: item.tags,
-      tags_en: item.tags_en,
-      status: item.status
+      status: item.status,
+      publishedDate: new Date(item.updated_at).toLocaleDateString()
     }));
 
     return res.status(200).json({ data: mappedData });
   }
 
-  // --- POST/PUT: Write Content (Admin Only) ---
+  // --- POST/PUT: Admin Write ---
   if (method === 'POST' || method === 'PUT') {
-    // Security Check
     const authHeader = req.headers.authorization;
     const secret = process.env.ADMIN_SECRET;
-    
+
+    // 1. Verify Secret
     if (!authHeader || !secret) {
         return res.status(401).json({ error: 'Unauthorized' });
     }
-
-    // Verify rudimentary token
+    const token = authHeader.replace('Bearer ', '');
+    // Simple verification: token should contain secret
+    // In production, use JWT verification
     try {
-        const decoded = Buffer.from(authHeader.replace('Bearer ', ''), 'base64').toString();
-        if (!decoded.startsWith(secret)) {
-            throw new Error('Invalid token');
-        }
-    } catch (e) {
-        return res.status(401).json({ error: 'Invalid Token' });
+       const decoded = Buffer.from(token, 'base64').toString();
+       if (!decoded.startsWith(secret)) throw new Error('Invalid token');
+    } catch(e) {
+       return res.status(401).json({ error: 'Invalid Token' });
     }
 
-    if (!supabase) {
+    // 2. Initialize Admin Client
+    if (!supabaseUrl || !supabaseServiceKey) {
         return res.status(503).json({ error: 'Database not configured' });
     }
+    const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
 
     const body = req.body;
     
-    // Map camelCase frontend to snake_case DB
+    // Map CamelCase to DB Snake_case
     const dbPayload = {
       id: body.id,
       title: body.title,
-      title_en: body.title_en,
       description: body.description,
-      description_en: body.description_en,
-      content_body: body.contentBody,
-      content_body_en: body.contentBody_en,
+      body_html: body.contentBody,
       category: body.category,
-      category_en: body.category_en,
       thumbnail_url: body.thumbnailUrl,
-      views: body.views,
-      published_date: body.publishedDate,
-      read_time: body.readTime,
-      read_time_value: body.readTimeValue,
-      is_video: body.isVideo,
-      tags: body.tags,
-      tags_en: body.tags_en,
-      status: body.status,
+      read_time_value: body.readTimeValue || 5,
+      tags: body.tags || [],
+      status: body.status || 'draft',
       updated_at: new Date().toISOString()
     };
 
-    const { data, error } = await supabase
+    const { data, error } = await supabaseAdmin
         .from('content')
         .upsert(dbPayload)
         .select();
