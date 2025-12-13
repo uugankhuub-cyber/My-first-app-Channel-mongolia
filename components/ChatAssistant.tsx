@@ -171,7 +171,7 @@ export const ChatAssistant: React.FC = () => {
       });
 
       const result = await chat.sendMessage({ message: userMessage.text });
-      const responseText = result.text;
+      const responseText = result.text ?? "";
 
       const botMessage: Message = {
         id: (Date.now() + 1).toString(),
