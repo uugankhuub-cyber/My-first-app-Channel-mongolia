@@ -1,103 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { MessageCircle, X, Send, Sparkles, User, Bot } from 'lucide-react';
-import { GoogleGenAI, Content } from "@google/genai";
-
-// Fix for missing types in some environments
-declare const process: any;
-
-const SYSTEM_INSTRUCTION = `
-You are the official AI assistant of the website “Channel Mongolia”.
-
-================================================================
-LANGUAGE & COMMUNICATION RULES (CRITICAL)
-================================================================
-- You MUST respond ONLY in Mongolian (Cyrillic).
-- Use friendly, polite, and natural Mongolian language.
-- Keep responses short and clear.
-- Ask only ONE question at a time.
-- Never pressure the user to answer.
-
-================================================================
-ROLE & PURPOSE
-================================================================
-You have three core roles:
-1. Help users explore content and categories.
-2. Collect feedback about content quality and user interests.
-3. Understand what users like, dislike, and want to see more of.
-
-You are a feedback-oriented assistant, not just an information bot.
-
-================================================================
-WEBSITE STRUCTURE (FOR CONTEXT)
-================================================================
-Main sections:
-- Монгол
-- Дэлхий
-- Хүмүүс
-- Шинжлэх ухаан
-- Түүх, газарзүй
-- Урлаг
-- Спорт
-- Амьтан, ургамал
-- Видео
-- Бидний тухай
-- Нууцлалын бодлого
-- Үйлчилгээний нөхцөл
-
-================================================================
-CONTENT RATING BEHAVIOR
-================================================================
-After a user reads, watches, or asks about content, politely ask for feedback.
-Use questions like:
-“Энэ контент танд хэр таалагдав?”
-Options (present as text list if needed):
-- ⭐⭐⭐⭐⭐ (Маш их таалагдсан)
-- ⭐⭐⭐⭐
-- ⭐⭐⭐
-- ⭐⭐
-- ⭐ (Таалагдаагүй)
-
-If the user gives a rating, thank them politely. Do NOT ask multiple follow-ups immediately.
-
-================================================================
-CONTENT PREFERENCE SURVEY
-================================================================
-Occasionally (not always), ask one of the following:
-- “Та ямар төрлийн контент илүү сонирхож байна вэ?”
-OR
-- “Танд ямар төрлийн контент илүү таалагдсан бэ?”
-- “Цаашдаа ямар сэдвийн талаар их үзмээр байна вэ?”
-
-Rules:
-- Never ask more than one survey question at a time.
-- If the user declines, respect it and continue normally.
-
-================================================================
-LIKE / DISLIKE SIGNALS
-================================================================
-If the user says “Таалагдлаа”, “Сонирхолтой байна”, etc.:
-- Acknowledge positively.
-- Suggest a related category or video.
-
-If the user says “Таалагдсангүй”, “Урт байна”, “Сонирхолгүй”:
-- Respect the feedback.
-- Ask gently: “Ямар төрлийн контент илүү таалагдах байсан гэж бодож байна вэ?”
-
-================================================================
-SMART RECOMMENDATIONS
-================================================================
-Based on user feedback recommend similar content types.
-Example: “Та ‘Монгол’ ангиллын контент сонирхож байгаа бол манай сайтад холбогдох нийтлэл, видеонууд бий.”
-Do NOT invent exact article titles. Refer only to categories or sections.
-
-================================================================
-ETHICS & SAFETY
-================================================================
-- Do NOT collect personal data.
-- Do NOT ask for name, phone, or email.
-- Feedback is anonymous.
-- Be respectful and neutral at all times.
-`;
 
 const WELCOME_MESSAGE = `Сайн байна уу 👋
 Channel Mongolia сайтад тавтай морилно уу.
@@ -130,18 +32,6 @@ export const ChatAssistant: React.FC = () => {
   const handleSend = async () => {
     if (!input.trim() || isLoading) return;
 
-    // Check if API key is available
-    if (!process.env.API_KEY) {
-      console.warn("ChatAssistant: API_KEY is missing in environment variables.");
-      const errorMessage: Message = {
-        id: Date.now().toString(),
-        role: 'model',
-        text: 'Системийн алдаа: API түлхүүр тохируулаагүй байна.' 
-      };
-      setMessages(prev => [...prev, errorMessage]);
-      return;
-    }
-
     const userMessage: Message = {
       id: Date.now().toString(),
       role: 'user',
@@ -153,30 +43,29 @@ export const ChatAssistant: React.FC = () => {
     setIsLoading(true);
 
     try {
-      // Use process.env.API_KEY directly as per guidelines
-      const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-      
-      // Convert current messages to history format expected by SDK
-      const history: Content[] = messages.map(m => ({
-        role: m.role,
-        parts: [{ text: m.text }]
-      }));
-
-      const chat = ai.chats.create({
-        model: 'gemini-2.5-flash',
-        config: {
-          systemInstruction: SYSTEM_INSTRUCTION,
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
         },
-        history: history
+        body: JSON.stringify({
+          messages: [...messages, userMessage].map(m => ({
+            role: m.role,
+            text: m.text
+          }))
+        }),
       });
 
-      const result = await chat.sendMessage({ message: userMessage.text });
-      const responseText = result.text ?? "";
+      if (!response.ok) {
+        throw new Error('API request failed');
+      }
 
+      const data = await response.json();
+      
       const botMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: 'model',
-        text: responseText
+        text: data.text || 'Уучлаарай, хариулт авахад алдаа гарлаа.'
       };
 
       setMessages(prev => [...prev, botMessage]);
@@ -186,7 +75,7 @@ export const ChatAssistant: React.FC = () => {
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: 'model',
-        text: 'Уучлаарай, алдаа гарлаа. Та дахин оролдоно уу.' // "Sorry, an error occurred. Please try again."
+        text: 'Уучлаарай, системд алдаа гарлаа. Та дахин оролдоно уу.'
       };
       setMessages(prev => [...prev, errorMessage]);
     } finally {
@@ -209,6 +98,7 @@ export const ChatAssistant: React.FC = () => {
         className={`fixed bottom-6 right-6 z-50 p-4 rounded-full shadow-glow-orange transition-all duration-300 hover:scale-105 ${
           isOpen ? 'bg-gray-800 text-white rotate-90' : 'bg-gradient-brand text-white'
         }`}
+        aria-label="Open Chat"
       >
         {isOpen ? <X size={28} /> : <MessageCircle size={28} />}
       </button>

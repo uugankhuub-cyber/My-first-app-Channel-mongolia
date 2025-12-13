@@ -10,8 +10,7 @@ import { AboutPage } from './pages/AboutPage';
 import { ContactPage } from './pages/ContactPage';
 import { PrivacyPage } from './pages/PrivacyPage';
 import { TermsPage } from './pages/TermsPage';
-// ChatAssistant removed temporarily for production stability
-// import { ChatAssistant } from './components/ChatAssistant';
+import { ChatAssistant } from './components/ChatAssistant';
 import { GlobalInfoBar } from './components/GlobalInfoBar';
 
 // Admin Imports
@@ -39,16 +38,14 @@ const ScrollToTop = () => {
 
 // Layout Wrapper for Public Pages to include Nav/Footer and GlobalInfoBar
 const PublicLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-  <div className="min-h-screen font-sans flex flex-col relative">
+  <div className="min-h-screen font-sans flex flex-col relative bg-slate-50 dark:bg-[#020617] transition-colors duration-300">
     <GlobalInfoBar />
     <Navbar />
     <main className="flex-grow">
       {children}
     </main>
     <Footer />
-    {/* ChatAssistant disabled
     <ChatAssistant />
-    */}
   </div>
 );
 

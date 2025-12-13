@@ -1,5 +1,22 @@
-import React from 'react';
-import { Cloud, Calendar, TrendingUp } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { Cloud, Calendar, TrendingUp, RefreshCw } from 'lucide-react';
+
+interface WeatherData {
+  temp: number;
+  condition: string;
+  location: string;
+  isMock: boolean;
+}
+
+interface RateData {
+  rates: {
+    USD: number;
+    CNY: number;
+    EUR: number;
+  };
+  updated: string;
+  isMock: boolean;
+}
 
 export const GlobalInfoBar: React.FC = () => {
   // Date Logic
@@ -10,6 +27,43 @@ export const GlobalInfoBar: React.FC = () => {
   const weekDayNum = date.getDay();
   const weekDays = ['Ням', 'Даваа', 'Мягмар', 'Лхагва', 'Пүрэв', 'Баасан', 'Бямба'];
   const dateString = `${year} оны ${month} сарын ${day}, ${weekDays[weekDayNum]}`;
+
+  const [weather, setWeather] = useState<WeatherData | null>(null);
+  const [rates, setRates] = useState<RateData | null>(null);
+
+  useEffect(() => {
+    // Initial Fetch
+    fetchWeather();
+    fetchRates();
+
+    // Poll Weather every 10 mins
+    const weatherInterval = setInterval(fetchWeather, 600000);
+    // Poll Rates every 30 mins
+    const ratesInterval = setInterval(fetchRates, 1800000);
+
+    return () => {
+      clearInterval(weatherInterval);
+      clearInterval(ratesInterval);
+    };
+  }, []);
+
+  const fetchWeather = async () => {
+    try {
+      const res = await fetch('/api/weather?city=Ulaanbaatar');
+      if (res.ok) setWeather(await res.json());
+    } catch (e) {
+      console.error('Weather widget error', e);
+    }
+  };
+
+  const fetchRates = async () => {
+    try {
+      const res = await fetch('/api/rates');
+      if (res.ok) setRates(await res.json());
+    } catch (e) {
+      console.error('Rate widget error', e);
+    }
+  };
 
   return (
     <div className="bg-[#020617] bg-gradient-to-r from-[#020617] via-[#1e1b4b] to-[#020617] border-b border-white/5 relative z-[60]">
@@ -27,13 +81,17 @@ export const GlobalInfoBar: React.FC = () => {
                 {/* Weather */}
                 <div className="flex items-center gap-2">
                    <Cloud size={12} className="text-sky-400" />
-                   <span className="text-[10px] text-slate-300">Улаанбаатар</span>
-                   <span className="text-[10px] font-bold text-white">-5°</span>
+                   <span className="text-[10px] text-slate-300">{weather ? weather.location : 'UB'}</span>
+                   <span className="text-[10px] font-bold text-white">
+                      {weather ? `${weather.temp}°` : '...'}
+                   </span>
                 </div>
                 {/* Main Currency (Mobile Only) */}
                 <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-white/5 border border-white/10">
                     <span className="text-[10px] font-bold text-green-400">USD</span>
-                    <span className="text-[10px] text-white">3,450₮</span>
+                    <span className="text-[10px] text-white">
+                      {rates ? rates.rates.USD.toLocaleString() : '...'}₮
+                    </span>
                 </div>
              </div>
           </div>
@@ -42,10 +100,10 @@ export const GlobalInfoBar: React.FC = () => {
           
           {/* Left: Weather */}
           <div className="hidden md:flex items-center gap-3">
-             <div className="flex items-center gap-2 group cursor-default">
+             <div className="flex items-center gap-2 group cursor-default" title={weather?.isMock ? 'Demo Data' : 'Live Data'}>
                 <Cloud size={14} className="text-sky-400 group-hover:text-white transition-colors" />
-                <span className="text-xs text-slate-300">Улаанбаатар</span>
-                <span className="text-xs font-bold text-white">-5°</span>
+                <span className="text-xs text-slate-300">{weather ? weather.location : 'Loading...'}</span>
+                {weather && <span className="text-xs font-bold text-white">{weather.temp}°</span>}
                 <span className="text-[10px] text-slate-500 uppercase tracking-wider pl-1 border-l border-white/10 ml-1">Цаг агаар</span>
              </div>
           </div>
@@ -63,20 +121,25 @@ export const GlobalInfoBar: React.FC = () => {
                 <span className="text-[10px] uppercase tracking-wider text-slate-500">Валютын ханш</span>
              </div>
              
-             <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white/5 border border-white/5 hover:border-green-500/30 hover:bg-green-500/10 transition-all group cursor-default">
-                <span className="text-[10px] font-bold text-green-400 group-hover:text-green-300">USD</span>
-                <span className="text-[10px] text-slate-200 group-hover:text-white">3,450₮</span>
-             </div>
+             {rates && (
+               <>
+                 <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white/5 border border-white/5 hover:border-green-500/30 hover:bg-green-500/10 transition-all group cursor-default">
+                    <span className="text-[10px] font-bold text-green-400 group-hover:text-green-300">USD</span>
+                    <span className="text-[10px] text-slate-200 group-hover:text-white">{rates.rates.USD.toLocaleString()}₮</span>
+                 </div>
 
-             <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white/5 border border-white/5 hover:border-blue-500/30 hover:bg-blue-500/10 transition-all group cursor-default">
-                <span className="text-[10px] font-bold text-blue-400 group-hover:text-blue-300">CNY</span>
-                <span className="text-[10px] text-slate-200 group-hover:text-white">480₮</span>
-             </div>
+                 <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white/5 border border-white/5 hover:border-blue-500/30 hover:bg-blue-500/10 transition-all group cursor-default">
+                    <span className="text-[10px] font-bold text-blue-400 group-hover:text-blue-300">CNY</span>
+                    <span className="text-[10px] text-slate-200 group-hover:text-white">{rates.rates.CNY.toLocaleString()}₮</span>
+                 </div>
 
-             <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white/5 border border-white/5 hover:border-indigo-500/30 hover:bg-indigo-500/10 transition-all group cursor-default">
-                <span className="text-[10px] font-bold text-indigo-400 group-hover:text-indigo-300">EUR</span>
-                <span className="text-[10px] text-slate-200 group-hover:text-white">3,700₮</span>
-             </div>
+                 <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white/5 border border-white/5 hover:border-indigo-500/30 hover:bg-indigo-500/10 transition-all group cursor-default">
+                    <span className="text-[10px] font-bold text-indigo-400 group-hover:text-indigo-300">EUR</span>
+                    <span className="text-[10px] text-slate-200 group-hover:text-white">{rates.rates.EUR.toLocaleString()}₮</span>
+                 </div>
+               </>
+             )}
+             {!rates && <span className="text-xs text-slate-500">Loading rates...</span>}
           </div>
 
         </div>
