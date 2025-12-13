@@ -37,9 +37,7 @@ export const Navbar: React.FC = () => {
   return (
     <nav className="sticky top-0 z-50 transition-all duration-300">
        
-       {/* Background with blur and gradient - Wraps both rows 
-           FIX: Added bg-white/90 for light mode, dark:bg-[#020617]/90 for dark mode 
-       */}
+       {/* Background with blur and gradient - Wraps both rows */}
        <div className="absolute inset-0 bg-white/95 dark:bg-[#020617]/90 backdrop-blur-xl border-b border-gray-200 dark:border-white/5 shadow-lg transition-colors duration-300">
           {/* Subtle gradient overlay */}
           <div className="absolute inset-0 bg-gradient-to-r from-brand-purple/5 via-transparent to-brand-orange/5 pointer-events-none"></div>

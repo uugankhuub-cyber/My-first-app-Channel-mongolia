@@ -6,9 +6,9 @@ export const TermsPage: React.FC = () => {
 
   return (
     <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-       <h1 className="text-3xl font-extrabold text-slate-100 mb-8 border-b border-white/10 pb-6">{t('terms_title')}</h1>
+       <h1 className="text-3xl font-extrabold text-gray-900 dark:text-slate-100 mb-8 border-b border-gray-200 dark:border-white/10 pb-6">{t('terms_title')}</h1>
        
-       <div className="prose prose-invert prose-lg text-slate-400">
+       <div className="prose prose-lg prose-slate dark:prose-invert">
           <h3>1. Terms</h3>
           <p>
              By accessing the website at Channel Mongolia, you are agreeing to be bound by these terms of service, all applicable laws and regulations, and agree that you are responsible for compliance with any applicable local laws.

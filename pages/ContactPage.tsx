@@ -7,28 +7,28 @@ export const ContactPage: React.FC = () => {
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-       <h1 className="text-4xl font-extrabold text-slate-100 mb-10 text-center">{t('contact_title')}</h1>
+       <h1 className="text-4xl font-extrabold text-gray-900 dark:text-slate-100 mb-10 text-center">{t('contact_title')}</h1>
        
        <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
           {/* Info Side */}
           <div className="space-y-8">
-             <div className="bg-brand-surface p-8 rounded-2xl border border-white/5 shadow-lg">
-                <h3 className="text-xl font-bold text-slate-200 mb-6">Get in touch</h3>
+             <div className="bg-white dark:bg-brand-surface p-8 rounded-2xl border border-gray-200 dark:border-white/5 shadow-lg">
+                <h3 className="text-xl font-bold text-gray-900 dark:text-slate-200 mb-6">Get in touch</h3>
                 <div className="space-y-4">
-                   <div className="flex items-center gap-4 text-slate-400">
-                      <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-brand-purple">
+                   <div className="flex items-center gap-4 text-slate-600 dark:text-slate-400">
+                      <div className="w-10 h-10 rounded-full bg-primary-50 dark:bg-white/5 flex items-center justify-center text-brand-purple">
                          <Mail size={20} />
                       </div>
                       <span>info@channelmongolia.mn</span>
                    </div>
-                   <div className="flex items-center gap-4 text-slate-400">
-                      <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-brand-purple">
+                   <div className="flex items-center gap-4 text-slate-600 dark:text-slate-400">
+                      <div className="w-10 h-10 rounded-full bg-primary-50 dark:bg-white/5 flex items-center justify-center text-brand-purple">
                          <Phone size={20} />
                       </div>
                       <span>+976 8811-0000</span>
                    </div>
-                   <div className="flex items-center gap-4 text-slate-400">
-                      <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-brand-purple">
+                   <div className="flex items-center gap-4 text-slate-600 dark:text-slate-400">
+                      <div className="w-10 h-10 rounded-full bg-primary-50 dark:bg-white/5 flex items-center justify-center text-brand-purple">
                          <MapPin size={20} />
                       </div>
                       <span>Ulaanbaatar, Mongolia</span>
@@ -41,19 +41,19 @@ export const ContactPage: React.FC = () => {
           </div>
 
           {/* Form Side */}
-          <div className="bg-brand-surface p-8 rounded-2xl border border-white/5 shadow-lg">
+          <div className="bg-white dark:bg-brand-surface p-8 rounded-2xl border border-gray-200 dark:border-white/5 shadow-lg">
              <form className="space-y-6">
                 <div>
-                   <label className="block text-sm font-medium text-slate-400 mb-2">{t('contact_name')}</label>
-                   <input type="text" className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-slate-200 focus:border-brand-purple focus:ring-1 focus:ring-brand-purple outline-none transition-all" />
+                   <label className="block text-sm font-medium text-slate-600 dark:text-slate-400 mb-2">{t('contact_name')}</label>
+                   <input type="text" className="w-full px-4 py-3 bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl text-gray-900 dark:text-slate-200 focus:border-brand-purple focus:ring-1 focus:ring-brand-purple outline-none transition-all" />
                 </div>
                 <div>
-                   <label className="block text-sm font-medium text-slate-400 mb-2">{t('contact_email')}</label>
-                   <input type="email" className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-slate-200 focus:border-brand-purple focus:ring-1 focus:ring-brand-purple outline-none transition-all" />
+                   <label className="block text-sm font-medium text-slate-600 dark:text-slate-400 mb-2">{t('contact_email')}</label>
+                   <input type="email" className="w-full px-4 py-3 bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl text-gray-900 dark:text-slate-200 focus:border-brand-purple focus:ring-1 focus:ring-brand-purple outline-none transition-all" />
                 </div>
                 <div>
-                   <label className="block text-sm font-medium text-slate-400 mb-2">{t('contact_message')}</label>
-                   <textarea rows={4} className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-slate-200 focus:border-brand-purple focus:ring-1 focus:ring-brand-purple outline-none transition-all"></textarea>
+                   <label className="block text-sm font-medium text-slate-600 dark:text-slate-400 mb-2">{t('contact_message')}</label>
+                   <textarea rows={4} className="w-full px-4 py-3 bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl text-gray-900 dark:text-slate-200 focus:border-brand-purple focus:ring-1 focus:ring-brand-purple outline-none transition-all"></textarea>
                 </div>
                 <button type="button" className="w-full flex items-center justify-center gap-2 py-3 bg-gradient-brand text-white rounded-xl font-bold shadow-glow hover:opacity-90 transition-all">
                    <Send size={18} />

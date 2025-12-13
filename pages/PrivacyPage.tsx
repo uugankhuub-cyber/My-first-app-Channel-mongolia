@@ -6,9 +6,9 @@ export const PrivacyPage: React.FC = () => {
 
   return (
     <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-       <h1 className="text-3xl font-extrabold text-slate-100 mb-8 border-b border-white/10 pb-6">{t('privacy_title')}</h1>
+       <h1 className="text-3xl font-extrabold text-gray-900 dark:text-slate-100 mb-8 border-b border-gray-200 dark:border-white/10 pb-6">{t('privacy_title')}</h1>
        
-       <div className="prose prose-invert prose-lg text-slate-400">
+       <div className="prose prose-lg prose-slate dark:prose-invert">
           <p>Last updated: October 2025</p>
           
           <h3>1. Introduction</h3>

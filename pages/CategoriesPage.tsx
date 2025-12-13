@@ -43,14 +43,15 @@ export const CategoriesPage: React.FC<CategoriesPageProps> = ({ categorySlug, fi
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
       
       <div className="flex flex-col md:flex-row md:items-center justify-between mb-8">
-        <h1 className="text-3xl font-extrabold text-slate-100 mb-4 md:mb-0 drop-shadow-md">
+        {/* FIX: Use gray-900 for light mode instead of slate-100 */}
+        <h1 className="text-3xl font-extrabold text-gray-900 dark:text-white mb-4 md:mb-0 drop-shadow-sm dark:drop-shadow-md">
           {activeCategoryLabel}
         </h1>
         
         {/* Simple Sort Dropdown (Visual only) */}
         <div className="flex items-center gap-3">
             <span className="text-sm text-slate-500 font-medium">{t('sort_by')}</span>
-            <button className="flex items-center gap-2 px-4 py-2 bg-brand-surface border border-white/10 rounded-lg text-sm font-medium hover:bg-white/5 text-slate-300 transition-colors">
+            <button className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-brand-surface border border-gray-200 dark:border-white/10 rounded-lg text-sm font-medium hover:bg-gray-50 dark:hover:bg-white/5 text-gray-700 dark:text-slate-300 transition-colors">
                 <Filter size={16} />
                 <span>{t('newest')}</span>
             </button>
@@ -61,15 +62,16 @@ export const CategoriesPage: React.FC<CategoriesPageProps> = ({ categorySlug, fi
         
         {/* Sidebar Filters */}
         <div className="lg:col-span-1">
-            <div className="bg-brand-surface p-4 rounded-xl shadow-lg border border-white/5 sticky top-24">
-                <h3 className="font-bold text-slate-200 mb-4 px-2">{t('nav_categories')}</h3>
+            {/* FIX: Adaptive background */}
+            <div className="bg-white dark:bg-brand-surface p-4 rounded-xl shadow-lg border border-gray-200 dark:border-white/5 sticky top-24">
+                <h3 className="font-bold text-gray-900 dark:text-slate-200 mb-4 px-2">{t('nav_categories')}</h3>
                 <div className="space-y-1">
                     <button
                         onClick={() => handleFilterChange('all')}
                         className={`w-full text-left px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
                             activeSlug === 'all' 
-                            ? 'bg-primary-900/30 text-primary-400 border border-primary-500/20 shadow-glow' 
-                            : 'text-slate-400 hover:bg-white/5 hover:text-slate-200'
+                            ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 border border-primary-200 dark:border-primary-500/20 shadow-sm dark:shadow-glow' 
+                            : 'text-slate-600 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-slate-200'
                         }`}
                     >
                         {t('all_knowledge')}
@@ -80,8 +82,8 @@ export const CategoriesPage: React.FC<CategoriesPageProps> = ({ categorySlug, fi
                             onClick={() => handleFilterChange(cat.slug)}
                             className={`w-full text-left px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
                                 activeSlug === cat.slug 
-                                ? 'bg-primary-900/30 text-primary-400 border border-primary-500/20 shadow-glow' 
-                                : 'text-slate-400 hover:bg-white/5 hover:text-slate-200'
+                                ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 border border-primary-200 dark:border-primary-500/20 shadow-sm dark:shadow-glow' 
+                                : 'text-slate-600 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-slate-200'
                             }`}
                         >
                             {cat.label}
@@ -100,7 +102,7 @@ export const CategoriesPage: React.FC<CategoriesPageProps> = ({ categorySlug, fi
                     ))}
                 </div>
             ) : (
-                <div className="py-20 text-center bg-brand-surface rounded-xl border border-dashed border-white/10">
+                <div className="py-20 text-center bg-white dark:bg-brand-surface rounded-xl border border-dashed border-gray-200 dark:border-white/10">
                     <p className="text-slate-500">{t('no_results')}</p>
                 </div>
             )}
