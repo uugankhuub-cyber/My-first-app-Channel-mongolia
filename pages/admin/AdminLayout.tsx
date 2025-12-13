@@ -26,13 +26,13 @@ export const AdminLayout: React.FC = () => {
         return;
       }
 
-      if (login(password)) {
-        navigate('/admin/dashboard');
-      } else {
-        setError('Нууц үг буруу байна!');
-      }
-    };
+      const handleLogin = async () => {
+  const success = await login(password);
 
+  if (success) {
+    navigate("/admin/dashboard");
+  }
+};
     return (
       <div className="min-h-screen bg-[#0F172A] flex items-center justify-center px-4">
         <div className="max-w-md w-full bg-[#1E293B] p-8 rounded-2xl border border-white/10 shadow-2xl">
