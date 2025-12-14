@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Link } from 'react-router-dom';
+import * as ReactRouterDOM from 'react-router-dom';
 import { Flame, Eye, Bookmark, Clock, Quote as QuoteIcon } from 'lucide-react';
 import { CATEGORIES, QUOTES } from '../constants';
 import { useContent } from '../context/ContentContext';
@@ -9,6 +9,8 @@ import { DailyKnowledge } from './DailyKnowledge';
 import { ContentItem } from '../types';
 import { Card } from './ui/Card';
 import { Thumbnail } from './ui/Thumbnail';
+
+const { Link } = ReactRouterDOM;
 
 export const Sidebar: React.FC = () => {
   const { t, language } = useLanguage();

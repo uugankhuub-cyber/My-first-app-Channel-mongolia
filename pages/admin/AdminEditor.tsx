@@ -1,10 +1,12 @@
 
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import * as ReactRouterDOM from 'react-router-dom';
 import { useAdmin } from '../../context/AdminContext';
 import { Save, ArrowLeft, Image as ImageIcon, Sparkles, Wand2, UploadCloud, RefreshCw, Type, List, Quote } from 'lucide-react';
 import { CATEGORIES } from '../../constants';
 import { ContentItem } from '../../types';
+
+const { useNavigate, useParams } = ReactRouterDOM;
 
 export const AdminEditor: React.FC = () => {
   const { id } = useParams();

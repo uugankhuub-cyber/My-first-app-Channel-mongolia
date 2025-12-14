@@ -1,10 +1,13 @@
+
 import React from 'react';
 import { CATEGORIES } from '../constants';
 import { useContent } from '../context/ContentContext';
 import { KnowledgeCard } from '../components/KnowledgeCard';
 import { Filter } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
-import { useNavigate } from 'react-router-dom';
+import * as ReactRouterDOM from 'react-router-dom';
+
+const { useNavigate } = ReactRouterDOM;
 
 interface CategoriesPageProps {
     categorySlug?: string;

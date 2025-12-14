@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 
 type Theme = 'dark' | 'light';
@@ -11,9 +12,19 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [theme, setTheme] = useState<Theme>(() => {
-    // Default to dark, but check local storage
-    const saved = localStorage.getItem('theme');
-    return (saved === 'dark' || saved === 'light') ? saved : 'dark';
+    // 1. Check localStorage
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('cm_theme');
+      if (saved === 'dark' || saved === 'light') {
+        return saved;
+      }
+      // 2. Check System Preference
+      if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        return 'dark';
+      }
+    }
+    // 3. Default to dark
+    return 'dark';
   });
 
   useEffect(() => {
@@ -23,7 +34,7 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     } else {
       root.classList.remove('dark');
     }
-    localStorage.setItem('theme', theme);
+    localStorage.setItem('cm_theme', theme);
   }, [theme]);
 
   const toggleTheme = () => {

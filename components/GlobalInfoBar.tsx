@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { Cloud, Calendar, TrendingUp } from 'lucide-react';
 
@@ -26,7 +27,7 @@ export const GlobalInfoBar: React.FC = () => {
   const day = date.getDate();
   const weekDayNum = date.getDay();
   const weekDays = ['Ням', 'Даваа', 'Мягмар', 'Лхагва', 'Пүрэв', 'Баасан', 'Бямба'];
-  const dateString = `${year} оны ${month} сарын ${day}, ${weekDays[weekDayNum]}`;
+  const dateString = `${year}.${month}.${day}, ${weekDays[weekDayNum]}`;
 
   const [weather, setWeather] = useState<WeatherData | null>(null);
   const [rates, setRates] = useState<RateData | null>(null);
@@ -66,80 +67,42 @@ export const GlobalInfoBar: React.FC = () => {
   };
 
   return (
-    <div className="bg-slate-50 dark:bg-[#020617] border-b border-gray-200 dark:border-white/5 relative z-[60] transition-colors duration-300">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-col md:flex-row items-center justify-between md:h-9">
-          
-          {/* Mobile Layout: Date on top, Weather/Currency below */}
-          <div className="md:hidden w-full">
-             {/* Line 1: Date */}
-             <div className="flex justify-center py-1 border-b border-gray-200 dark:border-white/5">
-                <span className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">{dateString}</span>
-             </div>
-             {/* Line 2: Weather + Main Currency */}
-             <div className="flex justify-between items-center py-1.5">
-                {/* Weather */}
-                <div className="flex items-center gap-2">
-                   <Cloud size={12} className="text-sky-500 dark:text-sky-400" />
-                   <span className="text-[10px] text-slate-600 dark:text-slate-300">{weather ? weather.location : 'UB'}</span>
-                   <span className="text-[10px] font-bold text-slate-900 dark:text-white">
-                      {weather ? `${weather.temp}°` : '...'}
-                   </span>
-                </div>
-                {/* Main Currency (Mobile Only) */}
-                <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10">
-                    <span className="text-[10px] font-bold text-green-600 dark:text-green-400">USD</span>
-                    <span className="text-[10px] text-slate-700 dark:text-white">
-                      {rates ? rates.rates.USD.toLocaleString() : '...'}₮
-                    </span>
-                </div>
-             </div>
-          </div>
-
-          {/* Desktop Layout */}
+    <div className="bg-surfaceHighlight/80 backdrop-blur-sm border-b border-border relative z-[60] transition-colors duration-300">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-8 text-[11px] md:text-xs text-text-muted font-medium">
           
           {/* Left: Weather */}
-          <div className="hidden md:flex items-center gap-3">
-             <div className="flex items-center gap-2 group cursor-default" title={weather?.isMock ? 'Demo Data' : 'Live Data'}>
-                <Cloud size={14} className="text-sky-500 dark:text-sky-400 group-hover:text-sky-600 dark:group-hover:text-white transition-colors" />
-                <span className="text-xs text-slate-600 dark:text-slate-300">{weather ? weather.location : 'Loading...'}</span>
-                {weather && <span className="text-xs font-bold text-slate-900 dark:text-white">{weather.temp}°</span>}
-                <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wider pl-1 border-l border-gray-200 dark:border-white/10 ml-1">Цаг агаар</span>
+          <div className="flex items-center gap-3">
+             <div className="flex items-center gap-1.5 group cursor-default" title={weather?.isMock ? 'Demo Data' : 'Live Data'}>
+                <Cloud size={12} className="text-sky-500" />
+                <span>{weather ? weather.location : 'UB'}</span>
+                {weather && <span className="font-bold text-text-main">{weather.temp}°</span>}
              </div>
-          </div>
-
-          {/* Center: Date */}
-          <div className="hidden md:flex items-center gap-2 absolute left-1/2 -translate-x-1/2 text-xs text-slate-500 dark:text-slate-400 font-medium tracking-wide">
-             <Calendar size={12} className="text-brand-purple" />
-             <span>{dateString}</span>
+             <div className="hidden md:block w-px h-3 bg-border"></div>
+             <div className="hidden md:flex items-center gap-1.5">
+                <Calendar size={12} className="text-brand-purple" />
+                <span>{dateString}</span>
+             </div>
           </div>
 
           {/* Right: Currency */}
-          <div className="hidden md:flex items-center gap-2">
-             <div className="flex items-center gap-1.5 mr-2">
-                <TrendingUp size={12} className="text-brand-orange" />
-                <span className="text-[10px] uppercase tracking-wider text-slate-500">Валютын ханш</span>
-             </div>
+          <div className="flex items-center gap-3">
+             {/* Mobile: Date replaces rates if space is tight, but here we prioritize date on left for consistency */}
              
-             {rates && (
-               <>
-                 <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white dark:bg-white/5 border border-gray-200 dark:border-white/5 hover:border-green-500/30 hover:bg-green-50 dark:hover:bg-green-500/10 transition-all group cursor-default">
-                    <span className="text-[10px] font-bold text-green-600 dark:text-green-400 group-hover:text-green-700 dark:group-hover:text-green-300">USD</span>
-                    <span className="text-[10px] text-slate-700 dark:text-slate-200 group-hover:text-slate-900 dark:group-hover:text-white">{rates.rates.USD.toLocaleString()}₮</span>
+             {rates ? (
+               <div className="flex items-center gap-3">
+                 <div className="flex items-center gap-1">
+                    <span className="font-bold text-green-600">USD</span>
+                    <span>{rates.rates.USD.toLocaleString()}₮</span>
                  </div>
-
-                 <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white dark:bg-white/5 border border-gray-200 dark:border-white/5 hover:border-blue-500/30 hover:bg-blue-50 dark:hover:bg-blue-500/10 transition-all group cursor-default">
-                    <span className="text-[10px] font-bold text-blue-600 dark:text-blue-400 group-hover:text-blue-700 dark:group-hover:text-blue-300">CNY</span>
-                    <span className="text-[10px] text-slate-700 dark:text-slate-200 group-hover:text-slate-900 dark:group-hover:text-white">{rates.rates.CNY.toLocaleString()}₮</span>
+                 <div className="hidden sm:flex items-center gap-1">
+                    <span className="font-bold text-blue-600">CNY</span>
+                    <span>{rates.rates.CNY.toLocaleString()}₮</span>
                  </div>
-
-                 <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white dark:bg-white/5 border border-gray-200 dark:border-white/5 hover:border-indigo-500/30 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 transition-all group cursor-default">
-                    <span className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 group-hover:text-indigo-700 dark:group-hover:text-indigo-300">EUR</span>
-                    <span className="text-[10px] text-slate-700 dark:text-slate-200 group-hover:text-slate-900 dark:group-hover:text-white">{rates.rates.EUR.toLocaleString()}₮</span>
-                 </div>
-               </>
+               </div>
+             ) : (
+                <span>Loading...</span>
              )}
-             {!rates && <span className="text-xs text-slate-500">Loading rates...</span>}
           </div>
 
         </div>

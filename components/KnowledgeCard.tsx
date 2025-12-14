@@ -1,11 +1,13 @@
 
 import React from 'react';
-import { PlayCircle, Clock, Eye } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { PlayCircle, Clock, Eye, Play } from 'lucide-react';
+import * as ReactRouterDOM from 'react-router-dom';
 import { ContentItem } from '../types';
 import { useLanguage } from '../context/LanguageContext';
 import { Card } from './ui/Card';
 import { Thumbnail } from './ui/Thumbnail';
+
+const { Link } = ReactRouterDOM;
 
 interface KnowledgeCardProps {
   item: ContentItem;
@@ -23,9 +25,9 @@ export const KnowledgeCard: React.FC<KnowledgeCardProps> = ({ item, featured = f
   const OverlayContent = (
     <>
       {item.isVideo && (
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="w-12 h-12 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center text-white border border-white/30 shadow-lg group-hover:scale-110 transition-transform duration-300">
-            <PlayCircle size={24} fill="currentColor" className="opacity-100" />
+        <div className="absolute bottom-3 right-3 pointer-events-none">
+          <div className="w-8 h-8 bg-black/50 backdrop-blur-sm rounded-full flex items-center justify-center text-white/90 shadow-sm border border-white/10">
+            <Play size={14} fill="currentColor" className="ml-0.5" />
           </div>
         </div>
       )}
@@ -49,13 +51,14 @@ export const KnowledgeCard: React.FC<KnowledgeCardProps> = ({ item, featured = f
             aspectRatio={featured ? 'wide' : 'video'}
             className="h-full w-full transform group-hover:scale-105 transition-transform duration-700 ease-out"
             overlayContent={OverlayContent}
+            showOverlay={true}
           />
         </div>
 
         {/* Content Section */}
         <div className={`p-5 flex flex-col flex-1 ${featured ? 'md:w-2/5 md:justify-center md:p-8' : ''}`}>
           
-          <h3 className={`font-bold text-text-main leading-tight mb-3 group-hover:text-brand-purple transition-colors duration-300 ${featured ? 'text-2xl md:text-3xl' : 'text-lg line-clamp-2'}`}>
+          <h3 className={`font-bold text-text-main leading-snug mb-2 group-hover:text-brand-purple transition-colors duration-300 ${featured ? 'text-2xl md:text-3xl' : 'text-lg line-clamp-2'}`}>
             {title}
           </h3>
           
@@ -64,13 +67,15 @@ export const KnowledgeCard: React.FC<KnowledgeCardProps> = ({ item, featured = f
           </p>
 
           <div className="mt-auto flex items-center justify-between text-xs text-text-muted font-medium uppercase tracking-wider">
-            <div className="flex items-center gap-1.5">
-              <Eye size={14} />
-              <span>{item.views.toLocaleString()}</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <Clock size={14} />
-              <span>{item.readTimeValue} {t('min_read')}</span>
+            <div className="flex items-center gap-3">
+               <div className="flex items-center gap-1.5">
+                  <Eye size={14} />
+                  <span>{item.views.toLocaleString()}</span>
+               </div>
+               <div className="flex items-center gap-1.5">
+                  <Clock size={14} />
+                  <span>{item.readTimeValue} {t('min_read')}</span>
+               </div>
             </div>
           </div>
           

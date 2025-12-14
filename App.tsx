@@ -1,6 +1,6 @@
 
 import React, { useEffect } from 'react';
-import { HashRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+import * as ReactRouterDOM from 'react-router-dom';
 import { Navbar } from './components/Navbar';
 import { Footer } from './components/Footer';
 import { Home } from './pages/Home';
@@ -34,6 +34,8 @@ import { AdminAppearance } from './pages/admin/AdminAppearance';
 import { AdminMedia } from './pages/admin/AdminMedia';
 
 import { CATEGORIES } from './constants';
+
+const { HashRouter: Router, Routes, Route, useLocation } = ReactRouterDOM;
 
 const ScrollToTop = () => {
   const { pathname } = useLocation();

@@ -1,15 +1,25 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { CATEGORIES } from '../constants';
 import { KnowledgeCard } from '../components/KnowledgeCard';
 import { Sidebar } from '../components/Sidebar';
 import { DailyKnowledge } from '../components/DailyKnowledge';
 import { ArrowRight, Sparkles } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import * as ReactRouterDOM from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext';
 import { useUserPreferences } from '../context/UserPreferencesContext';
 import { useContent } from '../context/ContentContext';
 import { Container } from '../components/ui/Container';
+
+const { Link } = ReactRouterDOM;
+
+// Curated high-quality images for the hero slider
+const HERO_IMAGES = [
+  "https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=2072&auto=format&fit=crop", // Space/Science
+  "https://images.unsplash.com/photo-1507842217121-ad959dc12246?q=80&w=2070&auto=format&fit=crop", // History/Library
+  "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?q=80&w=1948&auto=format&fit=crop", // Nature
+  "https://images.unsplash.com/photo-1532094349884-543bc11b234d?q=80&w=2070&auto=format&fit=crop", // Research
+];
 
 export const Home: React.FC = () => {
   const { t } = useLanguage();
@@ -25,34 +35,59 @@ export const Home: React.FC = () => {
   const latestContent = ALL_CONTENT.filter(c => !recommendedContent.includes(c)).slice(0, 4);
   const featuredContent = ALL_CONTENT[0];
   const trendingContent = ALL_CONTENT.slice(3, 6);
+
+  // Hero Slider State
+  const [currentHeroIndex, setCurrentHeroIndex] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentHeroIndex((prev) => (prev + 1) % HERO_IMAGES.length);
+    }, 8000); // Change slide every 8 seconds
+    return () => clearInterval(interval);
+  }, []);
   
   return (
     <div className="pb-16">
       {/* Hero / Header Section */}
-      <section className="relative pt-24 pb-20 border-b border-border overflow-hidden bg-surfaceHighlight/30">
-        {/* Subtle Ambient Background */}
-        <div className="absolute top-[-20%] left-1/2 -translate-x-1/2 w-[800px] h-[800px] bg-brand-purple/5 rounded-full blur-[120px] pointer-events-none animate-pulse"></div>
-        <div className="absolute bottom-[-20%] right-[-10%] w-[600px] h-[600px] bg-brand-orange/5 rounded-full blur-[100px] pointer-events-none"></div>
+      <section className="relative min-h-[420px] md:min-h-[520px] flex flex-col justify-center overflow-hidden bg-slate-950">
         
-        <Container className="relative z-10 text-center">
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-text-main tracking-tight mb-6 leading-tight">
-            {t('hero_title')} <span className="text-gradient">{t('hero_title_highlight')}</span>
+        {/* Background Slider */}
+        <div className="absolute inset-0 z-0">
+          {HERO_IMAGES.map((img, index) => (
+            <div
+              key={img}
+              className={`absolute inset-0 transition-opacity duration-[2000ms] ease-in-out ${
+                index === currentHeroIndex ? 'opacity-100' : 'opacity-0'
+              }`}
+            >
+              <img
+                src={img}
+                alt=""
+                className={`w-full h-full object-cover transform transition-transform duration-[12000ms] ease-linear ${
+                  index === currentHeroIndex ? 'scale-110' : 'scale-100'
+                }`}
+              />
+            </div>
+          ))}
+          {/* Single Clean Overlay for Text Readability */}
+          <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/40 to-black/80"></div>
+        </div>
+        
+        <Container className="relative z-10 text-center py-14 md:py-20">
+          <h1 className="text-4xl md:text-6xl font-extrabold text-white tracking-tight mb-4 leading-tight drop-shadow-lg">
+            {t('hero_title')} <br className="hidden md:block"/>
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-orange to-brand-purple">
+              {t('hero_title_highlight')}
+            </span>
           </h1>
-          <p className="text-lg md:text-xl text-text-muted max-w-2xl mx-auto mb-10 leading-relaxed">
+          <p className="text-lg md:text-xl text-slate-200 max-w-2xl mx-auto leading-relaxed font-light drop-shadow-md mb-8">
             {t('hero_subtitle')}
           </p>
-          
-          {/* Category Pills */}
-          <div className="flex flex-wrap justify-center gap-3">
-            {CATEGORIES.map(cat => (
-              <Link 
-                key={cat.id}
-                to={`/${cat.slug}`}
-                className="px-5 py-2 rounded-full border border-border bg-surface text-sm font-medium text-text-muted hover:border-brand-purple hover:text-brand-purple transition-all duration-300 shadow-sm hover:shadow-md"
-              >
-                {cat.label}
-              </Link>
-            ))}
+          <div className="flex justify-center">
+             <Link to="/categories" className="px-6 py-2.5 bg-gradient-brand text-white text-sm font-bold rounded-full shadow-lg hover:opacity-90 transition-all flex items-center gap-2">
+                <span>{t('view_all')}</span>
+                <ArrowRight size={16} />
+             </Link>
           </div>
         </Container>
       </section>
@@ -74,9 +109,9 @@ export const Home: React.FC = () => {
           </section>
         )}
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12">
-          {/* Main Feed */}
-          <div className="lg:col-span-2 space-y-20">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+          {/* Main Feed (2/3) -> col-span-8 */}
+          <div className="lg:col-span-8 space-y-20">
             
             {/* PERSONALIZED FEED */}
             {recommendedContent.length > 0 && (
@@ -136,8 +171,11 @@ export const Home: React.FC = () => {
 
           </div>
 
-          <div className="lg:col-span-1">
-             <Sidebar />
+          {/* Sidebar (1/3) -> col-span-4 */}
+          <div className="lg:col-span-4">
+             <div className="lg:sticky lg:top-24 space-y-8">
+                <Sidebar />
+             </div>
           </div>
         </div>
       </Container>

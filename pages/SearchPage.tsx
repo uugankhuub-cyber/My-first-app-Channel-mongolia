@@ -1,9 +1,12 @@
+
 import React, { useState, useEffect } from 'react';
-import { Search as SearchIcon } from 'lucide-react';
+import { Search as SearchIcon, X } from 'lucide-react';
 import { useContent } from '../context/ContentContext';
 import { KnowledgeCard } from '../components/KnowledgeCard';
-import { useSearchParams } from 'react-router-dom';
+import * as ReactRouterDOM from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext';
+
+const { useSearchParams } = ReactRouterDOM;
 
 export const SearchPage: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -26,26 +29,39 @@ export const SearchPage: React.FC = () => {
       })
     : [];
 
+  const handleClear = () => setSearchTerm('');
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 min-h-[60vh]">
         <div className="max-w-2xl mx-auto mb-16">
-            <h1 className="text-3xl font-bold text-center text-gray-900 dark:text-slate-100 mb-8 drop-shadow-sm dark:drop-shadow-md">{t('search_placeholder')}</h1>
+            <h1 className="text-3xl font-bold text-center text-text-main mb-8 drop-shadow-sm dark:drop-shadow-md">{t('search_placeholder')}</h1>
+            
+            {/* HERO SEARCH BAR - INTEGRATED UI */}
             <div className="relative group">
+                <SearchIcon className="absolute left-5 top-1/2 transform -translate-y-1/2 text-slate-400 pointer-events-none" size={24} />
                 <input
                     type="text"
                     placeholder={t('search_placeholder')}
-                    className="w-full pl-14 pr-6 py-4 rounded-2xl border border-gray-200 dark:border-white/10 bg-white dark:bg-brand-surface focus:border-primary-500 focus:ring-4 focus:ring-primary-500/20 outline-none text-lg text-gray-900 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 shadow-lg transition-all"
+                    className="w-full h-14 pl-12 pr-12 rounded-full border border-slate-200/50 dark:border-white/10 bg-white/50 dark:bg-white/5 backdrop-blur-sm focus:bg-white dark:focus:bg-slate-900 focus:border-brand-purple/30 focus:ring-4 focus:ring-brand-purple/10 outline-none text-lg text-slate-700 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 shadow-sm hover:shadow-md transition-all duration-300"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     autoFocus
                 />
-                <SearchIcon className="absolute left-5 top-1/2 transform -translate-y-1/2 text-slate-400 dark:text-slate-500 group-focus-within:text-primary-500 dark:group-focus-within:text-primary-400 transition-colors" size={24} />
+                {searchTerm && (
+                    <button 
+                        onClick={handleClear}
+                        className="absolute right-4 top-1/2 transform -translate-y-1/2 p-2 rounded-full text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/10 transition-colors"
+                        aria-label="Clear search"
+                    >
+                        <X size={20} />
+                    </button>
+                )}
             </div>
         </div>
 
         {searchTerm && (
             <div>
-                <h2 className="text-lg font-bold text-gray-900 dark:text-slate-200 mb-8 pb-4 border-b border-gray-200 dark:border-white/10">
+                <h2 className="text-lg font-bold text-text-main mb-8 pb-4 border-b border-border">
                     {t('search_results')} <span className="text-primary-600 dark:text-primary-400 ml-2">{filtered.length}</span>
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -54,8 +70,8 @@ export const SearchPage: React.FC = () => {
                     ))}
                 </div>
                 {filtered.length === 0 && (
-                    <div className="text-center py-16 bg-white dark:bg-brand-surface rounded-2xl border border-dashed border-gray-200 dark:border-white/10">
-                         <p className="text-slate-500 text-lg">{t('no_results')}</p>
+                    <div className="text-center py-16 bg-surface rounded-2xl border border-dashed border-border">
+                         <p className="text-text-muted text-lg">{t('no_results')}</p>
                     </div>
                 )}
             </div>
@@ -63,7 +79,7 @@ export const SearchPage: React.FC = () => {
 
         {!searchTerm && (
             <div className="text-center">
-                 <p className="text-slate-500 dark:text-slate-600 text-sm">Channel Mongolia</p>
+                 <p className="text-text-muted text-sm">Channel Mongolia</p>
             </div>
         )}
     </div>

@@ -1,12 +1,28 @@
+
 <!DOCTYPE html>
-<html lang="mn" class="dark">
+<html lang="mn">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Channel Mongolia</title>
     <meta name="description" content="A modern digital knowledge & media platform sharing interesting knowledge, science, and facts in Mongolian and English." />
     
-    <!-- Tailwind CSS (CDN for simplicity in this setup, ideally build step for prod) -->
+    <!-- Theme Initialization (Anti-FOUC) -->
+    <script>
+      (function() {
+        try {
+          var localTheme = localStorage.getItem('cm_theme');
+          var supportDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
+          if (localTheme === 'dark' || (!localTheme && supportDarkMode)) {
+            document.documentElement.classList.add('dark');
+          } else {
+            document.documentElement.classList.remove('dark');
+          }
+        } catch (e) {}
+      })();
+    </script>
+
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
     <!-- Fonts -->
@@ -94,10 +110,11 @@
         --border-color: #E2E8F0;
       }
       
-      html.dark :root {
+      /* FIX: Applied directly to html.dark instead of html.dark :root */
+      html.dark {
         /* Dark Mode Tokens */
         --bg-app: #020617;
-        --bg-surface: #0F172A; /* Slightly lighter than bg-app */
+        --bg-surface: #0F172A; 
         --bg-surface-highlight: #1E293B;
         --text-main: #F8FAFC;
         --text-muted: #94A3B8;

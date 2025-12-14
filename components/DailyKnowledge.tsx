@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Lightbulb, ThumbsUp, ThumbsDown, CheckCircle2 } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
@@ -22,7 +23,7 @@ export const DailyKnowledge: React.FC = () => {
   };
 
   return (
-    <div className="bg-gradient-to-br from-white to-primary-50 dark:from-[#151E32] dark:to-[#0B1120] border border-primary-100 dark:border-white/5 rounded-2xl p-6 relative overflow-hidden shadow-lg group">
+    <div className="bg-surface border border-border rounded-2xl p-6 relative overflow-hidden shadow-lg group">
       {/* Decorative Glow */}
       <div className="absolute top-0 right-0 w-32 h-32 bg-primary-500/10 dark:bg-primary-500/20 rounded-full blur-3xl -mr-16 -mt-16"></div>
       
@@ -34,7 +35,7 @@ export const DailyKnowledge: React.FC = () => {
           <span className="font-bold text-xs uppercase tracking-widest">{t('daily_knowledge')}</span>
         </div>
         
-        <p className="text-gray-900 dark:text-slate-100 font-medium text-lg leading-relaxed font-serif mb-6">
+        <p className="text-text-main font-medium text-lg leading-relaxed font-serif mb-6">
           "{fact}"
         </p>
 
@@ -42,18 +43,18 @@ export const DailyKnowledge: React.FC = () => {
         <div className={`transition-all duration-500 ease-out overflow-hidden ${feedbackGiven ? 'h-auto opacity-100' : 'h-auto opacity-100'}`}>
             {!feedbackGiven ? (
                 <div className="flex flex-col gap-3">
-                    <span className="text-xs text-gray-500 dark:text-slate-500 font-medium">{t('daily_feedback_q')}</span>
+                    <span className="text-xs text-text-muted font-medium">{t('daily_feedback_q')}</span>
                     <div className="flex gap-3">
                         <button 
                             onClick={() => handleFeedback(true)}
-                            className="flex-1 flex items-center justify-center gap-2 py-2 rounded-lg bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 text-xs font-bold text-gray-600 dark:text-slate-300 hover:bg-green-50 dark:hover:bg-green-900/20 hover:text-green-600 dark:hover:text-green-400 hover:border-green-200 dark:hover:border-green-800/50 transition-all"
+                            className="flex-1 flex items-center justify-center gap-2 py-2 rounded-lg bg-surfaceHighlight border border-border text-xs font-bold text-text-muted hover:bg-green-50 dark:hover:bg-green-900/20 hover:text-green-600 dark:hover:text-green-400 hover:border-green-200 dark:hover:border-green-800/50 transition-all"
                         >
                             <ThumbsUp size={14} />
                             {t('daily_yes')}
                         </button>
                         <button 
                             onClick={() => handleFeedback(false)}
-                            className="flex-1 flex items-center justify-center gap-2 py-2 rounded-lg bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 text-xs font-bold text-gray-600 dark:text-slate-300 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-400 hover:border-red-200 dark:hover:border-red-800/50 transition-all"
+                            className="flex-1 flex items-center justify-center gap-2 py-2 rounded-lg bg-surfaceHighlight border border-border text-xs font-bold text-text-muted hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-400 hover:border-red-200 dark:hover:border-red-800/50 transition-all"
                         >
                             <ThumbsDown size={14} />
                             {t('daily_no')}
