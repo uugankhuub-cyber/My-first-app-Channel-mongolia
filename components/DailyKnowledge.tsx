@@ -23,7 +23,7 @@ export const DailyKnowledge: React.FC = () => {
   };
 
   return (
-    <div className="bg-surface border border-border rounded-2xl p-6 relative overflow-hidden shadow-lg group">
+    <div className="bg-slate-900/5 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl p-6 relative overflow-hidden shadow-sm dark:shadow-lg group">
       {/* Decorative Glow */}
       <div className="absolute top-0 right-0 w-32 h-32 bg-primary-500/10 dark:bg-primary-500/20 rounded-full blur-3xl -mr-16 -mt-16"></div>
       
@@ -35,7 +35,7 @@ export const DailyKnowledge: React.FC = () => {
           <span className="font-bold text-xs uppercase tracking-widest">{t('daily_knowledge')}</span>
         </div>
         
-        <p className="text-text-main font-medium text-lg leading-relaxed font-serif mb-6">
+        <p className="text-slate-800 dark:text-slate-100 font-medium text-lg leading-relaxed font-serif mb-6">
           "{fact}"
         </p>
 
@@ -47,14 +47,14 @@ export const DailyKnowledge: React.FC = () => {
                     <div className="flex gap-3">
                         <button 
                             onClick={() => handleFeedback(true)}
-                            className="flex-1 flex items-center justify-center gap-2 py-2 rounded-lg bg-surfaceHighlight border border-border text-xs font-bold text-text-muted hover:bg-green-50 dark:hover:bg-green-900/20 hover:text-green-600 dark:hover:text-green-400 hover:border-green-200 dark:hover:border-green-800/50 transition-all"
+                            className="flex-1 flex items-center justify-center gap-2 py-2 rounded-lg bg-white/50 dark:bg-white/5 border border-border text-xs font-bold text-text-muted hover:bg-green-50 dark:hover:bg-green-900/20 hover:text-green-600 dark:hover:text-green-400 hover:border-green-200 dark:hover:border-green-800/50 transition-all"
                         >
                             <ThumbsUp size={14} />
                             {t('daily_yes')}
                         </button>
                         <button 
                             onClick={() => handleFeedback(false)}
-                            className="flex-1 flex items-center justify-center gap-2 py-2 rounded-lg bg-surfaceHighlight border border-border text-xs font-bold text-text-muted hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-400 hover:border-red-200 dark:hover:border-red-800/50 transition-all"
+                            className="flex-1 flex items-center justify-center gap-2 py-2 rounded-lg bg-white/50 dark:bg-white/5 border border-border text-xs font-bold text-text-muted hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-400 hover:border-red-200 dark:hover:border-red-800/50 transition-all"
                         >
                             <ThumbsDown size={14} />
                             {t('daily_no')}

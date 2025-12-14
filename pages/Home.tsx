@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { CATEGORIES } from '../constants';
-import { KnowledgeCard } from '../components/KnowledgeCard';
+import { KnowledgeCard, KnowledgeCardSkeleton } from '../components/KnowledgeCard';
 import { Sidebar } from '../components/Sidebar';
 import { DailyKnowledge } from '../components/DailyKnowledge';
 import { ArrowRight, Sparkles } from 'lucide-react';
@@ -24,7 +24,7 @@ const HERO_IMAGES = [
 export const Home: React.FC = () => {
   const { t } = useLanguage();
   const { getRecommendedCategory } = useUserPreferences();
-  const { content: ALL_CONTENT } = useContent(); 
+  const { content: ALL_CONTENT, loading } = useContent(); 
   
   const recommendedSlug = getRecommendedCategory();
   
@@ -47,9 +47,9 @@ export const Home: React.FC = () => {
   }, []);
   
   return (
-    <div className="pb-16">
+    <div className="pb-24 bg-slate-50 dark:bg-[#020617] transition-colors duration-500">
       {/* Hero / Header Section */}
-      <section className="relative min-h-[420px] md:min-h-[520px] flex flex-col justify-center overflow-hidden bg-slate-950">
+      <section className="relative min-h-[420px] md:min-h-[520px] flex flex-col justify-center overflow-hidden">
         
         {/* Background Slider */}
         <div className="absolute inset-0 z-0">
@@ -69,22 +69,23 @@ export const Home: React.FC = () => {
               />
             </div>
           ))}
-          {/* Single Clean Overlay for Text Readability */}
-          <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/40 to-black/80"></div>
+          
+          {/* DUAL MODE OVERLAY: Clean White for Light Mode, Cinematic Black for Dark Mode */}
+          <div className="absolute inset-0 bg-gradient-to-b from-white/90 via-white/60 to-white/90 dark:from-black/80 dark:via-black/50 dark:to-black/80 transition-colors duration-500"></div>
         </div>
         
         <Container className="relative z-10 text-center py-14 md:py-20">
-          <h1 className="text-4xl md:text-6xl font-extrabold text-white tracking-tight mb-4 leading-tight drop-shadow-lg">
+          <h1 className="text-4xl md:text-6xl font-extrabold text-slate-900 dark:text-white tracking-tight mb-4 leading-tight drop-shadow-sm dark:drop-shadow-lg transition-colors duration-300">
             {t('hero_title')} <br className="hidden md:block"/>
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-orange to-brand-purple">
               {t('hero_title_highlight')}
             </span>
           </h1>
-          <p className="text-lg md:text-xl text-slate-200 max-w-2xl mx-auto leading-relaxed font-light drop-shadow-md mb-8">
+          <p className="text-lg md:text-xl text-slate-600 dark:text-slate-300 max-w-2xl mx-auto leading-relaxed font-light mb-8 transition-colors duration-300">
             {t('hero_subtitle')}
           </p>
           <div className="flex justify-center">
-             <Link to="/categories" className="px-6 py-2.5 bg-gradient-brand text-white text-sm font-bold rounded-full shadow-lg hover:opacity-90 transition-all flex items-center gap-2">
+             <Link to="/categories" className="px-6 py-2.5 bg-gradient-brand text-white text-sm font-bold rounded-full shadow-lg hover:shadow-xl hover:-translate-y-0.5 active:scale-95 transition-all flex items-center gap-2">
                 <span>{t('view_all')}</span>
                 <ArrowRight size={16} />
              </Link>
@@ -92,29 +93,31 @@ export const Home: React.FC = () => {
         </Container>
       </section>
 
-      <Container className="mt-12">
+      <Container className="mt-8 md:mt-12">
         
         <div className="lg:hidden mb-12">
              <DailyKnowledge />
         </div>
 
         {/* Featured Section */}
-        {featuredContent && (
-          <section className="mb-20">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-1 h-8 bg-gradient-brand rounded-full"></div>
-              <h2 className="text-2xl md:text-3xl font-bold text-text-main tracking-tight">{t('featured')}</h2>
-            </div>
-            <KnowledgeCard item={featuredContent} featured={true} />
-          </section>
-        )}
+        <section className="mb-20">
+           <div className="flex items-center gap-3 mb-6">
+             <div className="w-1 h-8 bg-gradient-brand rounded-full"></div>
+             <h2 className="text-2xl md:text-3xl font-bold text-text-main tracking-tight">{t('featured')}</h2>
+           </div>
+           {loading ? (
+             <KnowledgeCardSkeleton featured={true} />
+           ) : (
+             featuredContent && <KnowledgeCard item={featuredContent} featured={true} />
+           )}
+        </section>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           {/* Main Feed (2/3) -> col-span-8 */}
           <div className="lg:col-span-8 space-y-20">
             
             {/* PERSONALIZED FEED */}
-            {recommendedContent.length > 0 && (
+            {!loading && recommendedContent.length > 0 && (
                 <section>
                   <div className="flex items-center gap-3 mb-8">
                      <div className="w-10 h-10 rounded-full bg-brand-purple/10 flex items-center justify-center text-brand-purple">
@@ -140,14 +143,18 @@ export const Home: React.FC = () => {
                 <h2 className="text-xl font-bold text-text-main">{t('latest')}</h2>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {latestContent.map(item => (
-                  <KnowledgeCard key={item.id} item={item} />
-                ))}
+                {loading ? (
+                  Array.from({ length: 4 }).map((_, i) => <KnowledgeCardSkeleton key={i} />)
+                ) : (
+                  latestContent.map(item => (
+                    <KnowledgeCard key={item.id} item={item} />
+                  ))
+                )}
               </div>
             </section>
 
             {/* Ad Placeholder */}
-            <div className="w-full h-32 bg-surfaceHighlight rounded-2xl border border-dashed border-border flex items-center justify-center">
+            <div className="w-full h-32 bg-slate-100 dark:bg-slate-800/50 rounded-2xl border border-dashed border-slate-300 dark:border-white/10 flex items-center justify-center">
                 <span className="text-text-muted font-medium text-sm tracking-widest uppercase opacity-70">{t('ad_space')}</span>
             </div>
 
@@ -163,9 +170,13 @@ export const Home: React.FC = () => {
                 </Link>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {trendingContent.map(item => (
-                  <KnowledgeCard key={item.id} item={item} />
-                ))}
+                {loading ? (
+                  Array.from({ length: 2 }).map((_, i) => <KnowledgeCardSkeleton key={i} />)
+                ) : (
+                  trendingContent.map(item => (
+                    <KnowledgeCard key={item.id} item={item} />
+                  ))
+                )}
               </div>
             </section>
 

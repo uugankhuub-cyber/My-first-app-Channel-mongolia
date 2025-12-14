@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { PlayCircle, Clock, Eye, Play } from 'lucide-react';
+import { Clock, Eye, Play } from 'lucide-react';
 import * as ReactRouterDOM from 'react-router-dom';
 import { ContentItem } from '../types';
 import { useLanguage } from '../context/LanguageContext';
@@ -14,6 +14,29 @@ interface KnowledgeCardProps {
   featured?: boolean;
 }
 
+// SKELETON LOADER
+export const KnowledgeCardSkeleton: React.FC<{ featured?: boolean }> = ({ featured }) => {
+  return (
+    <Card className={`h-full flex flex-col overflow-hidden pointer-events-none ${featured ? 'md:flex-row md:min-h-[380px]' : ''}`}>
+      <div className={`bg-slate-200 dark:bg-white/5 animate-pulse ${featured ? 'md:w-3/5 h-64 md:h-auto' : 'w-full aspect-video'}`} />
+      <div className={`p-5 flex flex-col flex-1 space-y-4 ${featured ? 'md:w-2/5 md:p-8' : ''}`}>
+        <div className="space-y-2">
+           <div className="h-6 bg-slate-200 dark:bg-white/5 rounded w-3/4 animate-pulse" />
+           {featured && <div className="h-6 bg-slate-200 dark:bg-white/5 rounded w-1/2 animate-pulse" />}
+        </div>
+        <div className="space-y-2">
+           <div className="h-4 bg-slate-200 dark:bg-white/5 rounded w-full animate-pulse" />
+           <div className="h-4 bg-slate-200 dark:bg-white/5 rounded w-5/6 animate-pulse" />
+        </div>
+        <div className="mt-auto flex items-center gap-3 pt-2">
+           <div className="h-3 w-16 bg-slate-200 dark:bg-white/5 rounded animate-pulse" />
+           <div className="h-3 w-16 bg-slate-200 dark:bg-white/5 rounded animate-pulse" />
+        </div>
+      </div>
+    </Card>
+  );
+};
+
 export const KnowledgeCard: React.FC<KnowledgeCardProps> = ({ item, featured = false }) => {
   const { t, language } = useLanguage();
   const isEn = language === 'en';
@@ -26,13 +49,13 @@ export const KnowledgeCard: React.FC<KnowledgeCardProps> = ({ item, featured = f
     <>
       {item.isVideo && (
         <div className="absolute bottom-3 right-3 pointer-events-none">
-          <div className="w-8 h-8 bg-black/50 backdrop-blur-sm rounded-full flex items-center justify-center text-white/90 shadow-sm border border-white/10">
+          <div className="w-8 h-8 bg-black/60 backdrop-blur-md rounded-full flex items-center justify-center text-white/90 shadow-lg border border-white/20">
             <Play size={14} fill="currentColor" className="ml-0.5" />
           </div>
         </div>
       )}
       <div className="absolute top-3 left-3 pointer-events-auto">
-         <span className="px-2.5 py-1 bg-black/60 backdrop-blur-md rounded-lg text-[10px] font-bold text-white tracking-wide border border-white/10 uppercase">
+         <span className="px-2.5 py-1 bg-black/60 backdrop-blur-md rounded-lg text-[10px] font-bold text-white tracking-wide border border-white/10 uppercase shadow-sm">
             {category}
          </span>
       </div>
@@ -40,8 +63,8 @@ export const KnowledgeCard: React.FC<KnowledgeCardProps> = ({ item, featured = f
   );
 
   return (
-    <Link to={`/niitlel/${item.id}`} className="block h-full">
-      <Card className={`h-full flex flex-col group ${featured ? 'md:flex-row md:min-h-[380px]' : ''}`}>
+    <Link to={`/niitlel/${item.id}`} className="block h-full outline-none group focus-visible:ring-2 ring-brand-purple rounded-2xl">
+      <Card className={`h-full flex flex-col group-hover:shadow-card-hover group-active:scale-[0.99] transition-all duration-300 ${featured ? 'md:flex-row md:min-h-[380px]' : ''}`}>
         
         {/* Thumbnail Section */}
         <div className={`relative overflow-hidden ${featured ? 'md:w-3/5 h-64 md:h-auto' : 'w-full'}`}>
@@ -58,7 +81,7 @@ export const KnowledgeCard: React.FC<KnowledgeCardProps> = ({ item, featured = f
         {/* Content Section */}
         <div className={`p-5 flex flex-col flex-1 ${featured ? 'md:w-2/5 md:justify-center md:p-8' : ''}`}>
           
-          <h3 className={`font-bold text-text-main leading-snug mb-2 group-hover:text-brand-purple transition-colors duration-300 ${featured ? 'text-2xl md:text-3xl' : 'text-lg line-clamp-2'}`}>
+          <h3 className={`font-bold text-text-main leading-snug mb-2 group-hover:text-brand-purple transition-colors duration-300 ${featured ? 'text-2xl md:text-3xl tracking-tight' : 'text-lg line-clamp-2'}`}>
             {title}
           </h3>
           

@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { Search as SearchIcon, X } from 'lucide-react';
+import { Search as SearchIcon, X, FileSearch } from 'lucide-react';
 import { useContent } from '../context/ContentContext';
 import { KnowledgeCard } from '../components/KnowledgeCard';
 import * as ReactRouterDOM from 'react-router-dom';
@@ -42,7 +42,7 @@ export const SearchPage: React.FC = () => {
                 <input
                     type="text"
                     placeholder={t('search_placeholder')}
-                    className="w-full h-14 pl-12 pr-12 rounded-full border border-slate-200/50 dark:border-white/10 bg-white/50 dark:bg-white/5 backdrop-blur-sm focus:bg-white dark:focus:bg-slate-900 focus:border-brand-purple/30 focus:ring-4 focus:ring-brand-purple/10 outline-none text-lg text-slate-700 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 shadow-sm hover:shadow-md transition-all duration-300"
+                    className="w-full h-14 pl-12 pr-12 rounded-full border border-border bg-white/50 dark:bg-white/5 backdrop-blur-sm focus:bg-white dark:focus:bg-slate-900 focus:border-brand-purple/50 focus:ring-4 focus:ring-brand-purple/10 outline-none text-lg text-text-main placeholder-slate-400 shadow-sm hover:shadow-md transition-all duration-300"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     autoFocus
@@ -50,7 +50,7 @@ export const SearchPage: React.FC = () => {
                 {searchTerm && (
                     <button 
                         onClick={handleClear}
-                        className="absolute right-4 top-1/2 transform -translate-y-1/2 p-2 rounded-full text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/10 transition-colors"
+                        className="absolute right-4 top-1/2 transform -translate-y-1/2 p-2 rounded-full text-slate-400 hover:text-text-main hover:bg-surfaceHighlight transition-colors"
                         aria-label="Clear search"
                     >
                         <X size={20} />
@@ -61,25 +61,32 @@ export const SearchPage: React.FC = () => {
 
         {searchTerm && (
             <div>
-                <h2 className="text-lg font-bold text-text-main mb-8 pb-4 border-b border-border">
-                    {t('search_results')} <span className="text-primary-600 dark:text-primary-400 ml-2">{filtered.length}</span>
+                <h2 className="text-lg font-bold text-text-main mb-8 pb-4 border-b border-border flex items-center justify-between">
+                    <span>{t('search_results')}</span>
+                    <span className="px-3 py-1 bg-surfaceHighlight rounded-full text-xs font-bold text-text-muted">{filtered.length} items</span>
                 </h2>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                    {filtered.map(item => (
-                        <KnowledgeCard key={item.id} item={item} />
-                    ))}
-                </div>
-                {filtered.length === 0 && (
-                    <div className="text-center py-16 bg-surface rounded-2xl border border-dashed border-border">
-                         <p className="text-text-muted text-lg">{t('no_results')}</p>
+                
+                {filtered.length > 0 ? (
+                   <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                       {filtered.map(item => (
+                           <KnowledgeCard key={item.id} item={item} />
+                       ))}
+                   </div>
+                ) : (
+                    <div className="text-center py-20 bg-surface rounded-2xl border border-dashed border-border flex flex-col items-center justify-center">
+                         <div className="w-16 h-16 bg-surfaceHighlight rounded-full flex items-center justify-center text-text-muted mb-4">
+                            <FileSearch size={32} />
+                         </div>
+                         <h3 className="text-lg font-bold text-text-main mb-2">Хайлт илэрцгүй</h3>
+                         <p className="text-text-muted">{t('no_results')}</p>
                     </div>
                 )}
             </div>
         )}
 
         {!searchTerm && (
-            <div className="text-center">
-                 <p className="text-text-muted text-sm">Channel Mongolia</p>
+            <div className="text-center mt-20 opacity-50">
+                 <p className="text-text-muted text-sm font-medium tracking-widest uppercase">Channel Mongolia</p>
             </div>
         )}
     </div>

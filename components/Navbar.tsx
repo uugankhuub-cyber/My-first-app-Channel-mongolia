@@ -75,8 +75,10 @@ export const Navbar: React.FC = () => {
 
   return (
     <nav 
-      className={`sticky top-0 z-50 w-full transition-all duration-300 border-b border-white/5 ${
-        scrolled ? 'bg-background/90 backdrop-blur-md shadow-sm' : 'bg-background/95 backdrop-blur-sm'
+      className={`sticky top-0 z-50 w-full transition-all duration-300 ${
+        scrolled 
+          ? 'bg-white/90 dark:bg-slate-950/80 backdrop-blur-md shadow-sm border-b border-slate-200/80 dark:border-white/5' 
+          : 'bg-white/95 dark:bg-slate-950/95 backdrop-blur-sm border-b border-transparent dark:border-white/5'
       }`}
     >
       <div className="relative z-10">
@@ -91,13 +93,13 @@ export const Navbar: React.FC = () => {
               </span>
             </Link>
 
-            {/* Search Bar (Desktop) - QUIET UI */}
-            <div className="hidden md:flex flex-1 max-w-sm mx-auto">
+            {/* Search Bar (Desktop) - QUIET UI & FIXED ALIGNMENT */}
+            <div className="hidden md:flex flex-1 max-w-sm mx-auto items-center">
               <form onSubmit={handleSearch} className="w-full relative group">
                   <div className="relative flex items-center">
                     <Search 
                       size={16} 
-                      className="absolute left-3 text-slate-400 pointer-events-none" 
+                      className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" 
                     />
                     <input 
                       type="text" 
@@ -118,7 +120,7 @@ export const Navbar: React.FC = () => {
                       <button
                         type="button"
                         onClick={handleClearSearch}
-                        className="absolute right-2 p-1 rounded-full text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-200 dark:hover:bg-white/10 transition-colors"
+                        className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded-full text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-200 dark:hover:bg-white/10 transition-colors"
                         aria-label="Clear search"
                       >
                         <X size={14} />
@@ -175,11 +177,11 @@ export const Navbar: React.FC = () => {
         </Container>
 
         {/* ROW 2: Navigation Categories */}
-        <div className="border-t border-border/40 w-full overflow-hidden">
+        <div className="border-t border-slate-100 dark:border-white/5 w-full overflow-hidden">
           <Container className="relative">
              {/* Mobile Fade Edges */}
-             <div className="lg:hidden absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-background to-transparent z-10 pointer-events-none" />
-             <div className="lg:hidden absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-background to-transparent z-10 pointer-events-none" />
+             <div className="lg:hidden absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-white dark:from-slate-950 to-transparent z-10 pointer-events-none" />
+             <div className="lg:hidden absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-white dark:from-slate-950 to-transparent z-10 pointer-events-none" />
              
              <div className="flex items-center h-12 md:h-14 gap-2 overflow-x-auto no-scrollbar px-1 py-2 mask-linear-fade">
               {mainNavItems.map((item) => (
@@ -190,7 +192,7 @@ export const Navbar: React.FC = () => {
                     flex-shrink-0 px-3 py-1.5 md:py-1 text-sm rounded-full whitespace-nowrap transition-all duration-300
                     ${isActive 
                       ? 'bg-gradient-to-r from-brand-purple to-brand-orange text-white font-semibold shadow-sm' 
-                      : 'text-text-muted font-medium hover:text-text-main hover:bg-surfaceHighlight'
+                      : 'text-slate-600 dark:text-slate-400 font-medium hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5'
                     }
                   `}
                 >
@@ -212,16 +214,16 @@ export const Navbar: React.FC = () => {
 
       {/* Mobile Menu Drawer */}
       <div 
-        className={`fixed inset-y-0 right-0 z-[150] w-[85vw] max-w-sm bg-surface shadow-2xl transform transition-transform duration-300 ease-in-out ${
+        className={`fixed inset-y-0 right-0 z-[150] w-[85vw] max-w-sm bg-white dark:bg-slate-900 shadow-2xl transform transition-transform duration-300 ease-in-out ${
           isOpen ? 'translate-x-0' : 'translate-x-full'
         }`}
       >
         <div className="flex flex-col h-full">
-          <div className="flex items-center justify-between p-4 border-b border-border">
+          <div className="flex items-center justify-between p-4 border-b border-slate-100 dark:border-white/10">
             <span className="font-bold text-xl text-gradient">Menu</span>
             <button 
               onClick={() => setIsOpen(false)} 
-              className="p-2 text-text-muted hover:text-text-main rounded-full hover:bg-surfaceHighlight"
+              className="p-2 text-slate-500 hover:text-slate-900 dark:hover:text-white rounded-full hover:bg-slate-100 dark:hover:bg-white/5"
             >
               <X size={24} />
             </button>
@@ -232,7 +234,7 @@ export const Navbar: React.FC = () => {
             {/* Mobile Search - QUIET UI */}
             <form onSubmit={handleSearch} className="relative group">
                <div className="relative flex items-center">
-                  <Search size={18} className="absolute left-3 text-slate-400 pointer-events-none" />
+                  <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
                   <input 
                     type="text" 
                     value={searchValue}
@@ -245,7 +247,7 @@ export const Navbar: React.FC = () => {
                     <button
                       type="button"
                       onClick={handleClearSearch}
-                      className="absolute right-3 p-1 rounded-full text-slate-400 hover:text-text-main hover:bg-slate-200 dark:hover:bg-white/10 transition-colors"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-full text-slate-400 hover:text-text-main hover:bg-slate-200 dark:hover:bg-white/10 transition-colors"
                     >
                       <X size={18} />
                     </button>
@@ -263,7 +265,7 @@ export const Navbar: React.FC = () => {
                     block px-4 py-3 rounded-xl text-base transition-all
                     ${isActive 
                       ? 'bg-gradient-to-r from-brand-purple to-brand-orange text-white font-semibold shadow-md' 
-                      : 'text-text-main font-medium hover:bg-surfaceHighlight'
+                      : 'text-slate-700 dark:text-slate-300 font-medium hover:bg-slate-50 dark:hover:bg-white/5'
                     }
                   `}
                 >
@@ -272,24 +274,24 @@ export const Navbar: React.FC = () => {
               ))}
             </nav>
             
-            <div className="border-t border-border pt-4 space-y-2">
-               <Link to="/bidnii-tukhai" onClick={() => setIsOpen(false)} className="block px-4 py-3 text-text-muted hover:text-text-main rounded-xl hover:bg-surfaceHighlight/30">{t('nav_about')}</Link>
-               <Link to="/holboo-barikh" onClick={() => setIsOpen(false)} className="block px-4 py-3 text-text-muted hover:text-text-main rounded-xl hover:bg-surfaceHighlight/30">{t('contact')}</Link>
+            <div className="border-t border-slate-100 dark:border-white/10 pt-4 space-y-2">
+               <Link to="/bidnii-tukhai" onClick={() => setIsOpen(false)} className="block px-4 py-3 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white rounded-xl hover:bg-slate-50 dark:hover:bg-white/5">{t('nav_about')}</Link>
+               <Link to="/holboo-barikh" onClick={() => setIsOpen(false)} className="block px-4 py-3 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white rounded-xl hover:bg-slate-50 dark:hover:bg-white/5">{t('contact')}</Link>
             </div>
           </div>
 
-          <div className="p-4 border-t border-border bg-surfaceHighlight/50 space-y-3">
+          <div className="p-4 border-t border-slate-100 dark:border-white/10 bg-slate-50/50 dark:bg-white/5 space-y-3">
              {/* Mobile Theme & Lang Toggles */}
              <div className="flex items-center justify-between gap-2 mb-2">
                 <button 
                   onClick={() => setLanguage(language === 'mn' ? 'en' : 'mn')}
-                  className="flex-1 py-2 rounded-lg border border-border bg-surface text-text-muted text-xs font-bold hover:text-text-main transition-colors"
+                  className="flex-1 py-2 rounded-lg border border-slate-200 dark:border-white/10 bg-white dark:bg-transparent text-slate-500 dark:text-slate-400 text-xs font-bold hover:text-slate-900 dark:hover:text-white transition-colors"
                 >
                   {language === 'mn' ? 'EN хэл рүү шилжих' : 'Switch to Mongolian'}
                 </button>
                 <button
                   onClick={toggleTheme}
-                  className="p-2 rounded-lg border border-border bg-surface text-text-muted hover:text-brand-orange transition-colors"
+                  className="p-2 rounded-lg border border-slate-200 dark:border-white/10 bg-white dark:bg-transparent text-slate-500 dark:text-slate-400 hover:text-brand-orange transition-colors"
                   aria-label={t('theme_dark')}
                 >
                    {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
@@ -298,7 +300,7 @@ export const Navbar: React.FC = () => {
 
              <button 
                 onClick={handleAdminClick} 
-                className={`w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-bold shadow-sm transition-transform active:scale-95 ${isAuthenticated ? 'bg-surface text-text-main border border-border' : 'bg-gradient-brand text-white'}`}
+                className={`w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-bold shadow-sm transition-transform active:scale-95 ${isAuthenticated ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-white border border-slate-200 dark:border-white/10' : 'bg-gradient-brand text-white'}`}
              >
                 {isAuthenticated ? <ShieldCheck size={18} /> : <User size={18} />}
                 <span>{isAuthenticated ? 'Admin Panel' : t('login')}</span>

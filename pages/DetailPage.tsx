@@ -2,13 +2,14 @@
 import React, { useEffect } from 'react';
 import * as ReactRouterDOM from 'react-router-dom';
 import { useContent } from '../context/ContentContext';
-import { ThumbsUp, Share2, Bookmark, Eye, Calendar, User, PlayCircle } from 'lucide-react';
+import { ThumbsUp, Share2, Bookmark, Eye, Calendar, User, PlayCircle, Layers } from 'lucide-react';
 import { Sidebar } from '../components/Sidebar';
 import { useLanguage } from '../context/LanguageContext';
 import { QuizCard } from '../components/QuizCard';
 import { useUserPreferences } from '../context/UserPreferencesContext';
+import { KnowledgeCard } from '../components/KnowledgeCard';
 
-const { useParams } = ReactRouterDOM;
+const { useParams, Link } = ReactRouterDOM;
 
 export const DetailPage: React.FC = () => {
   const { id } = useParams();
@@ -19,9 +20,14 @@ export const DetailPage: React.FC = () => {
   
   const content = allContent.find(c => c.id === id);
   
+  // Logic for Related Articles: same category, excluding current
+  const relatedContent = content 
+      ? allContent.filter(c => c.category === content.category && c.id !== content.id).slice(0, 3)
+      : [];
+  
   // Fallback if not found (or still loading)
   if (!content) {
-      return <div className="p-20 text-center text-text-muted">Loading or not found...</div>;
+      return <div className="p-20 text-center text-text-muted animate-pulse">Loading content...</div>;
   }
   
   const title = isEn ? content.title_en : content.title;
@@ -44,12 +50,12 @@ export const DetailPage: React.FC = () => {
         <div className="lg:col-span-2">
           
           <div className="flex items-center text-sm text-text-muted mb-6">
-             <span className="hover:text-primary-600 dark:hover:text-primary-400 cursor-pointer transition-colors">{t('nav_home')}</span>
+             <Link to="/" className="hover:text-brand-purple transition-colors font-medium">{t('nav_home')}</Link>
              <span className="mx-2 text-border">/</span>
-             <span className="text-primary-600 dark:text-primary-400 font-medium dark:drop-shadow-[0_0_5px_rgba(59,130,246,0.3)]">{category}</span>
+             <Link to={`/${content.category}`} className="text-brand-purple font-semibold hover:underline decoration-brand-purple/30 underline-offset-4">{category}</Link>
           </div>
 
-          <h1 className="text-3xl md:text-4xl font-extrabold text-text-main mb-6 leading-tight">
+          <h1 className="text-3xl md:text-5xl font-extrabold text-text-main mb-6 leading-tight tracking-tight">
             {title}
           </h1>
 
@@ -72,27 +78,26 @@ export const DetailPage: React.FC = () => {
             </div>
           </div>
 
-          <div className="relative aspect-video bg-black rounded-xl overflow-hidden mb-10 shadow-lg dark:shadow-2xl border border-border group">
-             <img src={content.thumbnailUrl} alt={title} className="w-full h-full object-cover opacity-90 dark:opacity-80" />
+          <div className="relative aspect-video bg-surfaceHighlight rounded-2xl overflow-hidden mb-10 shadow-lg dark:shadow-2xl border border-border group">
+             <img src={content.thumbnailUrl} alt={title} className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-[1.02]" />
              {content.isVideo && (
                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                     <div className="w-20 h-20 bg-white/30 dark:bg-[#151E32]/50 backdrop-blur-md rounded-full flex items-center justify-center border border-white/50 dark:border-white/30 shadow-lg dark:shadow-glow">
+                     <div className="w-20 h-20 bg-white/30 dark:bg-[#151E32]/50 backdrop-blur-md rounded-full flex items-center justify-center border border-white/50 dark:border-white/30 shadow-lg dark:shadow-glow animate-pulse-fast">
                         <div className="w-0 h-0 border-t-[15px] border-t-transparent border-l-[25px] border-l-white border-b-[15px] border-b-transparent ml-2 drop-shadow-lg"></div>
                      </div>
                  </div>
              )}
           </div>
 
-          <div className="prose prose-lg prose-gray dark:prose-invert max-w-none text-text-main">
+          <div className="prose prose-lg prose-slate dark:prose-invert max-w-none text-text-main">
              {/* Description Intro */}
-             <p className="font-medium text-xl text-text-main mb-6 leading-relaxed border-l-4 border-primary-500 pl-4">
+             <p className="font-serif text-xl md:text-2xl text-text-main mb-8 leading-relaxed border-l-4 border-brand-purple pl-6 italic opacity-90">
                 {description}
              </p>
              
              {/* Render HTML Content Safely */}
-             {/* In a real production app, use DOMPurify here. For this demo we trust Admin content. */}
              <div 
-                className="mb-6 leading-relaxed whitespace-pre-wrap text-text-muted"
+                className="mb-8 leading-relaxed whitespace-pre-wrap text-text-muted"
                 dangerouslySetInnerHTML={{ __html: body || '' }}
              />
              
@@ -101,9 +106,24 @@ export const DetailPage: React.FC = () => {
 
           <div className="flex flex-wrap gap-2 mt-10 pt-8 border-t border-border">
              {(tags || []).map((tag, i) => (
-                 <span key={i} className="px-4 py-1.5 bg-surfaceHighlight border border-border text-text-muted rounded-lg text-sm font-medium hover:text-primary-600 dark:hover:text-primary-300 hover:border-primary-200 dark:hover:border-primary-500/30 transition-colors cursor-pointer">#{tag}</span>
+                 <span key={i} className="px-4 py-1.5 bg-surfaceHighlight border border-border text-text-muted rounded-full text-sm font-medium hover:text-brand-purple hover:border-brand-purple/30 transition-colors cursor-pointer select-none">#{tag}</span>
              ))}
           </div>
+
+          {/* Related Articles Section */}
+          {relatedContent.length > 0 && (
+             <div className="mt-16 pt-10 border-t border-border">
+                <div className="flex items-center gap-3 mb-8">
+                   <Layers className="text-brand-purple" size={24} />
+                   <h3 className="text-2xl font-bold text-text-main">{t('related')}</h3>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                   {relatedContent.map(item => (
+                      <KnowledgeCard key={item.id} item={item} />
+                   ))}
+                </div>
+             </div>
+          )}
 
         </div>
 

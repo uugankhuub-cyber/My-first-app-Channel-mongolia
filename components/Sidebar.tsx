@@ -14,7 +14,7 @@ const { Link } = ReactRouterDOM;
 
 export const Sidebar: React.FC = () => {
   const { t, language } = useLanguage();
-  const { content } = useContent(); 
+  const { content, loading } = useContent(); 
   const isEn = language === 'en';
 
   const mostViewed = [...content].sort((a, b) => b.views - a.views).slice(0, 5);
@@ -29,13 +29,23 @@ export const Sidebar: React.FC = () => {
     </h3>
   );
 
+  const CompactSkeleton = () => (
+    <div className="flex gap-3 items-start p-2 animate-pulse">
+       <div className="w-16 h-12 bg-slate-200 dark:bg-white/5 rounded-lg flex-shrink-0" />
+       <div className="flex-1 space-y-2 py-1">
+          <div className="h-3 bg-slate-200 dark:bg-white/5 rounded w-3/4" />
+          <div className="h-2 bg-slate-200 dark:bg-white/5 rounded w-1/2" />
+       </div>
+    </div>
+  );
+
   const CompactContentItem: React.FC<{ item: ContentItem; rank?: number; showImage?: boolean; metaIcon?: React.ReactNode; metaText?: string }> = ({ 
     item, rank, showImage = true, metaIcon, metaText 
   }) => {
     const title = isEn ? item.title_en : item.title;
     
     return (
-      <Link to={`/niitlel/${item.id}`} className="group flex gap-3 items-start p-2 rounded-xl hover:bg-surfaceHighlight transition-colors">
+      <Link to={`/niitlel/${item.id}`} className="group flex gap-3 items-start p-2 rounded-xl hover:bg-black/5 dark:hover:bg-white/5 transition-colors focus-visible:ring-2 focus-visible:ring-brand-purple">
         {showImage && (
           <div className="relative w-16 h-12 flex-shrink-0">
              <Thumbnail 
@@ -70,35 +80,43 @@ export const Sidebar: React.FC = () => {
       
       <DailyKnowledge />
 
-      {/* BLOCK 1: MOST VIEWED */}
-      <Card className="p-5">
+      {/* BLOCK 1: MOST VIEWED - TINTED */}
+      <Card className="p-5" variant="tinted">
         <SidebarHeader title={t('sb_most_viewed')} icon={<Eye size={16} className="text-brand-purple" />} />
         <div className="space-y-1">
-          {mostViewed.map((item, idx) => (
-            <CompactContentItem 
-              key={item.id} 
-              item={item} 
-              rank={idx + 1} 
-              metaIcon={<Eye size={10} />}
-              metaText={`${(item.views / 1000).toFixed(1)}k`}
-            />
-          ))}
+          {loading ? (
+            Array.from({ length: 3 }).map((_, i) => <CompactSkeleton key={i} />)
+          ) : (
+            mostViewed.map((item, idx) => (
+              <CompactContentItem 
+                key={item.id} 
+                item={item} 
+                rank={idx + 1} 
+                metaIcon={<Eye size={10} />}
+                metaText={`${(item.views / 1000).toFixed(1)}k`}
+              />
+            ))
+          )}
         </div>
       </Card>
 
-      {/* BLOCK 2: TRENDING */}
+      {/* BLOCK 2: TRENDING - DEFAULT WHITE/SURFACE */}
       <Card className="p-5 overflow-hidden relative">
         <div className="absolute top-0 right-0 w-32 h-32 bg-brand-orange/5 rounded-full blur-3xl pointer-events-none -mr-10 -mt-10"></div>
         <SidebarHeader title={t('sb_trending')} icon={<Flame size={16} className="text-brand-orange" />} />
         <div className="space-y-3 relative z-10">
-           {trending.map(item => (
-              <CompactContentItem 
-                key={item.id} 
-                item={item} 
-                metaIcon={<Clock size={10} />}
-                metaText="2h ago"
-              />
-           ))}
+           {loading ? (
+             Array.from({ length: 3 }).map((_, i) => <CompactSkeleton key={i} />)
+           ) : (
+             trending.map(item => (
+                <CompactContentItem 
+                  key={item.id} 
+                  item={item} 
+                  metaIcon={<Clock size={10} />}
+                  metaText="2h ago"
+                />
+             ))
+           )}
         </div>
       </Card>
 
@@ -106,38 +124,47 @@ export const Sidebar: React.FC = () => {
       <div>
          <SidebarHeader title={t('sb_editors_pick')} icon={<Bookmark size={16} className="text-brand-purple" />} />
          <div className="space-y-4">
-            {editorsPick.map(item => {
-               const title = isEn ? item.title_en : item.title;
-               return (
-                <Link key={item.id} to={`/niitlel/${item.id}`} className="block group">
-                  <div className="relative rounded-xl overflow-hidden mb-2 shadow-sm border border-border">
-                     <Thumbnail 
-                        src={item.thumbnailUrl} 
-                        alt={title} 
-                        className="group-hover:scale-105 transition-transform duration-700" 
-                     />
-                     <div className="absolute bottom-2 left-2">
-                        <span className="px-1.5 py-0.5 bg-brand-purple/90 backdrop-blur-sm rounded text-[10px] font-bold text-white tracking-wide">PICK</span>
+            {loading ? (
+               Array.from({ length: 2 }).map((_, i) => (
+                 <div key={i} className="rounded-xl overflow-hidden mb-2 animate-pulse">
+                    <div className="h-32 bg-slate-200 dark:bg-white/5 w-full mb-2" />
+                    <div className="h-4 bg-slate-200 dark:bg-white/5 w-3/4" />
+                 </div>
+               ))
+            ) : (
+               editorsPick.map(item => {
+                  const title = isEn ? item.title_en : item.title;
+                  return (
+                   <Link key={item.id} to={`/niitlel/${item.id}`} className="block group outline-none focus-visible:ring-2 focus-visible:ring-brand-purple rounded-xl">
+                     <div className="relative rounded-xl overflow-hidden mb-2 shadow-sm border border-border">
+                        <Thumbnail 
+                           src={item.thumbnailUrl} 
+                           alt={title} 
+                           className="group-hover:scale-105 transition-transform duration-700" 
+                        />
+                        <div className="absolute bottom-2 left-2">
+                           <span className="px-1.5 py-0.5 bg-brand-purple/90 backdrop-blur-sm rounded text-[10px] font-bold text-white tracking-wide">PICK</span>
+                        </div>
                      </div>
-                  </div>
-                  <h4 className="font-bold text-sm text-text-main group-hover:text-brand-purple transition-colors leading-snug">
-                     {title}
-                  </h4>
-                </Link>
-               )
-            })}
+                     <h4 className="font-bold text-sm text-text-main group-hover:text-brand-purple transition-colors leading-snug">
+                        {title}
+                     </h4>
+                   </Link>
+                  )
+               })
+            )}
          </div>
       </div>
 
-      {/* BLOCK 5: CATEGORY JUMP */}
-      <Card className="p-5">
+      {/* BLOCK 5: CATEGORY JUMP - TINTED */}
+      <Card className="p-5" variant="tinted">
          <SidebarHeader title={t('sb_categories')} />
          <div className="flex flex-wrap gap-2">
             {CATEGORIES.map(cat => (
                <Link 
                  key={cat.id} 
                  to={`/${cat.slug}`}
-                 className="px-3 py-1.5 bg-surfaceHighlight hover:bg-brand-purple text-text-muted hover:text-white rounded-lg text-xs font-semibold transition-all"
+                 className="px-3 py-1.5 bg-white dark:bg-white/5 hover:bg-brand-purple border border-slate-200 dark:border-white/10 text-text-muted hover:text-white rounded-lg text-xs font-semibold transition-all focus-visible:ring-2 focus-visible:ring-brand-purple"
                >
                  {cat.label}
                </Link>
@@ -146,7 +173,7 @@ export const Sidebar: React.FC = () => {
       </Card>
       
        {/* QUOTE */}
-      <Card className="p-6 text-center bg-gradient-to-br from-surface to-surfaceHighlight">
+      <Card className="p-6 text-center bg-gradient-to-br from-white to-slate-100 dark:from-surface dark:to-surfaceHighlight">
          <QuoteIcon size={32} className="text-brand-purple/20 mx-auto mb-3" />
          <h3 className="text-[10px] font-bold text-brand-purple uppercase tracking-widest mb-3">{t('sb_quote')}</h3>
          <blockquote className="text-text-main font-serif italic text-lg leading-relaxed mb-4">

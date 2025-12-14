@@ -37,6 +37,7 @@
           extend: {
             fontFamily: {
               sans: ['Inter', 'Roboto', 'sans-serif'],
+              serif: ['Georgia', 'serif'],
             },
             colors: {
               // Using CSS variables for semantic coloring
@@ -77,11 +78,12 @@
               'glow': '0 0 20px -5px rgba(109, 40, 217, 0.3)',
               'glow-orange': '0 0 20px -5px rgba(249, 115, 22, 0.3)',
               'soft': '0 10px 40px -10px rgba(0, 0, 0, 0.05)',
-              'card': '0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03)',
-              'card-hover': '0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04)',
+              'card': '0 2px 8px -1px rgba(0, 0, 0, 0.04), 0 1px 4px -1px rgba(0, 0, 0, 0.02)',
+              'card-hover': '0 12px 24px -4px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04)',
             },
             animation: {
               'gradient-x': 'gradient-x 15s ease infinite',
+              'pulse-fast': 'pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite',
             },
             keyframes: {
               'gradient-x': {
@@ -101,23 +103,22 @@
     </script>
     <style>
       :root {
-        /* Light Mode Tokens */
-        --bg-app: #F8FAFC;
+        /* Light Mode Tokens - Clean Editorial */
+        --bg-app: #FAFAFA; /* Slightly warmer white */
         --bg-surface: #FFFFFF;
-        --bg-surface-highlight: #F1F5F9;
-        --text-main: #0F172A;
-        --text-muted: #64748B;
-        --border-color: #E2E8F0;
+        --bg-surface-highlight: #F4F4F5;
+        --text-main: #18181B; /* Zinc-900 */
+        --text-muted: #71717A; /* Zinc-500 */
+        --border-color: #E4E4E7; /* Zinc-200 */
       }
       
-      /* FIX: Applied directly to html.dark instead of html.dark :root */
       html.dark {
-        /* Dark Mode Tokens */
-        --bg-app: #020617;
-        --bg-surface: #0F172A; 
-        --bg-surface-highlight: #1E293B;
-        --text-main: #F8FAFC;
-        --text-muted: #94A3B8;
+        /* Dark Mode Tokens - Premium Cinematic */
+        --bg-app: #020617; /* Slate-950 */
+        --bg-surface: #0F172A; /* Slate-900 */
+        --bg-surface-highlight: #1E293B; /* Slate-800 */
+        --text-main: #F8FAFC; /* Slate-50 */
+        --text-muted: #94A3B8; /* Slate-400 */
         --border-color: rgba(255, 255, 255, 0.08);
       }
 
@@ -125,6 +126,14 @@
         background-color: var(--bg-app);
         color: var(--text-main);
         transition: background-color 0.3s ease, color 0.3s ease;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
+
+      /* Global Focus Ring for Accessibility */
+      *:focus-visible {
+        outline: 2px solid #6D28D9;
+        outline-offset: 2px;
       }
 
       .no-scrollbar::-webkit-scrollbar {
@@ -156,6 +165,12 @@
       
       .bg-gradient-brand {
         background: linear-gradient(135deg, #6D28D9 0%, #F97316 100%);
+      }
+
+      /* Mobile Category Fade Mask */
+      .mask-linear-fade {
+        mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+        -webkit-mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
       }
     </style>
   <script type="importmap">
