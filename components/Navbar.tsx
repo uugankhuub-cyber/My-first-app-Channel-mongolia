@@ -189,10 +189,10 @@ export const Navbar: React.FC = () => {
                   key={item.label}
                   to={item.path}
                   className={({ isActive }) => `
-                    flex-shrink-0 px-3 py-1.5 md:py-1 text-sm rounded-full whitespace-nowrap transition-all duration-300
+                    flex-shrink-0 inline-flex items-center justify-center h-9 px-4 text-sm rounded-full whitespace-nowrap transition-all duration-200
                     ${isActive 
-                      ? 'bg-gradient-to-r from-brand-purple to-brand-orange text-white font-semibold shadow-sm' 
-                      : 'text-slate-600 dark:text-slate-400 font-medium hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5'
+                      ? 'bg-gradient-to-r from-brand-purple to-brand-orange text-white font-semibold shadow-md shadow-brand-purple/20 ring-1 ring-inset ring-white/10' 
+                      : 'text-slate-600 dark:text-slate-400 font-medium hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5'
                     }
                   `}
                 >
