@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Flame, Eye, Bookmark, Clock, Quote as QuoteIcon } from 'lucide-react';
@@ -6,22 +7,23 @@ import { useContent } from '../context/ContentContext';
 import { useLanguage } from '../context/LanguageContext';
 import { DailyKnowledge } from './DailyKnowledge';
 import { ContentItem } from '../types';
+import { Card } from './ui/Card';
+import { Thumbnail } from './ui/Thumbnail';
 
 export const Sidebar: React.FC = () => {
   const { t, language } = useLanguage();
-  const { content } = useContent(); // Dynamic Content
+  const { content } = useContent(); 
   const isEn = language === 'en';
 
-  // --- DATA PROCESSING ---
   const mostViewed = [...content].sort((a, b) => b.views - a.views).slice(0, 5);
   const trending = content.filter(c => c.isTrending).slice(0, 5);
   const editorsPick = content.filter(c => c.isEditorPick).slice(0, 3);
   const todaysQuote = QUOTES[0];
 
   const SidebarHeader: React.FC<{ title: string; icon?: React.ReactNode }> = ({ title, icon }) => (
-    <h3 className="flex items-center gap-2 font-bold text-gray-900 dark:text-white mb-5 text-sm uppercase tracking-wider pl-1">
+    <h3 className="flex items-center gap-2 font-bold text-text-main mb-4 text-xs uppercase tracking-wider pl-1 border-l-2 border-brand-purple">
       {icon}
-      {title}
+      <span className="ml-2">{title}</span>
     </h3>
   );
 
@@ -31,28 +33,28 @@ export const Sidebar: React.FC = () => {
     const title = isEn ? item.title_en : item.title;
     
     return (
-      <Link to={`/niitlel/${item.id}`} className="group flex gap-3 items-start p-2 rounded-xl hover:bg-gray-50 dark:hover:bg-white/5 transition-all">
+      <Link to={`/niitlel/${item.id}`} className="group flex gap-3 items-start p-2 rounded-xl hover:bg-surfaceHighlight transition-colors">
         {showImage && (
-          <div className={`relative flex-shrink-0 overflow-hidden rounded-lg border border-gray-100 dark:border-white/5 ${rank === 1 ? 'w-24 h-16 shadow-md' : 'w-16 h-12'}`}>
-            <img src={item.thumbnailUrl} alt={title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
-            
-            {rank === 1 && (
-               <div className="absolute top-0 left-0 px-1.5 py-0.5 bg-gradient-brand rounded-br-lg text-[10px] font-bold text-white shadow-sm">
-                 TOP
-               </div>
-            )}
-            {rank && rank > 1 && (
-               <div className="absolute top-0 left-0 w-5 h-5 bg-gray-900/80 backdrop-blur-sm flex items-center justify-center text-[10px] font-bold text-white rounded-br-lg">
+          <div className="relative w-16 h-12 flex-shrink-0">
+             <Thumbnail 
+                src={item.thumbnailUrl} 
+                alt={title} 
+                aspectRatio="video" 
+                className="rounded-lg h-full w-full"
+                showOverlay={false}
+             />
+             {rank && (
+               <div className={`absolute -top-1 -left-1 w-5 h-5 flex items-center justify-center text-[10px] font-bold text-white rounded-full shadow-sm ${rank === 1 ? 'bg-brand-orange' : 'bg-brand-surface'}`}>
                  {rank}
                </div>
-            )}
+             )}
           </div>
         )}
-        <div className="flex-1 min-w-0">
-          <h4 className={`font-medium text-gray-700 dark:text-slate-300 group-hover:text-brand-purple dark:group-hover:text-primary-300 transition-colors leading-snug line-clamp-2 ${rank === 1 ? 'text-sm font-bold text-gray-900 dark:text-white' : 'text-xs'}`}>
+        <div className="flex-1 min-w-0 py-0.5">
+          <h4 className="font-medium text-sm text-text-main group-hover:text-brand-purple transition-colors leading-snug line-clamp-2">
             {title}
           </h4>
-          <div className="flex items-center gap-2 mt-1.5 text-[10px] text-gray-400 dark:text-slate-500 font-medium">
+          <div className="flex items-center gap-2 mt-1 text-[10px] text-text-muted font-medium">
              {metaIcon}
              <span>{metaText}</span>
           </div>
@@ -62,16 +64,14 @@ export const Sidebar: React.FC = () => {
   };
 
   return (
-    <aside className="space-y-10 sticky top-24">
+    <aside className="space-y-8 sticky top-24">
       
-      <div>
-         <DailyKnowledge />
-      </div>
+      <DailyKnowledge />
 
       {/* BLOCK 1: MOST VIEWED */}
-      <div className="bg-white dark:bg-brand-surface rounded-2xl p-6 border border-gray-100 dark:border-white/5 shadow-soft dark:shadow-none">
+      <Card className="p-5">
         <SidebarHeader title={t('sb_most_viewed')} icon={<Eye size={16} className="text-brand-purple" />} />
-        <div className="space-y-2">
+        <div className="space-y-1">
           {mostViewed.map((item, idx) => (
             <CompactContentItem 
               key={item.id} 
@@ -82,13 +82,13 @@ export const Sidebar: React.FC = () => {
             />
           ))}
         </div>
-      </div>
+      </Card>
 
       {/* BLOCK 2: TRENDING */}
-      <div className="bg-white dark:bg-brand-surface rounded-2xl p-6 border border-gray-100 dark:border-white/5 shadow-soft dark:shadow-none relative overflow-hidden group">
-        <div className="absolute top-0 right-0 w-32 h-32 bg-brand-orange/10 rounded-full blur-3xl pointer-events-none -mr-16 -mt-16 group-hover:bg-brand-orange/20 transition-colors"></div>
+      <Card className="p-5 overflow-hidden relative">
+        <div className="absolute top-0 right-0 w-32 h-32 bg-brand-orange/5 rounded-full blur-3xl pointer-events-none -mr-10 -mt-10"></div>
         <SidebarHeader title={t('sb_trending')} icon={<Flame size={16} className="text-brand-orange" />} />
-        <div className="space-y-4 relative z-10">
+        <div className="space-y-3 relative z-10">
            {trending.map(item => (
               <CompactContentItem 
                 key={item.id} 
@@ -98,24 +98,27 @@ export const Sidebar: React.FC = () => {
               />
            ))}
         </div>
-      </div>
+      </Card>
 
       {/* BLOCK 3: EDITOR'S PICK */}
       <div>
          <SidebarHeader title={t('sb_editors_pick')} icon={<Bookmark size={16} className="text-brand-purple" />} />
-         <div className="space-y-5">
+         <div className="space-y-4">
             {editorsPick.map(item => {
                const title = isEn ? item.title_en : item.title;
                return (
                 <Link key={item.id} to={`/niitlel/${item.id}`} className="block group">
-                  <div className="relative aspect-[16/9] rounded-xl overflow-hidden border border-gray-100 dark:border-white/5 mb-3 shadow-sm">
-                     <img src={item.thumbnailUrl} alt={title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
-                     <div className="absolute inset-0 bg-gradient-to-t from-[#020617]/80 to-transparent"></div>
-                     <div className="absolute bottom-3 left-3">
-                        <span className="px-2 py-1 bg-brand-purple/90 backdrop-blur-sm rounded text-[10px] font-bold text-white tracking-wide">EDITOR'S PICK</span>
+                  <div className="relative rounded-xl overflow-hidden mb-2 shadow-sm border border-border">
+                     <Thumbnail 
+                        src={item.thumbnailUrl} 
+                        alt={title} 
+                        className="group-hover:scale-105 transition-transform duration-700" 
+                     />
+                     <div className="absolute bottom-2 left-2">
+                        <span className="px-1.5 py-0.5 bg-brand-purple/90 backdrop-blur-sm rounded text-[10px] font-bold text-white tracking-wide">PICK</span>
                      </div>
                   </div>
-                  <h4 className="font-bold text-sm text-gray-900 dark:text-white group-hover:text-brand-purple dark:group-hover:text-primary-300 transition-colors leading-snug">
+                  <h4 className="font-bold text-sm text-text-main group-hover:text-brand-purple transition-colors leading-snug">
                      {title}
                   </h4>
                 </Link>
@@ -125,31 +128,31 @@ export const Sidebar: React.FC = () => {
       </div>
 
       {/* BLOCK 5: CATEGORY JUMP */}
-      <div className="bg-white dark:bg-brand-surface rounded-2xl p-6 border border-gray-100 dark:border-white/5 shadow-soft dark:shadow-none">
+      <Card className="p-5">
          <SidebarHeader title={t('sb_categories')} />
          <div className="flex flex-wrap gap-2">
             {CATEGORIES.map(cat => (
                <Link 
                  key={cat.id} 
                  to={`/${cat.slug}`}
-                 className="px-4 py-2 bg-gray-50 dark:bg-white/5 hover:bg-gradient-brand text-gray-600 dark:text-slate-400 hover:text-white border border-gray-200 dark:border-white/5 hover:border-transparent rounded-lg text-xs font-semibold transition-all shadow-sm hover:shadow-md"
+                 className="px-3 py-1.5 bg-surfaceHighlight hover:bg-brand-purple text-text-muted hover:text-white rounded-lg text-xs font-semibold transition-all"
                >
                  {cat.label}
                </Link>
             ))}
          </div>
-      </div>
+      </Card>
       
-       {/* BLOCK 10: QUOTE OF THE DAY */}
-      <div className="relative p-8 text-center rounded-2xl border border-gray-100 dark:border-white/5 bg-gradient-to-br from-white to-gray-50 dark:from-brand-surface dark:to-[#020617] overflow-hidden group shadow-soft dark:shadow-none">
-         <QuoteIcon size={48} className="text-gray-100 dark:text-white/5 absolute top-4 left-4" />
-         <h3 className="text-xs font-bold text-brand-purple uppercase tracking-widest mb-4 relative z-10 opacity-80">{t('sb_quote')}</h3>
-         <blockquote className="text-gray-800 dark:text-slate-200 font-serif italic text-lg leading-relaxed mb-4 relative z-10">
+       {/* QUOTE */}
+      <Card className="p-6 text-center bg-gradient-to-br from-surface to-surfaceHighlight">
+         <QuoteIcon size={32} className="text-brand-purple/20 mx-auto mb-3" />
+         <h3 className="text-[10px] font-bold text-brand-purple uppercase tracking-widest mb-3">{t('sb_quote')}</h3>
+         <blockquote className="text-text-main font-serif italic text-lg leading-relaxed mb-4">
             "{isEn ? todaysQuote.text_en : todaysQuote.text}"
          </blockquote>
-         <div className="w-8 h-1 bg-gradient-brand mx-auto mb-3 rounded-full opacity-50"></div>
-         <cite className="text-xs text-gray-500 dark:text-slate-500 font-bold not-italic relative z-10 uppercase tracking-wide">{todaysQuote.author}</cite>
-      </div>
+         <div className="w-6 h-0.5 bg-brand-purple/30 mx-auto mb-2"></div>
+         <cite className="text-xs text-text-muted font-bold not-italic uppercase">{todaysQuote.author}</cite>
+      </Card>
 
     </aside>
   );

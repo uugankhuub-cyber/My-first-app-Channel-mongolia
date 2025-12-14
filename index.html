@@ -23,7 +23,16 @@
               sans: ['Inter', 'Roboto', 'sans-serif'],
             },
             colors: {
-              // Brand Colors
+              // Using CSS variables for semantic coloring
+              background: 'var(--bg-app)',
+              surface: 'var(--bg-surface)',
+              surfaceHighlight: 'var(--bg-surface-highlight)',
+              border: 'var(--border-color)',
+              text: {
+                main: 'var(--text-main)',
+                muted: 'var(--text-muted)',
+              },
+              // Brand Colors (kept as is)
               brand: {
                 purple: '#6D28D9', // Deep Purple
                 orange: '#F97316', // Warm Orange
@@ -42,9 +51,6 @@
                 800: '#5b21b6',
                 900: '#4c1d95',
               },
-              secondary: {
-                500: '#06b6d4', // Muted Cyan
-              }
             },
             borderRadius: {
               'xl': '12px',
@@ -52,9 +58,11 @@
               '3xl': '24px',
             },
             boxShadow: {
-              'glow': '0 0 20px -5px rgba(109, 40, 217, 0.3)', // Purple glow
-              'glow-orange': '0 0 20px -5px rgba(249, 115, 22, 0.3)', // Orange glow
-              'soft': '0 10px 40px -10px rgba(0, 0, 0, 0.2)',
+              'glow': '0 0 20px -5px rgba(109, 40, 217, 0.3)',
+              'glow-orange': '0 0 20px -5px rgba(249, 115, 22, 0.3)',
+              'soft': '0 10px 40px -10px rgba(0, 0, 0, 0.05)',
+              'card': '0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03)',
+              'card-hover': '0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04)',
             },
             animation: {
               'gradient-x': 'gradient-x 15s ease infinite',
@@ -76,20 +84,30 @@
       }
     </script>
     <style>
+      :root {
+        /* Light Mode Tokens */
+        --bg-app: #F8FAFC;
+        --bg-surface: #FFFFFF;
+        --bg-surface-highlight: #F1F5F9;
+        --text-main: #0F172A;
+        --text-muted: #64748B;
+        --border-color: #E2E8F0;
+      }
+      
+      html.dark :root {
+        /* Dark Mode Tokens */
+        --bg-app: #020617;
+        --bg-surface: #0F172A; /* Slightly lighter than bg-app */
+        --bg-surface-highlight: #1E293B;
+        --text-main: #F8FAFC;
+        --text-muted: #94A3B8;
+        --border-color: rgba(255, 255, 255, 0.08);
+      }
+
       body {
+        background-color: var(--bg-app);
+        color: var(--text-main);
         transition: background-color 0.3s ease, color 0.3s ease;
-      }
-      
-      /* Dark Mode Defaults */
-      html.dark body {
-        background-color: #020617; /* Very dark purple-blue/charcoal */
-        color: #F1F5F9;
-      }
-      
-      /* Light Mode Defaults */
-      html:not(.dark) body {
-        background-color: #F8FAFC; /* Soft off-white */
-        color: #0F172A;
       }
 
       .no-scrollbar::-webkit-scrollbar {
@@ -100,24 +118,17 @@
           scrollbar-width: none;
       }
       
-      /* Dynamic Glass Effect */
       .glass {
-        backdrop-filter: blur(16px);
-        -webkit-backdrop-filter: blur(16px);
-        transition: all 0.3s ease;
+        background: rgba(255, 255, 255, 0.85);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border-bottom: 1px solid var(--border-color);
       }
       
       html.dark .glass {
-        background: rgba(2, 6, 23, 0.8);
-        border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+        background: rgba(2, 6, 23, 0.85);
       }
       
-      html:not(.dark) .glass {
-        background: rgba(255, 255, 255, 0.9);
-        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-      }
-      
-      /* Premium Gradient Text Utility */
       .text-gradient {
         background: linear-gradient(135deg, #6D28D9 0%, #F97316 100%);
         -webkit-background-clip: text;
@@ -128,11 +139,6 @@
       
       .bg-gradient-brand {
         background: linear-gradient(135deg, #6D28D9 0%, #F97316 100%);
-      }
-
-      .border-gradient-brand {
-         border-image: linear-gradient(135deg, #6D28D9 0%, #F97316 100%);
-         border-image-slice: 1;
       }
     </style>
   <script type="importmap">

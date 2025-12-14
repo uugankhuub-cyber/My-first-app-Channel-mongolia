@@ -1,21 +1,36 @@
-import React, { useState } from 'react';
+
+import React, { useState, useEffect } from 'react';
 import { Menu, X, Search, User, Moon, Sun, ShieldCheck } from 'lucide-react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext';
 import { useTheme } from '../context/ThemeContext';
 import { useAdmin } from '../context/AdminContext';
 import { CATEGORIES } from '../constants';
+import { Container } from './ui/Container';
 
 export const Navbar: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchValue, setSearchValue] = useState('');
-  const location = useLocation();
+  const [scrolled, setScrolled] = useState(false);
   const navigate = useNavigate();
   const { t, language, setLanguage } = useLanguage();
   const { theme, toggleTheme } = useTheme();
   const { isAuthenticated } = useAdmin();
 
-  const isActive = (path: string) => location.pathname === path;
+  useEffect(() => {
+    const handleScroll = () => setScrolled(window.scrollY > 10);
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // Close mobile menu on ESC
+  useEffect(() => {
+    const handleEsc = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setIsOpen(false);
+    };
+    window.addEventListener('keydown', handleEsc);
+    return () => window.removeEventListener('keydown', handleEsc);
+  }, []);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -30,7 +45,6 @@ export const Navbar: React.FC = () => {
     setIsOpen(false);
   };
 
-  // Main navigation items for desktop (Row 2)
   const mainNavItems = [
     { label: t('nav_home'), path: '/', type: 'link' },
     ...CATEGORIES.map(cat => ({
@@ -42,174 +56,180 @@ export const Navbar: React.FC = () => {
   ];
 
   return (
-    <nav className="sticky top-0 z-50 transition-all duration-300">
-       
-       {/* Background with blur and gradient - Wraps both rows 
-           Ensuring bg-white/95 renders clearly in light mode 
-       */}
-       <div className="absolute inset-0 bg-white/95 dark:bg-[#020617]/90 backdrop-blur-xl border-b border-gray-200 dark:border-white/5 shadow-lg transition-colors duration-300">
-          {/* Subtle gradient overlay */}
-          <div className="absolute inset-0 bg-gradient-to-r from-brand-purple/5 via-transparent to-brand-orange/5 pointer-events-none"></div>
-       </div>
+    <nav 
+      className={`sticky top-0 z-50 w-full transition-all duration-300 ${
+        scrolled ? 'glass shadow-sm' : 'bg-background border-b border-transparent'
+      }`}
+    >
+      <div className="relative z-10">
+        {/* TOP ROW: Brand, Search, Utilities */}
+        <Container>
+          <div className="flex h-16 items-center justify-between gap-6">
+            
+            {/* Logo */}
+            <Link to="/" className="flex-shrink-0 flex items-center gap-2 group">
+              <span className="font-bold text-xl md:text-2xl tracking-tight text-gradient transition-all duration-300 group-hover:opacity-90">
+                Channel Mongolia
+              </span>
+            </Link>
 
-       <div className="relative z-10">
-          
-          {/* TOP ROW: Brand, Search, Utilities */}
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex h-16 items-center justify-between gap-6 border-b border-gray-200 dark:border-white/5">
-              
-              {/* Left: Logo */}
-              <Link to="/" className="flex-shrink-0 flex items-center gap-2 group">
-                <span className="font-bold text-xl md:text-2xl tracking-wide text-gradient transition-all duration-300 group-hover:drop-shadow-glow">
-                  Channel Mongolia
-                </span>
-              </Link>
-
-              {/* Center: Search Bar (Desktop) */}
-              <div className="hidden md:flex flex-1 max-w-xl mx-auto">
-                <form onSubmit={handleSearch} className="w-full relative group">
-                    <input 
-                      type="text" 
-                      value={searchValue}
-                      onChange={(e) => setSearchValue(e.target.value)}
-                      placeholder={t('search_placeholder')}
-                      className="w-full pl-11 pr-4 py-2.5 rounded-xl bg-gray-100 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-gray-900 dark:text-slate-200 placeholder-slate-500 focus:bg-white dark:focus:bg-[#0F172A] focus:border-brand-purple/50 focus:ring-1 focus:ring-brand-purple/50 outline-none transition-all duration-300 group-hover:border-gray-300 dark:group-hover:border-white/20"
-                    />
-                    <Search size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500 group-hover:text-brand-purple transition-colors" />
-                </form>
-              </div>
-
-              {/* Right: Actions */}
-              <div className="flex items-center gap-4">
-                
-                {/* Language Toggle */}
-                <button 
-                  onClick={() => setLanguage(language === 'mn' ? 'en' : 'mn')}
-                  className="hidden sm:flex items-center gap-1 text-xs font-bold px-2 py-1 rounded transition-colors text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
-                >
-                  <span className={language === 'mn' ? 'text-brand-purple' : ''}>MN</span>
-                  <span className="text-gray-300 dark:text-white/20">|</span>
-                  <span className={language === 'en' ? 'text-brand-purple' : ''}>EN</span>
-                </button>
-
-                {/* Theme Toggle */}
-                <button
-                  onClick={toggleTheme}
-                  className="p-2 rounded-full text-slate-600 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-brand-orange transition-colors"
-                  title={theme === 'dark' ? t('theme_light') : t('theme_dark')}
-                >
-                  {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
-                </button>
-
-                {/* Login/Admin Button */}
-                <button 
-                  onClick={handleAdminClick}
-                  className={`hidden md:flex items-center gap-2 px-5 py-2 rounded-full text-sm font-semibold hover:opacity-90 shadow-md hover:shadow-glow transition-all hover:-translate-y-0.5 ${isAuthenticated ? 'bg-gray-800 text-white border border-gray-700' : 'bg-gradient-brand text-white'}`}
-                >
-                  {isAuthenticated ? <ShieldCheck size={18} /> : <User size={18} />}
-                  <span>{isAuthenticated ? 'Admin Panel' : t('login')}</span>
-                </button>
-
-                {/* Mobile menu button */}
-                <button
-                  onClick={() => setIsOpen(!isOpen)}
-                  className="lg:hidden p-2 rounded-md text-slate-700 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white focus:outline-none"
-                >
-                  {isOpen ? <X size={24} /> : <Menu size={24} />}
-                </button>
-              </div>
+            {/* Search Bar (Desktop) */}
+            <div className="hidden md:flex flex-1 max-w-md mx-auto">
+              <form onSubmit={handleSearch} className="w-full relative group">
+                  <input 
+                    type="text" 
+                    value={searchValue}
+                    onChange={(e) => setSearchValue(e.target.value)}
+                    placeholder={t('search_placeholder')}
+                    className="w-full pl-10 pr-4 py-2 rounded-full bg-surfaceHighlight border border-transparent text-text-main placeholder-text-muted focus:bg-surface focus:border-brand-purple/50 focus:ring-2 focus:ring-brand-purple/20 outline-none transition-all duration-300"
+                  />
+                  <Search size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-text-muted group-hover:text-brand-purple transition-colors" />
+              </form>
             </div>
-          </div>
 
-          {/* BOTTOM ROW: Navigation Categories (Desktop) */}
-          <div className="hidden lg:block max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-             <div className="flex items-center h-16 gap-2 overflow-x-auto no-scrollbar mask-fade-right">
-                {mainNavItems.map((item) => {
-                   const active = isActive(item.path);
-
-                   return (
-                    <Link
-                      key={item.label}
-                      to={item.path}
-                      data-active={active ? "true" : "false"}
-                      className="px-4 py-2 text-sm rounded-full font-medium whitespace-nowrap text-gray-700 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-brand-purple dark:hover:text-white active:bg-gray-200 dark:active:bg-white/10 data-[active=true]:bg-gradient-to-r data-[active=true]:from-brand-purple data-[active=true]:to-brand-orange data-[active=true]:text-white data-[active=true]:shadow-md transition-all duration-200"
-                    >
-                      {item.label}
-                    </Link>
-                   );
-                })}
-             </div>
-          </div>
-       </div>
-
-      {/* Mobile Menu Drawer */}
-      {isOpen && (
-        <div className="lg:hidden fixed inset-0 z-[100] bg-white dark:bg-[#020617] flex flex-col animate-fade-in">
-           {/* Header of Drawer */}
-           <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-white/10 bg-white dark:bg-[#0B1120]">
-              <span className="font-bold text-xl text-gradient">Channel Mongolia</span>
-              <button onClick={() => setIsOpen(false)} className="p-2 text-slate-700 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white">
-                 <X size={24} />
+            {/* Actions */}
+            <div className="flex items-center gap-3">
+              {/* Language */}
+              <button 
+                onClick={() => setLanguage(language === 'mn' ? 'en' : 'mn')}
+                className="hidden sm:flex items-center gap-1 text-xs font-bold px-3 py-1.5 rounded-full hover:bg-surfaceHighlight transition-colors text-text-muted hover:text-text-main"
+              >
+                <span className={language === 'mn' ? 'text-brand-purple' : ''}>MN</span>
+                <span className="opacity-30 mx-1">/</span>
+                <span className={language === 'en' ? 'text-brand-purple' : ''}>EN</span>
               </button>
-           </div>
 
-          <div className="flex-1 overflow-y-auto px-4 py-6 space-y-6">
-            <form onSubmit={handleSearch} className="relative">
-                <input 
-                  type="text" 
-                  value={searchValue}
-                  onChange={(e) => setSearchValue(e.target.value)}
-                  placeholder={t('search_placeholder')}
-                  className="w-full pl-11 pr-4 py-3.5 rounded-xl bg-gray-100 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-gray-900 dark:text-slate-200 text-base focus:border-brand-purple/50 focus:bg-white dark:focus:bg-[#0F172A]"
-                />
-                <Search size={20} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500" />
-            </form>
-            
-            <div className="space-y-1">
-              {mainNavItems.map((item) => {
-                 const active = isActive(item.path);
-                 return (
-                  <Link
-                    key={item.label}
-                    to={item.path}
-                    onClick={() => setIsOpen(false)}
-                    className={`block px-4 py-3.5 rounded-xl text-base font-medium transition-all ${
-                      active
-                        ? 'bg-gradient-brand text-white shadow-glow'
-                        : 'text-gray-800 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-brand-purple dark:hover:text-white'
-                    }`}
-                  >
-                    {item.label}
-                  </Link>
-                 );
-              })}
-            </div>
-            
-            <div className="border-t border-gray-200 dark:border-white/10 pt-4">
-               <Link to="/bidnii-tukhai" onClick={() => setIsOpen(false)} className="block px-4 py-3 text-gray-700 dark:text-slate-400 hover:text-brand-purple dark:hover:text-white">{t('nav_about')}</Link>
-               <Link to="/holboo-barikh" onClick={() => setIsOpen(false)} className="block px-4 py-3 text-gray-700 dark:text-slate-400 hover:text-brand-purple dark:hover:text-white">{t('contact')}</Link>
-            </div>
-          </div>
+              {/* Theme */}
+              <button
+                onClick={toggleTheme}
+                className="p-2 rounded-full text-text-muted hover:bg-surfaceHighlight hover:text-brand-orange transition-colors"
+                aria-label={theme === 'dark' ? t('theme_light') : t('theme_dark')}
+              >
+                {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
+              </button>
 
-          {/* Footer of Drawer */}
-          <div className="p-4 border-t border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-[#0B1120] space-y-3">
-             <button onClick={handleAdminClick} className={`w-full flex items-center justify-center gap-2 px-4 py-3.5 rounded-xl text-sm font-bold shadow-md ${isAuthenticated ? 'bg-gray-800 text-white' : 'bg-gradient-brand text-white'}`}>
+              {/* Admin */}
+              <button 
+                onClick={handleAdminClick}
+                className={`hidden md:flex items-center gap-2 px-5 py-2 rounded-full text-sm font-semibold transition-all hover:-translate-y-0.5 ${
+                  isAuthenticated 
+                    ? 'bg-surfaceHighlight text-text-main border border-border hover:border-brand-purple/30' 
+                    : 'bg-gradient-brand text-white shadow-glow hover:shadow-lg'
+                }`}
+              >
                 {isAuthenticated ? <ShieldCheck size={18} /> : <User size={18} />}
                 <span>{isAuthenticated ? 'Admin Panel' : t('login')}</span>
               </button>
-              
-              <div className="flex items-center justify-between px-2 pt-2">
-                 <button onClick={() => setLanguage(language === 'mn' ? 'en' : 'mn')} className="text-sm font-medium text-slate-700 dark:text-slate-400 hover:text-brand-purple dark:hover:text-white">
-                    {language === 'mn' ? 'Монгол хэл' : 'English'}
-                 </button>
-                 <button onClick={toggleTheme} className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-400 hover:text-brand-purple dark:hover:text-white">
-                    {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
-                    <span>{theme === 'dark' ? t('theme_light') : t('theme_dark')}</span>
-                 </button>
-              </div>
+
+              {/* Mobile Menu Toggle */}
+              <button
+                onClick={() => setIsOpen(true)}
+                className="lg:hidden p-2 rounded-md text-text-main hover:bg-surfaceHighlight focus:outline-none"
+                aria-label="Open menu"
+              >
+                <Menu size={24} />
+              </button>
+            </div>
+          </div>
+        </Container>
+
+        {/* BOTTOM ROW: Navigation (Desktop) */}
+        <div className="hidden lg:block border-t border-border/50">
+          <Container>
+            <div className="flex items-center h-12 gap-1 overflow-x-auto no-scrollbar">
+              {mainNavItems.map((item) => (
+                <NavLink
+                  key={item.label}
+                  to={item.path}
+                  className={({ isActive }) => `
+                    px-4 py-1.5 text-sm font-medium rounded-full whitespace-nowrap transition-all duration-200
+                    ${isActive 
+                      ? 'bg-brand-purple/10 text-brand-purple font-semibold' 
+                      : 'text-text-muted hover:text-text-main hover:bg-surfaceHighlight'
+                    }
+                  `}
+                >
+                  {item.label}
+                </NavLink>
+              ))}
+            </div>
+          </Container>
+        </div>
+      </div>
+
+      {/* Mobile Menu Backdrop */}
+      {isOpen && (
+        <div 
+          className="fixed inset-0 z-[100] bg-black/50 backdrop-blur-sm animate-in fade-in duration-200"
+          onClick={() => setIsOpen(false)}
+        />
+      )}
+
+      {/* Mobile Menu Drawer */}
+      <div 
+        className={`fixed inset-y-0 right-0 z-[101] w-[85vw] max-w-sm bg-surface shadow-2xl transform transition-transform duration-300 ease-in-out ${
+          isOpen ? 'translate-x-0' : 'translate-x-full'
+        }`}
+      >
+        <div className="flex flex-col h-full">
+          <div className="flex items-center justify-between p-4 border-b border-border">
+            <span className="font-bold text-xl text-gradient">Menu</span>
+            <button 
+              onClick={() => setIsOpen(false)} 
+              className="p-2 text-text-muted hover:text-text-main rounded-full hover:bg-surfaceHighlight"
+            >
+              <X size={24} />
+            </button>
+          </div>
+
+          <div className="flex-1 overflow-y-auto px-4 py-6 space-y-6">
+            <form onSubmit={handleSearch} className="relative">
+              <input 
+                type="text" 
+                value={searchValue}
+                onChange={(e) => setSearchValue(e.target.value)}
+                placeholder={t('search_placeholder')}
+                className="w-full pl-10 pr-4 py-3 rounded-xl bg-surfaceHighlight border border-transparent text-text-main focus:border-brand-purple/50 focus:bg-surface outline-none"
+              />
+              <Search size={20} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" />
+            </form>
+            
+            <nav className="space-y-1">
+              {mainNavItems.map((item) => (
+                <NavLink
+                  key={item.label}
+                  to={item.path}
+                  onClick={() => setIsOpen(false)}
+                  className={({ isActive }) => `
+                    block px-4 py-3 rounded-xl text-base font-medium transition-all
+                    ${isActive 
+                      ? 'bg-brand-purple/10 text-brand-purple border-l-4 border-brand-purple' 
+                      : 'text-text-main hover:bg-surfaceHighlight'
+                    }
+                  `}
+                >
+                  {item.label}
+                </NavLink>
+              ))}
+            </nav>
+            
+            <div className="border-t border-border pt-4 space-y-2">
+               <Link to="/bidnii-tukhai" onClick={() => setIsOpen(false)} className="block px-4 py-3 text-text-muted hover:text-text-main">{t('nav_about')}</Link>
+               <Link to="/holboo-barikh" onClick={() => setIsOpen(false)} className="block px-4 py-3 text-text-muted hover:text-text-main">{t('contact')}</Link>
+            </div>
+          </div>
+
+          <div className="p-4 border-t border-border bg-surfaceHighlight/50 space-y-3">
+             <button 
+                onClick={handleAdminClick} 
+                className={`w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-bold shadow-sm transition-transform active:scale-95 ${isAuthenticated ? 'bg-surface text-text-main border border-border' : 'bg-gradient-brand text-white'}`}
+             >
+                {isAuthenticated ? <ShieldCheck size={18} /> : <User size={18} />}
+                <span>{isAuthenticated ? 'Admin Panel' : t('login')}</span>
+              </button>
           </div>
         </div>
-      )}
+      </div>
     </nav>
   );
 };

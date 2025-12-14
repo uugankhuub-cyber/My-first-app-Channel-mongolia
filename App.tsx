@@ -1,3 +1,4 @@
+
 import React, { useEffect } from 'react';
 import { HashRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { Navbar } from './components/Navbar';
@@ -54,7 +55,7 @@ const SiteAppearanceManager: React.FC = () => {
 
 const PublicLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => (
   <div 
-    className="min-h-screen font-sans flex flex-col relative bg-slate-50 dark:bg-[#020617] transition-colors duration-300"
+    className="min-h-screen font-sans flex flex-col relative bg-background text-text-main transition-colors duration-300"
     style={{ 
        fontFamily: 'var(--cm-font-family, Inter)', 
        fontSize: 'var(--cm-base-size, 16px)', 
