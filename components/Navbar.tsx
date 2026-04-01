@@ -2,11 +2,13 @@
 import React, { useState, useEffect } from 'react';
 import { Menu, X, Search, User, Moon, Sun, ShieldCheck } from 'lucide-react';
 import * as ReactRouterDOM from 'react-router-dom';
+import { motion, AnimatePresence } from 'motion/react';
 import { useLanguage } from '../context/LanguageContext';
 import { useTheme } from '../context/ThemeContext';
 import { useAdmin } from '../context/AdminContext';
 import { CATEGORIES } from '../constants';
 import { Container } from './ui/Container';
+import { cn } from '../lib/utils';
 
 const { Link, NavLink, useNavigate } = ReactRouterDOM;
 
@@ -96,7 +98,11 @@ export const Navbar: React.FC = () => {
             {/* Search Bar (Desktop) - QUIET UI & FIXED ALIGNMENT */}
             <div className="hidden md:flex flex-1 max-w-sm mx-auto items-center">
               <form onSubmit={handleSearch} className="w-full relative group">
-                  <div className="relative flex items-center">
+                  <motion.div 
+                    initial={false}
+                    animate={{ width: searchValue ? '100%' : '100%' }}
+                    className="relative flex items-center"
+                  >
                     <Search 
                       size={16} 
                       className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" 
@@ -116,17 +122,22 @@ export const Navbar: React.FC = () => {
                       transition-all duration-200 ease-out"
                       aria-label="Search"
                     />
-                    {searchValue && (
-                      <button
-                        type="button"
-                        onClick={handleClearSearch}
-                        className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded-full text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-200 dark:hover:bg-white/10 transition-colors"
-                        aria-label="Clear search"
-                      >
-                        <X size={14} />
-                      </button>
-                    )}
-                  </div>
+                    <AnimatePresence>
+                      {searchValue && (
+                        <motion.button
+                          initial={{ opacity: 0, scale: 0.8 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          exit={{ opacity: 0, scale: 0.8 }}
+                          type="button"
+                          onClick={handleClearSearch}
+                          className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded-full text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-200 dark:hover:bg-white/10 transition-colors"
+                          aria-label="Clear search"
+                        >
+                          <X size={14} />
+                        </motion.button>
+                      )}
+                    </AnimatePresence>
+                  </motion.div>
               </form>
             </div>
 
@@ -205,109 +216,129 @@ export const Navbar: React.FC = () => {
       </div>
 
       {/* Mobile Menu Backdrop */}
-      {isOpen && (
-        <div 
-          className="fixed inset-0 z-[140] bg-black/50 backdrop-blur-sm animate-in fade-in duration-200"
-          onClick={() => setIsOpen(false)}
-        />
-      )}
+      <AnimatePresence>
+        {isOpen && (
+          <>
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-[140] bg-black/50 backdrop-blur-sm"
+              onClick={() => setIsOpen(false)}
+            />
 
-      {/* Mobile Menu Drawer */}
-      <div 
-        className={`fixed inset-y-0 right-0 z-[150] w-[85vw] max-w-sm bg-white dark:bg-slate-900 shadow-2xl transform transition-transform duration-300 ease-in-out ${
-          isOpen ? 'translate-x-0' : 'translate-x-full'
-        }`}
-      >
-        <div className="flex flex-col h-full">
-          <div className="flex items-center justify-between p-4 border-b border-slate-100 dark:border-white/10">
-            <span className="font-bold text-xl text-gradient">Menu</span>
-            <button 
-              onClick={() => setIsOpen(false)} 
-              className="p-2 text-slate-500 hover:text-slate-900 dark:hover:text-white rounded-full hover:bg-slate-100 dark:hover:bg-white/5"
+            {/* Mobile Menu Drawer */}
+            <motion.div 
+              initial={{ x: '100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '100%' }}
+              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+              className="fixed inset-y-0 right-0 z-[150] w-[85vw] max-w-sm bg-white dark:bg-slate-900 shadow-2xl"
             >
-              <X size={24} />
-            </button>
-          </div>
+              <div className="flex flex-col h-full">
+                <div className="flex items-center justify-between p-4 border-b border-slate-100 dark:border-white/10">
+                  <span className="font-bold text-xl text-gradient">Menu</span>
+                  <button 
+                    onClick={() => setIsOpen(false)} 
+                    className="p-2 text-slate-500 hover:text-slate-900 dark:hover:text-white rounded-full hover:bg-slate-100 dark:hover:bg-white/5"
+                  >
+                    <X size={24} />
+                  </button>
+                </div>
 
-          <div className="flex-1 overflow-y-auto px-4 py-6 space-y-6">
-            
-            {/* Mobile Search - QUIET UI */}
-            <form onSubmit={handleSearch} className="relative group">
-               <div className="relative flex items-center">
-                  <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
-                  <input 
-                    type="text" 
-                    value={searchValue}
-                    onChange={(e) => setSearchValue(e.target.value)}
-                    placeholder={t('search_placeholder')}
-                    className="w-full h-12 pl-10 pr-10 text-base rounded-xl bg-slate-100/50 dark:bg-white/5 border border-slate-200/50 dark:border-white/10 text-text-main placeholder-slate-400 dark:placeholder-slate-600 focus:bg-white dark:focus:bg-slate-900 focus:border-brand-purple/50 focus:ring-2 focus:ring-brand-purple/20 outline-none transition-all duration-200"
-                    aria-label="Search"
-                  />
-                  {searchValue && (
-                    <button
-                      type="button"
-                      onClick={handleClearSearch}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-full text-slate-400 hover:text-text-main hover:bg-slate-200 dark:hover:bg-white/10 transition-colors"
-                    >
-                      <X size={18} />
+                <div className="flex-1 overflow-y-auto px-4 py-6 space-y-6">
+                  
+                  {/* Mobile Search - QUIET UI */}
+                  <form onSubmit={handleSearch} className="relative group">
+                     <div className="relative flex items-center">
+                        <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                        <input 
+                          type="text" 
+                          value={searchValue}
+                          onChange={(e) => setSearchValue(e.target.value)}
+                          placeholder={t('search_placeholder')}
+                          className="w-full h-12 pl-10 pr-10 text-base rounded-xl bg-slate-100/50 dark:bg-white/5 border border-slate-200/50 dark:border-white/10 text-text-main placeholder-slate-400 dark:placeholder-slate-600 focus:bg-white dark:focus:bg-slate-900 focus:border-brand-purple/50 focus:ring-2 focus:ring-brand-purple/20 outline-none transition-all duration-200"
+                          aria-label="Search"
+                        />
+                        <AnimatePresence>
+                          {searchValue && (
+                            <motion.button
+                              initial={{ opacity: 0, scale: 0.8 }}
+                              animate={{ opacity: 1, scale: 1 }}
+                              exit={{ opacity: 0, scale: 0.8 }}
+                              type="button"
+                              onClick={handleClearSearch}
+                              className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-full text-slate-400 hover:text-text-main hover:bg-slate-200 dark:hover:bg-white/10 transition-colors"
+                            >
+                              <X size={18} />
+                            </motion.button>
+                          )}
+                        </AnimatePresence>
+                     </div>
+                  </form>
+                  
+                  <nav className="space-y-1">
+                    {mainNavItems.map((item, idx) => (
+                      <motion.div
+                        key={item.label}
+                        initial={{ opacity: 0, x: 20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: idx * 0.05 }}
+                      >
+                        <NavLink
+                          to={item.path}
+                          onClick={() => setIsOpen(false)}
+                          className={({ isActive }) => `
+                            block px-4 py-3 rounded-xl text-base transition-all
+                            ${isActive 
+                              ? 'bg-gradient-to-r from-brand-purple to-brand-orange text-white font-semibold shadow-md' 
+                              : 'text-slate-700 dark:text-slate-300 font-medium hover:bg-slate-50 dark:hover:bg-white/5'
+                            }
+                          `}
+                        >
+                          {item.label}
+                        </NavLink>
+                      </motion.div>
+                    ))}
+                  </nav>
+                  
+                  <div className="border-t border-slate-100 dark:border-white/10 pt-4 space-y-2">
+                     <Link to="/bidnii-tukhai" onClick={() => setIsOpen(false)} className="block px-4 py-3 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white rounded-xl hover:bg-slate-50 dark:hover:bg-white/5">{t('nav_about')}</Link>
+                     <Link to="/holboo-barikh" onClick={() => setIsOpen(false)} className="block px-4 py-3 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white rounded-xl hover:bg-slate-50 dark:hover:bg-white/5">{t('contact')}</Link>
+                  </div>
+                </div>
+
+                <div className="p-4 border-t border-slate-100 dark:border-white/10 bg-slate-50/50 dark:bg-white/5 space-y-3">
+                   {/* Mobile Theme & Lang Toggles */}
+                   <div className="flex items-center justify-between gap-2 mb-2">
+                      <button 
+                        onClick={() => setLanguage(language === 'mn' ? 'en' : 'mn')}
+                        className="flex-1 py-2 rounded-lg border border-slate-200 dark:border-white/10 bg-white dark:bg-transparent text-slate-500 dark:text-slate-400 text-xs font-bold hover:text-slate-900 dark:hover:text-white transition-colors"
+                      >
+                        {language === 'mn' ? 'EN хэл рүү шилжих' : 'Switch to Mongolian'}
+                      </button>
+                      <button
+                        onClick={toggleTheme}
+                        className="p-2 rounded-lg border border-slate-200 dark:border-white/10 bg-white dark:bg-transparent text-slate-500 dark:text-slate-400 hover:text-brand-orange transition-colors"
+                        aria-label={t('theme_dark')}
+                      >
+                         {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
+                      </button>
+                   </div>
+
+                   <button 
+                      onClick={handleAdminClick} 
+                      className={`w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-bold shadow-sm transition-transform active:scale-95 ${isAuthenticated ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-white border border-slate-200 dark:border-white/10' : 'bg-gradient-brand text-white'}`}
+                   >
+                      {isAuthenticated ? <ShieldCheck size={18} /> : <User size={18} />}
+                      <span>{isAuthenticated ? 'Admin Panel' : t('login')}</span>
                     </button>
-                  )}
-               </div>
-            </form>
-            
-            <nav className="space-y-1">
-              {mainNavItems.map((item) => (
-                <NavLink
-                  key={item.label}
-                  to={item.path}
-                  onClick={() => setIsOpen(false)}
-                  className={({ isActive }) => `
-                    block px-4 py-3 rounded-xl text-base transition-all
-                    ${isActive 
-                      ? 'bg-gradient-to-r from-brand-purple to-brand-orange text-white font-semibold shadow-md' 
-                      : 'text-slate-700 dark:text-slate-300 font-medium hover:bg-slate-50 dark:hover:bg-white/5'
-                    }
-                  `}
-                >
-                  {item.label}
-                </NavLink>
-              ))}
-            </nav>
-            
-            <div className="border-t border-slate-100 dark:border-white/10 pt-4 space-y-2">
-               <Link to="/bidnii-tukhai" onClick={() => setIsOpen(false)} className="block px-4 py-3 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white rounded-xl hover:bg-slate-50 dark:hover:bg-white/5">{t('nav_about')}</Link>
-               <Link to="/holboo-barikh" onClick={() => setIsOpen(false)} className="block px-4 py-3 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white rounded-xl hover:bg-slate-50 dark:hover:bg-white/5">{t('contact')}</Link>
-            </div>
-          </div>
-
-          <div className="p-4 border-t border-slate-100 dark:border-white/10 bg-slate-50/50 dark:bg-white/5 space-y-3">
-             {/* Mobile Theme & Lang Toggles */}
-             <div className="flex items-center justify-between gap-2 mb-2">
-                <button 
-                  onClick={() => setLanguage(language === 'mn' ? 'en' : 'mn')}
-                  className="flex-1 py-2 rounded-lg border border-slate-200 dark:border-white/10 bg-white dark:bg-transparent text-slate-500 dark:text-slate-400 text-xs font-bold hover:text-slate-900 dark:hover:text-white transition-colors"
-                >
-                  {language === 'mn' ? 'EN хэл рүү шилжих' : 'Switch to Mongolian'}
-                </button>
-                <button
-                  onClick={toggleTheme}
-                  className="p-2 rounded-lg border border-slate-200 dark:border-white/10 bg-white dark:bg-transparent text-slate-500 dark:text-slate-400 hover:text-brand-orange transition-colors"
-                  aria-label={t('theme_dark')}
-                >
-                   {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
-                </button>
-             </div>
-
-             <button 
-                onClick={handleAdminClick} 
-                className={`w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-bold shadow-sm transition-transform active:scale-95 ${isAuthenticated ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-white border border-slate-200 dark:border-white/10' : 'bg-gradient-brand text-white'}`}
-             >
-                {isAuthenticated ? <ShieldCheck size={18} /> : <User size={18} />}
-                <span>{isAuthenticated ? 'Admin Panel' : t('login')}</span>
-              </button>
-          </div>
-        </div>
-      </div>
+                </div>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </nav>
   );
 };

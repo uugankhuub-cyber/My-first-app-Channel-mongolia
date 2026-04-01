@@ -6,6 +6,7 @@ import { ContentItem } from '../types';
 import { useLanguage } from '../context/LanguageContext';
 import { Card } from './ui/Card';
 import { Thumbnail } from './ui/Thumbnail';
+import { motion } from 'motion/react';
 
 const { Link } = ReactRouterDOM;
 
@@ -17,7 +18,7 @@ interface KnowledgeCardProps {
 // SKELETON LOADER
 export const KnowledgeCardSkeleton: React.FC<{ featured?: boolean }> = ({ featured }) => {
   return (
-    <Card className={`h-full flex flex-col overflow-hidden pointer-events-none ${featured ? 'md:flex-row md:min-h-[380px]' : ''}`}>
+    <Card animate={false} className={`h-full flex flex-col overflow-hidden pointer-events-none ${featured ? 'md:flex-row md:min-h-[380px]' : ''}`}>
       <div className={`bg-slate-200 dark:bg-white/5 animate-pulse ${featured ? 'md:w-3/5 h-64 md:h-auto' : 'w-full aspect-video'}`} />
       <div className={`p-5 flex flex-col flex-1 space-y-4 ${featured ? 'md:w-2/5 md:p-8' : ''}`}>
         <div className="space-y-2">
@@ -49,9 +50,13 @@ export const KnowledgeCard: React.FC<KnowledgeCardProps> = ({ item, featured = f
     <>
       {item.isVideo && (
         <div className="absolute bottom-3 right-3 pointer-events-none">
-          <div className="w-8 h-8 bg-black/60 backdrop-blur-md rounded-full flex items-center justify-center text-white/90 shadow-lg border border-white/20">
+          <motion.div 
+            initial={{ scale: 0.8, opacity: 0 }}
+            whileInView={{ scale: 1, opacity: 1 }}
+            className="w-8 h-8 bg-black/60 backdrop-blur-md rounded-full flex items-center justify-center text-white/90 shadow-lg border border-white/20"
+          >
             <Play size={14} fill="currentColor" className="ml-0.5" />
-          </div>
+          </motion.div>
         </div>
       )}
       <div className="absolute top-3 left-3 pointer-events-auto">
@@ -64,7 +69,10 @@ export const KnowledgeCard: React.FC<KnowledgeCardProps> = ({ item, featured = f
 
   return (
     <Link to={`/niitlel/${item.id}`} className="block h-full outline-none group focus-visible:ring-2 ring-brand-purple rounded-2xl">
-      <Card className={`h-full flex flex-col group-hover:shadow-card-hover group-active:scale-[0.99] transition-all duration-300 ${featured ? 'md:flex-row md:min-h-[380px]' : ''}`}>
+      <Card 
+        className={`h-full flex flex-col group-hover:shadow-card-hover ${featured ? 'md:flex-row md:min-h-[380px]' : ''}`}
+        animate={true}
+      >
         
         {/* Thumbnail Section */}
         <div className={`relative overflow-hidden ${featured ? 'md:w-3/5 h-64 md:h-auto' : 'w-full'}`}>
@@ -104,9 +112,13 @@ export const KnowledgeCard: React.FC<KnowledgeCardProps> = ({ item, featured = f
           
           {featured && (
              <div className="mt-8 hidden md:block">
-                <span className="inline-flex items-center justify-center px-6 py-2.5 rounded-full border border-border text-text-main text-sm font-semibold group-hover:bg-brand-purple group-hover:text-white group-hover:border-transparent transition-all">
+                <motion.span 
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="inline-flex items-center justify-center px-6 py-2.5 rounded-full border border-border text-text-main text-sm font-semibold group-hover:bg-brand-purple group-hover:text-white group-hover:border-transparent transition-all"
+                >
                    {item.isVideo ? t('watch') : t('read')}
-                </span>
+                </motion.span>
              </div>
           )}
         </div>

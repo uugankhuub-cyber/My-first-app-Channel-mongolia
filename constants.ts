@@ -82,7 +82,9 @@ export const TRANSLATIONS = {
     daily_thanks: "Баярлалаа! Бид танд илүү тохирох мэдээллийг хүргэх болно.",
     quiz_title: "Хариу нь юу вэ?",
     quiz_reveal: "Хариуг харах",
-    quiz_hide: "Хариуг нуух"
+    quiz_hide: "Хариуг нуух",
+    loading: "Уншиж байна...",
+    back: "Буцах"
   },
   en: {
     nav_home: "Home",
@@ -165,7 +167,9 @@ export const TRANSLATIONS = {
     daily_thanks: "Thanks! We will adjust your feed.",
     quiz_title: "What is the answer?",
     quiz_reveal: "Show Answer",
-    quiz_hide: "Hide Answer"
+    quiz_hide: "Hide Answer",
+    loading: "Loading...",
+    back: "Back"
   }
 };
 

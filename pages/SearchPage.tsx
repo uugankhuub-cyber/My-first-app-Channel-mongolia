@@ -1,10 +1,13 @@
 
 import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
 import { Search as SearchIcon, X, FileSearch } from 'lucide-react';
 import { useContent } from '../context/ContentContext';
 import { KnowledgeCard } from '../components/KnowledgeCard';
 import * as ReactRouterDOM from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext';
+import { Container } from '../components/ui/Container';
+import { cn } from '../lib/utils';
 
 const { useSearchParams } = ReactRouterDOM;
 
@@ -31,12 +34,32 @@ export const SearchPage: React.FC = () => {
 
   const handleClear = () => setSearchTerm('');
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.05
+      }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0 }
+  };
+
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 min-h-[60vh]">
-        <div className="max-w-2xl mx-auto mb-16">
-            <h1 className="text-3xl font-bold text-center text-text-main mb-8 drop-shadow-sm dark:drop-shadow-md">{t('search_placeholder')}</h1>
+    <Container className="py-16 min-h-[60vh]">
+        <motion.div 
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="max-w-2xl mx-auto mb-16"
+        >
+            <h1 className="text-3xl font-bold text-center text-text-main mb-8 drop-shadow-sm dark:drop-shadow-md">
+              {t('search_placeholder')}
+            </h1>
             
-            {/* HERO SEARCH BAR - INTEGRATED UI */}
             <div className="relative group">
                 <SearchIcon className="absolute left-5 top-1/2 transform -translate-y-1/2 text-slate-400 pointer-events-none" size={24} />
                 <input
@@ -47,48 +70,74 @@ export const SearchPage: React.FC = () => {
                     onChange={(e) => setSearchTerm(e.target.value)}
                     autoFocus
                 />
-                {searchTerm && (
-                    <button 
-                        onClick={handleClear}
-                        className="absolute right-4 top-1/2 transform -translate-y-1/2 p-2 rounded-full text-slate-400 hover:text-text-main hover:bg-surfaceHighlight transition-colors"
-                        aria-label="Clear search"
-                    >
-                        <X size={20} />
-                    </button>
-                )}
+                <AnimatePresence>
+                  {searchTerm && (
+                      <motion.button 
+                          initial={{ opacity: 0, scale: 0.8 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          exit={{ opacity: 0, scale: 0.8 }}
+                          onClick={handleClear}
+                          className="absolute right-4 top-1/2 transform -translate-y-1/2 p-2 rounded-full text-slate-400 hover:text-text-main hover:bg-surfaceHighlight transition-colors"
+                          aria-label="Clear search"
+                      >
+                          <X size={20} />
+                      </motion.button>
+                  )}
+                </AnimatePresence>
             </div>
-        </div>
+        </motion.div>
 
-        {searchTerm && (
-            <div>
-                <h2 className="text-lg font-bold text-text-main mb-8 pb-4 border-b border-border flex items-center justify-between">
-                    <span>{t('search_results')}</span>
-                    <span className="px-3 py-1 bg-surfaceHighlight rounded-full text-xs font-bold text-text-muted">{filtered.length} items</span>
-                </h2>
-                
-                {filtered.length > 0 ? (
-                   <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                       {filtered.map(item => (
-                           <KnowledgeCard key={item.id} item={item} />
-                       ))}
-                   </div>
-                ) : (
-                    <div className="text-center py-20 bg-surface rounded-2xl border border-dashed border-border flex flex-col items-center justify-center">
-                         <div className="w-16 h-16 bg-surfaceHighlight rounded-full flex items-center justify-center text-text-muted mb-4">
-                            <FileSearch size={32} />
-                         </div>
-                         <h3 className="text-lg font-bold text-text-main mb-2">Хайлт илэрцгүй</h3>
-                         <p className="text-text-muted">{t('no_results')}</p>
-                    </div>
-                )}
-            </div>
-        )}
-
-        {!searchTerm && (
-            <div className="text-center mt-20 opacity-50">
-                 <p className="text-text-muted text-sm font-medium tracking-widest uppercase">Channel Mongolia</p>
-            </div>
-        )}
-    </div>
+        <AnimatePresence mode="wait">
+          {searchTerm ? (
+              <motion.div
+                key="results"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+              >
+                  <h2 className="text-lg font-bold text-text-main mb-8 pb-4 border-b border-border flex items-center justify-between">
+                      <span>{t('search_results')}</span>
+                      <span className="px-3 py-1 bg-surfaceHighlight rounded-full text-xs font-bold text-text-muted">{filtered.length} items</span>
+                  </h2>
+                  
+                  {filtered.length > 0 ? (
+                     <motion.div 
+                        variants={containerVariants}
+                        initial="hidden"
+                        animate="visible"
+                        className="grid grid-cols-1 md:grid-cols-3 gap-8"
+                      >
+                         {filtered.map(item => (
+                             <motion.div key={item.id} variants={itemVariants}>
+                               <KnowledgeCard item={item} />
+                             </motion.div>
+                         ))}
+                     </motion.div>
+                  ) : (
+                      <motion.div 
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        className="text-center py-20 bg-surface rounded-2xl border border-dashed border-border flex flex-col items-center justify-center"
+                      >
+                           <div className="w-16 h-16 bg-surfaceHighlight rounded-full flex items-center justify-center text-text-muted mb-4">
+                              <FileSearch size={32} />
+                           </div>
+                           <h3 className="text-lg font-bold text-text-main mb-2">Хайлт илэрцгүй</h3>
+                           <p className="text-text-muted">{t('no_results')}</p>
+                      </motion.div>
+                  )}
+              </motion.div>
+          ) : (
+              <motion.div 
+                key="empty"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 0.5 }}
+                className="text-center mt-20"
+              >
+                   <p className="text-text-muted text-sm font-medium tracking-widest uppercase">Channel Mongolia</p>
+              </motion.div>
+          )}
+        </AnimatePresence>
+    </Container>
   );
 };

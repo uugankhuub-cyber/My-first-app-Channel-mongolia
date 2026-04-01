@@ -1,5 +1,7 @@
 
 import React from 'react';
+import { motion } from 'motion/react';
+import { cn } from '../../lib/utils';
 
 interface CardProps {
   children: React.ReactNode;
@@ -7,6 +9,7 @@ interface CardProps {
   onClick?: () => void;
   hoverEffect?: boolean;
   variant?: 'default' | 'tinted';
+  animate?: boolean;
 }
 
 export const Card: React.FC<CardProps> = ({ 
@@ -14,24 +17,31 @@ export const Card: React.FC<CardProps> = ({
   className = '', 
   onClick, 
   hoverEffect = true,
-  variant = 'default'
+  variant = 'default',
+  animate = true
 }) => {
   
   const bgClasses = variant === 'tinted'
-    ? 'bg-slate-900/5 dark:bg-white/5 border-slate-200 dark:border-white/10' // Tinted: Editorial grey in light mode
-    : 'bg-white dark:bg-surface border-slate-200/80 dark:border-white/10'; // Default: Clean white
+    ? 'bg-slate-900/5 dark:bg-white/5 border-slate-200 dark:border-white/10' 
+    : 'bg-white dark:bg-surface border-slate-200/80 dark:border-white/10';
+
+  const Component = animate ? motion.div : 'div';
 
   return (
-    <div 
+    <Component 
       onClick={onClick}
-      className={`
-        ${bgClasses} border rounded-2xl overflow-hidden
-        transition-all duration-300 ease-out
-        ${hoverEffect ? 'hover:shadow-md hover:-translate-y-1 hover:border-brand-purple/20' : 'shadow-sm dark:shadow-none'}
-        ${className}
-      `}
+      initial={animate ? { opacity: 0, y: 20 } : undefined}
+      whileInView={animate ? { opacity: 1, y: 0 } : undefined}
+      viewport={animate ? { once: true, margin: "-50px" } : undefined}
+      whileHover={animate && hoverEffect ? { y: -8, transition: { duration: 0.3 } } : undefined}
+      className={cn(
+        bgClasses,
+        "border rounded-2xl overflow-hidden transition-colors duration-300 ease-out",
+        hoverEffect ? "hover:shadow-xl hover:border-brand-purple/20" : "shadow-sm dark:shadow-none",
+        className
+      )}
     >
       {children}
-    </div>
+    </Component>
   );
 };
