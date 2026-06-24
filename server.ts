@@ -36,7 +36,12 @@ async function startServer() {
   const limiter = rateLimit({
     windowMs: 15 * 60 * 1000,
     max: 100, // Limit each IP to 100 requests per window
-    message: 'Too many requests, please try again later.'
+    handler: (req, res) => {
+      res.status(429).json({
+        error: 'Too many requests',
+        message: 'Please try again later'
+      });
+    }
   });
   app.use('/api/', limiter);
 

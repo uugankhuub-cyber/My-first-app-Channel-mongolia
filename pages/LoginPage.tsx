@@ -26,8 +26,15 @@ export const LoginPage: React.FC = () => {
         body: JSON.stringify({ email, password }),
       });
 
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Login failed');
+      const contentType = res.headers.get('content-type');
+      let data: any = {};
+      if (contentType && contentType.includes('application/json')) {
+        data = await res.json();
+      } else {
+        const text = await res.text();
+        throw new Error(text || 'Login failed');
+      }
+      if (!res.ok) throw new Error(data.error || data.message || 'Login failed');
 
       login(data.user);
       navigate(data.user.role === 'ADMIN' ? '/admin/dashboard' : '/');

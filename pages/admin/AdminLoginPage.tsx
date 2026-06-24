@@ -34,8 +34,16 @@ export const AdminLoginPage: React.FC = () => {
         body: JSON.stringify({ email, password }),
       });
 
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Нэвтрэхэд алдаа гарлаа');
+      const contentType = res.headers.get('content-type');
+      let data: any = {};
+      if (contentType && contentType.includes('application/json')) {
+        data = await res.json();
+      } else {
+        const text = await res.text();
+        throw new Error(text || 'Нэвтрэхэд алдаа гарлаа');
+      }
+
+      if (!res.ok) throw new Error(data.error || data.message || 'Нэвтрэхэд алдаа гарлаа');
 
       if (data.user.role !== 'ADMIN' && data.user.role !== 'EDITOR') {
         throw new Error('Удирдлагын хэсэгт нэвтрэх эрхгүй хэрэглэгч байна!');
