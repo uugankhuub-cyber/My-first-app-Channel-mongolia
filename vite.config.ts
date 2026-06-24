@@ -15,6 +15,12 @@ export default defineConfig(({ mode }) => {
     build: {
       outDir: 'dist',
       sourcemap: false
+    },
+    server: {
+      host: '0.0.0.0',
+      allowedHosts: [
+        '.railway.app'
+      ]
     }
   }
 })
