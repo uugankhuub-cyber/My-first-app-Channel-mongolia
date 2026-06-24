@@ -1,0 +1,111 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  EDITOR
+  USER
+}
+
+enum ArticleStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+model User {
+  id                    String    @id @default(uuid())
+  email                 String    @unique
+  password              String
+  role                  Role      @default(USER)
+  
+  // Verification
+  emailVerified         Boolean   @default(false)
+  emailVerifiedAt       DateTime?
+  verificationToken     String?   @unique
+  
+  // Password Management
+  forcePasswordChange   Boolean   @default(false)
+  passwordChangedAt     DateTime?
+  resetToken            String?   @unique
+  resetTokenExpiry      DateTime?
+  previousPasswords     String[]  @default([]) // Store last 3 hashes
+  
+  // Security
+  failedLoginAttempts   Int       @default(0)
+  lockedUntil           DateTime?
+  
+  // Timestamps
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  // Relations
+  articles              Article[]
+  sessions              Session[]
+}
+
+model Session {
+  id           String   @id @default(uuid())
+  userId       String
+  token        String   @unique
+  expiresAt    DateTime
+  createdAt    DateTime @default(now())
+  
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Article {
+  id            String        @id @default(uuid())
+  title         String
+  slug          String        @unique
+  excerpt       String?       @db.Text
+  content       String        @db.Text
+  thumbnail     String?
+  status        ArticleStatus @default(DRAFT)
+  
+  // SEO
+  metaTitle     String?
+  metaDesc      String?
+  ogImage       String?
+  
+  // Timestamps
+  publishedAt   DateTime?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  // Relations
+  authorId      String
+  author        User          @relation(fields: [authorId], references: [id])
+  categoryId    String?
+  category      Category?     @relation(fields: [categoryId], references: [id])
+  tags          Tag[]
+}
+
+model Category {
+  id          String    @id @default(uuid())
+  name        String    @unique
+  slug        String    @unique
+  articles    Article[]
+}
+
+model Tag {
+  id          String    @id @default(uuid())
+  name        String    @unique
+  articles    Article[]
+}
+
+model Setting {
+  id          String   @id @default(uuid())
+  key         String   @unique
+  value       String   @db.Text
+  updatedAt   DateTime @updatedAt
+}

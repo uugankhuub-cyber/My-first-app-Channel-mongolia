@@ -6,128 +6,22 @@ import {
   Settings, LogOut, Menu, X, ShieldCheck, Image as ImageIcon, 
   ScrollText, Palette, MonitorPlay, Loader2
 } from 'lucide-react';
-import { useAdmin } from '../../context/AdminContext';
+import { useAuth } from '../../context/AuthContext.tsx';
 
 const { Outlet, NavLink, useNavigate, useLocation } = ReactRouterDOM;
 
 export const AdminLayout: React.FC = () => {
-  const { isAuthenticated, logout, login, register } = useAdmin();
+  const { user, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [isSidebarOpen, setSidebarOpen] = useState(true);
   
-  // Login/Signup State
-  const [isSignUp, setIsSignUp] = useState(false);
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
-
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-    setLoading(true);
-    
-    let success = false;
-    if (isSignUp) {
-      if (!email) {
-        setError('И-мэйл хаяг оруулна уу!');
-        setLoading(false);
-        return;
-      }
-      success = await register(email, password);
-    } else {
-      success = await login(password);
-    }
-    
-    setLoading(false);
-    if (success) {
-      navigate('/admin/dashboard');
-    } else {
-      setError(isSignUp ? 'Бүртгүүлэхэд алдаа гарлаа!' : 'Нууц үг буруу байна!');
-    }
-  };
-
   const handleLogout = () => {
     logout();
-    navigate('/admin');
+    navigate('/login');
   };
 
-  // --- 1. LOGIN SCREEN (GUARD) ---
-  if (!isAuthenticated) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center px-4 transition-colors duration-300">
-        <div className="max-w-md w-full bg-surface p-8 rounded-2xl border border-border shadow-2xl animate-fade-in">
-          <div className="flex justify-center mb-6">
-             <div className="w-16 h-16 bg-gradient-brand rounded-2xl flex items-center justify-center shadow-glow">
-                <ShieldCheck className="text-white w-8 h-8" />
-             </div>
-          </div>
-          <h2 className="text-2xl font-bold text-center text-text-main mb-2">
-            {isSignUp ? 'Бүртгүүлэх' : 'Удирдлагын хэсэг'}
-          </h2>
-          <p className="text-text-muted text-center mb-8 text-sm">
-            {isSignUp ? 'Шинэ хэрэглэгч үүсгэх' : 'Channel Mongolia Admin'}
-          </p>
-          
-          <form onSubmit={handleLogin} className="space-y-4">
-            {isSignUp && (
-              <div>
-                <label className="block text-sm font-medium text-text-muted mb-1">И-мэйл хаяг</label>
-                <input 
-                  type="email" 
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="w-full px-4 py-3 bg-surfaceHighlight border border-border rounded-xl text-text-main focus:border-brand-purple outline-none transition-colors"
-                  placeholder="admin@example.com"
-                  autoFocus={isSignUp}
-                />
-              </div>
-            )}
-            <div>
-              <label className="block text-sm font-medium text-text-muted mb-1">Нууц үг</label>
-              <input 
-                type="password" 
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-3 bg-surfaceHighlight border border-border rounded-xl text-text-main focus:border-brand-purple outline-none transition-colors"
-                placeholder="••••••••"
-                autoFocus={!isSignUp}
-              />
-            </div>
-            
-            {error && (
-              <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-lg">
-                <p className="text-red-400 text-sm text-center font-medium">{error}</p>
-              </div>
-            )}
-
-            <button 
-              type="submit" 
-              disabled={loading}
-              className="w-full py-3 bg-gradient-brand text-white font-bold rounded-xl hover:opacity-90 transition-all shadow-md disabled:opacity-50 flex items-center justify-center gap-2"
-            >
-              {loading ? <Loader2 className="animate-spin" size={20} /> : (isSignUp ? 'Бүртгүүлэх' : 'Нэвтрэх')}
-            </button>
-            <div className="text-center mt-4 flex flex-col gap-2">
-               <button 
-                 type="button" 
-                 onClick={() => setIsSignUp(!isSignUp)} 
-                 className="text-brand-purple text-sm font-medium hover:underline"
-               >
-                 {isSignUp ? 'Аль хэдийн бүртгүүлсэн үү? Нэвтрэх' : 'Шинээр бүртгүүлэх'}
-               </button>
-               <button type="button" onClick={() => navigate('/')} className="text-text-muted text-xs hover:text-text-main mt-2">
-                  Нүүр хуудас руу буцах
-               </button>
-            </div>
-          </form>
-        </div>
-      </div>
-    );
-  }
-
-  // --- 2. AUTHENTICATED LAYOUT ---
+  // --- AUTHENTICATED LAYOUT ---
   const navItems = [
     { label: 'Хянах самбар', path: '/admin/dashboard', icon: <LayoutDashboard size={20} /> },
     { label: 'Контент', path: '/admin/content', icon: <FileText size={20} /> },
@@ -152,6 +46,18 @@ export const AdminLayout: React.FC = () => {
             <button onClick={() => setSidebarOpen(false)} className="lg:hidden ml-auto text-text-muted">
                <X size={24} />
             </button>
+          </div>
+
+          <div className="px-6 py-4 border-b border-border bg-slate-900/20">
+             <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-brand-purple flex items-center justify-center text-white font-bold">
+                   {user?.email[0].toUpperCase()}
+                </div>
+                <div className="flex flex-col min-w-0">
+                   <span className="text-xs font-bold text-white truncate">{user?.email}</span>
+                   <span className="text-[10px] text-slate-400 uppercase tracking-tighter">{user?.role}</span>
+                </div>
+             </div>
           </div>
 
           <nav className="flex-1 px-3 py-6 space-y-1 overflow-y-auto">
@@ -204,3 +110,4 @@ export const AdminLayout: React.FC = () => {
     </div>
   );
 };
+

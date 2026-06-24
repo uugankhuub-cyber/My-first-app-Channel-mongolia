@@ -11,9 +11,12 @@ import { AboutPage } from './pages/AboutPage';
 import { ContactPage } from './pages/ContactPage';
 import { PrivacyPage } from './pages/PrivacyPage';
 import { TermsPage } from './pages/TermsPage';
+import { LoginPage } from './pages/LoginPage';
+import { RegisterPage } from './pages/RegisterPage';
 import { ChatAssistant } from './components/ChatAssistant';
 import { GlobalInfoBar } from './components/GlobalInfoBar';
 import { motion, AnimatePresence } from 'motion/react';
+import { ProtectedRoute } from './components/ProtectedRoute';
 
 // Contexts
 import { ContentProvider } from './context/ContentContext';
@@ -21,6 +24,7 @@ import { AdminProvider, useAdmin } from './context/AdminContext';
 import { LanguageProvider } from './context/LanguageContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { UserPreferencesProvider } from './context/UserPreferencesContext';
+import { AuthProvider } from './context/AuthContext';
 
 // Admin Components
 import { AdminLayout } from './pages/admin/AdminLayout';
@@ -79,18 +83,31 @@ const AnimatedRoutes = () => {
   return (
     <AnimatePresence mode="wait">
       <Routes location={location} key={location.pathname}>
-        <Route path="/admin" element={<AdminLayout />}>
-           <Route index element={<AdminDashboard />} />
-           <Route path="dashboard" element={<AdminDashboard />} />
-           <Route path="content" element={<AdminContent />} />
-           <Route path="images" element={<AdminImages />} />
-           <Route path="media" element={<AdminMedia />} />
-           <Route path="appearance" element={<AdminAppearance />} />
-           <Route path="ai-suggestions" element={<AdminAISuggestions />} />
-           <Route path="chat-settings" element={<AdminChatSettings />} />
-           <Route path="logs" element={<AdminLogs />} />
-           <Route path="content/edit/:id" element={<AdminEditor />} />
-           <Route path="settings" element={<div className="p-8 text-white">Settings Coming Soon...</div>} />
+        {/* Public Routes */}
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
+        <Route path="/forgot-password" element={<div className="p-20 text-center text-white">Password Reset Coming Soon...</div>} />
+
+        {/* Admin Routes (Protected) */}
+        <Route element={<ProtectedRoute roles={['ADMIN', 'EDITOR']} />}>
+          <Route path="/admin" element={<AdminLayout />}>
+             <Route index element={<AdminDashboard />} />
+             <Route path="dashboard" element={<AdminDashboard />} />
+             <Route path="content" element={<AdminContent />} />
+             <Route path="images" element={<AdminImages />} />
+             <Route path="media" element={<AdminMedia />} />
+             <Route path="appearance" element={<AdminAppearance />} />
+             <Route path="ai-suggestions" element={<AdminAISuggestions />} />
+             <Route path="chat-settings" element={<AdminChatSettings />} />
+             <Route path="logs" element={<AdminLogs />} />
+             <Route path="content/edit/:id" element={<AdminEditor />} />
+             <Route path="settings" element={<div className="p-8 text-white">Settings Coming Soon...</div>} />
+          </Route>
+        </Route>
+
+        {/* User Protected Routes (Read-only User Profile etc) */}
+        <Route element={<ProtectedRoute roles={['ADMIN', 'EDITOR', 'USER']} />}>
+           {/* Add user-specific routes here if any */}
         </Route>
 
         <Route path="*" element={
@@ -129,20 +146,21 @@ const AnimatedRoutes = () => {
 const App: React.FC = () => {
   return (
     <ThemeProvider>
-      <LanguageProvider>
-        <UserPreferencesProvider>
-          {/* ContentProvider wraps everything to provide data to both Public and Admin */}
-          <ContentProvider>
-            <AdminProvider>
-              <SiteAppearanceManager />
-              <Router>
-                <ScrollToTop />
-                <AnimatedRoutes />
-              </Router>
-            </AdminProvider>
-          </ContentProvider>
-        </UserPreferencesProvider>
-      </LanguageProvider>
+      <AuthProvider>
+        <LanguageProvider>
+          <UserPreferencesProvider>
+            <ContentProvider>
+              <AdminProvider>
+                <SiteAppearanceManager />
+                <Router>
+                  <ScrollToTop />
+                  <AnimatedRoutes />
+                </Router>
+              </AdminProvider>
+            </ContentProvider>
+          </UserPreferencesProvider>
+        </LanguageProvider>
+      </AuthProvider>
     </ThemeProvider>
   );
 };
