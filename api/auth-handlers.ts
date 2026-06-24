@@ -1,4 +1,4 @@
-import { prisma } from '../lib/prisma.ts';
+import { prisma, getDbStatus } from '../lib/prisma.ts';
 import { hashPassword, comparePassword, generateTokens } from '../lib/auth.ts';
 import { z } from 'zod';
 import * as mockDb from '../lib/mock-db.ts';
@@ -9,7 +9,7 @@ const registerSchema = z.object({
 });
 
 const isDbAvailable = () => {
-  return !!process.env.DATABASE_URL;
+  return getDbStatus();
 };
 
 export const login = async (req: any, res: any) => {

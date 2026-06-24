@@ -4,7 +4,7 @@ import { createServer as createViteServer } from 'vite';
 import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
 import rateLimit from 'express-rate-limit';
-import { prisma } from './lib/prisma.ts';
+import { prisma, checkConnection, getDbStatus } from './lib/prisma.ts';
 import { hashPassword } from './lib/auth.ts';
 import { authenticate, authorize } from './middleware/auth.ts';
 
@@ -40,10 +40,12 @@ async function startServer() {
   });
   app.use('/api/', limiter);
 
-  // 2. Initial Admin Creation
+  // 2. Initial Admin Creation & Database Connection Verification
+  await checkConnection();
+
   const initAdmin = async () => {
-    if (!process.env.DATABASE_URL) {
-      console.warn('DATABASE_URL not set. Skipping admin initialization.');
+    if (!getDbStatus()) {
+      console.warn('Database is not healthy/connected. Skipping database admin initialization.');
       return;
     }
 
@@ -52,9 +54,6 @@ async function startServer() {
 
     if (adminEmail && adminPassword) {
       try {
-        // Test connection
-        await prisma.$connect();
-        
         const adminExists = await prisma.user.findUnique({ where: { email: adminEmail } });
         if (!adminExists) {
           console.log('Creating initial admin account...');
@@ -70,8 +69,7 @@ async function startServer() {
           });
         }
       } catch (err: any) {
-        console.error('Database connection error in initAdmin:', err.message);
-        // Do not crash the server, just log the error
+        console.error('Database query error in initAdmin:', err.message);
       }
     }
   };
@@ -112,7 +110,7 @@ async function startServer() {
   // Articles (Public)
   app.get('/api/articles', articleHandlers.getArticles);
   app.get('/api/articles/:slug', async (req, res) => {
-    if (process.env.DATABASE_URL) {
+    if (getDbStatus()) {
       try {
         const article = await prisma.article.findUnique({
           where: { slug: req.params.slug },
@@ -162,7 +160,7 @@ async function startServer() {
 
   // Dashboard Stats
   app.get('/api/admin/stats', authenticate, authorize(['ADMIN', 'EDITOR']), async (req, res) => {
-    if (process.env.DATABASE_URL) {
+    if (getDbStatus()) {
       try {
         const articleCount = await prisma.article.count();
         const userCount = await prisma.user.count();

@@ -1,10 +1,10 @@
-import { prisma } from '../lib/prisma.ts';
+import { prisma, getDbStatus } from '../lib/prisma.ts';
 import * as mockDb from '../lib/mock-db.ts';
 
 export default async function handle(req: any, res: any) {
   if (req.method === 'GET') {
     try {
-      if (process.env.DATABASE_URL) {
+      if (getDbStatus()) {
         try {
           const articles = await prisma.article.findMany({
             where: { status: 'PUBLISHED' },

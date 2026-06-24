@@ -1,4 +1,4 @@
-import { prisma } from '../lib/prisma.ts';
+import { prisma, getDbStatus } from '../lib/prisma.ts';
 import { z } from 'zod';
 import * as mockDb from '../lib/mock-db.ts';
 
@@ -15,7 +15,7 @@ const articleSchema = z.object({
 });
 
 const isDbAvailable = () => {
-  return !!process.env.DATABASE_URL;
+  return getDbStatus();
 };
 
 export const getArticles = async (req: any, res: any) => {
