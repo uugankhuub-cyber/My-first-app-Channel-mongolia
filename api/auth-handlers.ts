@@ -1,5 +1,5 @@
 import { prisma, getDbStatus } from '../lib/prisma.ts';
-import { hashPassword, comparePassword, generateTokens } from '../lib/auth.ts';
+import { hashPassword, comparePassword, generateTokens, verifyAccessToken } from '../lib/auth.ts';
 import { z } from 'zod';
 import * as mockDb from '../lib/mock-db.ts';
 
@@ -125,11 +125,27 @@ export const register = async (req: any, res: any) => {
             email,
             password: hashedPassword,
             verificationToken,
+            emailVerified: true, // Auto-verify email for seamless UX on Railway
           },
         });
 
         console.log(`Verification link: /api/auth/verify?token=${verificationToken}`);
-        return res.json({ message: 'Registration successful. Please verify your email.' });
+
+        const tokens = generateTokens(user.id, user.role);
+
+        // Set HttpOnly cookies
+        res.cookie('accessToken', tokens.accessToken, { httpOnly: true, secure: true, sameSite: 'strict', maxAge: 15 * 60 * 1000 });
+        res.cookie('refreshToken', tokens.refreshToken, { httpOnly: true, secure: true, sameSite: 'strict', maxAge: 7 * 24 * 60 * 60 * 1000 });
+
+        return res.json({
+          message: 'Registration successful. Please verify your email.',
+          user: {
+            id: user.id,
+            email: user.email,
+            role: user.role,
+            forcePasswordChange: user.forcePasswordChange,
+          }
+        });
       } catch (dbError: any) {
         console.error('Database query failed in register, falling back to mock DB:', dbError.message);
       }
@@ -160,7 +176,22 @@ export const register = async (req: any, res: any) => {
     mockDb.saveDb(db);
 
     console.log(`Mock verification link: /api/auth/verify?token=${verificationToken}`);
-    res.json({ message: 'Registration successful. Account pre-verified for seamless testing!' });
+
+    const tokens = generateTokens(newUser.id, newUser.role);
+
+    // Set HttpOnly cookies
+    res.cookie('accessToken', tokens.accessToken, { httpOnly: true, secure: true, sameSite: 'strict', maxAge: 15 * 60 * 1000 });
+    res.cookie('refreshToken', tokens.refreshToken, { httpOnly: true, secure: true, sameSite: 'strict', maxAge: 7 * 24 * 60 * 60 * 1000 });
+
+    res.json({
+      message: 'Registration successful. Account pre-verified for seamless testing!',
+      user: {
+        id: newUser.id,
+        email: newUser.email,
+        role: newUser.role,
+        forcePasswordChange: false,
+      }
+    });
 
   } catch (error: any) {
     console.error('Register error:', error);
@@ -172,4 +203,49 @@ export const logout = (req: any, res: any) => {
   res.clearCookie('accessToken');
   res.clearCookie('refreshToken');
   res.json({ message: 'Logged out' });
+};
+
+export const getMe = async (req: any, res: any) => {
+  const token = req.cookies?.accessToken || req.headers.authorization?.split(' ')[1];
+  if (!token) {
+    return res.status(401).json({ error: 'Authentication required' });
+  }
+
+  const decoded = verifyAccessToken(token);
+  if (!decoded) {
+    return res.status(401).json({ error: 'Invalid or expired token' });
+  }
+
+  if (isDbAvailable()) {
+    try {
+      const user = await prisma.user.findUnique({ where: { id: decoded.userId } });
+      if (user) {
+        return res.json({
+          user: {
+            id: user.id,
+            email: user.email,
+            role: user.role,
+            forcePasswordChange: user.forcePasswordChange,
+          }
+        });
+      }
+    } catch (e) {
+      console.error('Database query failed in getMe, falling back to mock DB');
+    }
+  }
+
+  const db = mockDb.getDb();
+  const user = db.users.find(u => u.id === decoded.userId);
+  if (user) {
+    return res.json({
+      user: {
+        id: user.id,
+        email: user.email,
+        role: user.role,
+        forcePasswordChange: false,
+      }
+    });
+  }
+
+  res.status(404).json({ error: 'User not found' });
 };

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { UserPlus, Mail, Lock, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { motion } from 'motion/react';
+import { useAuth } from '../context/AuthContext.tsx';
 
 export const RegisterPage: React.FC = () => {
   const [formData, setFormData] = useState({ email: '', password: '', confirmPassword: '' });
@@ -10,6 +11,7 @@ export const RegisterPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -24,14 +26,20 @@ export const RegisterPage: React.FC = () => {
       const res = await fetch('/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({ email: formData.email, password: formData.password }),
       });
 
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Registration failed');
 
+      if (data.user) {
+        login(data.user);
+      }
       setSuccess(true);
-      setTimeout(() => navigate('/login'), 3000);
+      setTimeout(() => {
+        navigate(data.user?.role === 'ADMIN' ? '/admin/dashboard' : '/');
+      }, 2000);
     } catch (err: any) {
       setError(err.message);
     } finally {

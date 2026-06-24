@@ -13,6 +13,7 @@ import { PrivacyPage } from './pages/PrivacyPage';
 import { TermsPage } from './pages/TermsPage';
 import { LoginPage } from './pages/LoginPage';
 import { RegisterPage } from './pages/RegisterPage';
+import { ProfilePage } from './pages/ProfilePage';
 import { ChatAssistant } from './components/ChatAssistant';
 import { GlobalInfoBar } from './components/GlobalInfoBar';
 import { motion, AnimatePresence } from 'motion/react';
@@ -129,6 +130,7 @@ const AnimatedRoutes = () => {
                   <Route path="/categories" element={<CategoriesPage />} />
                   <Route path="/niitlel/:id" element={<DetailPage />} />
                   <Route path="/search" element={<SearchPage />} />
+                  <Route path="/profile" element={<ProfilePage />} />
                   <Route path="/bidnii-tukhai" element={<AboutPage />} />
                   <Route path="/holboo-barikh" element={<ContactPage />} />
                   <Route path="/nuuts-lalin-bodlogo" element={<PrivacyPage />} />

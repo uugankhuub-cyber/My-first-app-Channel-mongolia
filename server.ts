@@ -104,6 +104,7 @@ async function startServer() {
   app.post('/api/auth/login', authHandlers.login);
   app.post('/api/auth/register', authHandlers.register);
   app.post('/api/auth/logout', authHandlers.logout);
+  app.get('/api/auth/me', authHandlers.getMe);
   app.post('/api/admin-ai-content', adminHandlers.askAI);
   app.post('/api/admin-upload', adminHandlers.adminUpload);
 

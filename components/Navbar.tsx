@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { useLanguage } from "../context/LanguageContext";
 import { useTheme } from "../context/ThemeContext";
 import { useAdmin } from "../context/AdminContext";
+import { useAuth } from "../context/AuthContext";
 import { CATEGORIES } from "../constants";
 import { Container } from "./ui/Container";
 import { cn } from "../lib/utils";
@@ -19,6 +20,7 @@ export const Navbar: React.FC = () => {
   const { t, language, setLanguage } = useLanguage();
   const { theme, toggleTheme } = useTheme();
   const { isAuthenticated } = useAdmin();
+  const { user, logout: authLogout } = useAuth();
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 10);
@@ -169,22 +171,54 @@ export const Navbar: React.FC = () => {
                 {theme === "dark" ? <Sun size={20} /> : <Moon size={20} />}
               </button>
 
-              {/* Admin */}
-              <button
-                onClick={handleAdminClick}
-                className={`hidden md:flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold transition-all hover:-translate-y-0.5 ${
-                  isAuthenticated
-                    ? "bg-surfaceHighlight text-text-main border border-border hover:border-brand-purple/30"
-                    : "bg-gradient-brand text-white shadow-sm hover:shadow-md"
-                }`}
-              >
-                {isAuthenticated ? (
-                  <ShieldCheck size={18} />
-                ) : (
-                  <User size={18} />
-                )}
-                <span>{isAuthenticated ? "Admin" : t("login")}</span>
-              </button>
+              {/* User Authentication Actions (Desktop) */}
+              {user ? (
+                <div className="hidden md:flex items-center gap-3">
+                  <span className="text-sm font-medium text-slate-600 dark:text-slate-300 flex items-center gap-1.5 bg-slate-100 dark:bg-white/5 px-3 py-1.5 rounded-full border border-slate-200 dark:border-white/5">
+                    <User size={16} className="text-brand-purple" />
+                    <span className="max-w-[120px] truncate">{user.email}</span>
+                  </span>
+                  
+                  <Link
+                    to="/profile"
+                    className="text-sm font-semibold text-slate-700 dark:text-slate-200 hover:text-brand-purple dark:hover:text-brand-purple transition-colors"
+                  >
+                    Profile
+                  </Link>
+
+                  {(user.role === "ADMIN" || user.role === "EDITOR") && (
+                    <button
+                      onClick={handleAdminClick}
+                      className="flex items-center gap-1.5 text-sm font-semibold text-brand-purple hover:underline transition-colors"
+                    >
+                      <ShieldCheck size={16} />
+                      <span>Admin</span>
+                    </button>
+                  )}
+
+                  <button
+                    onClick={authLogout}
+                    className="px-4 py-2 rounded-full text-sm font-semibold bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 text-slate-700 dark:text-slate-200 transition-colors border border-slate-200/50 dark:border-white/5"
+                  >
+                    Гарах
+                  </button>
+                </div>
+              ) : (
+                <div className="hidden md:flex items-center gap-2">
+                  <Link
+                    to="/login"
+                    className="px-4 py-2 rounded-full text-sm font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors border border-slate-200 dark:border-white/10"
+                  >
+                    {t("login")}
+                  </Link>
+                  <Link
+                    to="/register"
+                    className="px-4 py-2 rounded-full text-sm font-semibold bg-gradient-brand text-white shadow-sm hover:shadow-md transition-all hover:-translate-y-0.5"
+                  >
+                    Бүртгүүлэх
+                  </Link>
+                </div>
+              )}
 
               {/* Mobile Menu Toggle */}
               <button
@@ -357,17 +391,64 @@ export const Navbar: React.FC = () => {
                     </button>
                   </div>
 
-                  <button
-                    onClick={handleAdminClick}
-                    className={`w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-bold shadow-sm transition-transform active:scale-95 ${isAuthenticated ? "bg-white dark:bg-slate-800 text-slate-900 dark:text-white border border-slate-200 dark:border-white/10" : "bg-gradient-brand text-white"}`}
-                  >
-                    {isAuthenticated ? (
-                      <ShieldCheck size={18} />
-                    ) : (
-                      <User size={18} />
-                    )}
-                    <span>{isAuthenticated ? "Admin Panel" : t("login")}</span>
-                  </button>
+                  {/* User Authentication Actions (Mobile Drawer) */}
+                  {user ? (
+                    <div className="space-y-3">
+                      <div className="px-4 py-3 text-sm text-center font-medium text-slate-600 dark:text-slate-300 bg-slate-100/50 dark:bg-white/5 rounded-xl flex items-center justify-center gap-2">
+                        <User size={16} className="text-brand-purple" />
+                        <span className="truncate">{user.email}</span>
+                      </div>
+                      
+                      <Link
+                        to="/profile"
+                        onClick={() => setIsOpen(false)}
+                        className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-bold bg-white dark:bg-slate-800 text-slate-900 dark:text-white border border-slate-200 dark:border-white/10 transition-transform active:scale-95"
+                      >
+                        Profile
+                      </Link>
+
+                      {(user.role === "ADMIN" || user.role === "EDITOR") && (
+                        <button
+                          onClick={() => {
+                            setIsOpen(false);
+                            handleAdminClick();
+                          }}
+                          className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-bold bg-white dark:bg-slate-800 text-slate-900 dark:text-white border border-slate-200 dark:border-white/10 transition-transform active:scale-95"
+                        >
+                          <ShieldCheck size={18} />
+                          <span>Admin Panel</span>
+                        </button>
+                      )}
+
+                      <button
+                        onClick={() => {
+                          setIsOpen(false);
+                          authLogout();
+                        }}
+                        className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-bold bg-red-500/10 text-red-500 hover:bg-red-500/20 transition-transform active:scale-95"
+                      >
+                        Гарах
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col gap-2">
+                      <Link
+                        to="/login"
+                        onClick={() => setIsOpen(false)}
+                        className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-bold bg-white dark:bg-slate-800 text-slate-900 dark:text-white border border-slate-200 dark:border-white/10 transition-transform active:scale-95"
+                      >
+                        <User size={18} />
+                        <span>{t("login")}</span>
+                      </Link>
+                      <Link
+                        to="/register"
+                        onClick={() => setIsOpen(false)}
+                        className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-bold bg-gradient-brand text-white shadow-sm transition-transform active:scale-95"
+                      >
+                        <span>Бүртгүүлэх</span>
+                      </Link>
+                    </div>
+                  )}
                 </div>
               </div>
             </motion.div>
