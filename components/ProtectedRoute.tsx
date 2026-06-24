@@ -1,5 +1,5 @@
 import React from 'react';
-import { Navigate, Outlet } from 'react-router-dom';
+import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.tsx';
 
 interface ProtectedRouteProps {
@@ -8,11 +8,13 @@ interface ProtectedRouteProps {
 
 export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ roles }) => {
   const { user, loading } = useAuth();
+  const location = useLocation();
 
   if (loading) return <div className="p-8 text-white">Loading...</div>;
 
   if (!user) {
-    return <Navigate to="/login" replace />;
+    const isAdminRoute = location.pathname.startsWith('/admin');
+    return <Navigate to={isAdminRoute ? "/admin/login" : "/login"} replace />;
   }
 
   if (roles && !roles.includes(user.role)) {

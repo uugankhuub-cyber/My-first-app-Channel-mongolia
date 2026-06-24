@@ -180,6 +180,289 @@ async function startServer() {
     res.json({ articleCount, userCount, draftCount });
   });
 
+  // --- CATEGORIES API ---
+  app.get('/api/admin/categories', authenticate, authorize(['ADMIN', 'EDITOR']), async (req: any, res: any) => {
+    if (getDbStatus()) {
+      try {
+        const categories = await prisma.category.findMany({
+          include: { _count: { select: { articles: true } } }
+        });
+        return res.json(categories.map(c => ({ id: c.id, name: c.name, slug: c.slug, articleCount: c._count.articles })));
+      } catch (e) {}
+    }
+    const db = mockDb.getDb();
+    const result = db.categories.map(c => ({
+      id: c.id,
+      name: c.name,
+      slug: c.slug,
+      articleCount: db.articles.filter(a => a.categoryId === c.id).length
+    }));
+    res.json(result);
+  });
+
+  app.post('/api/admin/categories', authenticate, authorize(['ADMIN', 'EDITOR']), async (req: any, res: any) => {
+    const { name, slug } = req.body;
+    if (getDbStatus()) {
+      try {
+        const category = await prisma.category.create({ data: { name, slug } });
+        return res.json(category);
+      } catch (e) {}
+    }
+    const db = mockDb.getDb();
+    const newCat = { id: 'cat-' + Math.random().toString(36).substring(2, 9), name, slug };
+    db.categories.push(newCat);
+    mockDb.saveDb(db);
+    res.json(newCat);
+  });
+
+  app.put('/api/admin/categories/:id', authenticate, authorize(['ADMIN', 'EDITOR']), async (req: any, res: any) => {
+    const { name, slug } = req.body;
+    const { id } = req.params;
+    if (getDbStatus()) {
+      try {
+        const category = await prisma.category.update({ where: { id }, data: { name, slug } });
+        return res.json(category);
+      } catch (e) {}
+    }
+    const db = mockDb.getDb();
+    const cat = db.categories.find(c => c.id === id);
+    if (cat) {
+      cat.name = name;
+      cat.slug = slug;
+      mockDb.saveDb(db);
+      return res.json(cat);
+    }
+    res.status(404).json({ error: 'Not found' });
+  });
+
+  app.delete('/api/admin/categories/:id', authenticate, authorize(['ADMIN']), async (req: any, res: any) => {
+    const { id } = req.params;
+    if (getDbStatus()) {
+      try {
+        await prisma.category.delete({ where: { id } });
+        return res.json({ success: true });
+      } catch (e) {}
+    }
+    const db = mockDb.getDb();
+    db.categories = db.categories.filter(c => c.id !== id);
+    mockDb.saveDb(db);
+    res.json({ success: true });
+  });
+
+  // --- TAGS API ---
+  app.get('/api/admin/tags', authenticate, authorize(['ADMIN', 'EDITOR']), async (req: any, res: any) => {
+    if (getDbStatus()) {
+      try {
+        const tags = await prisma.tag.findMany({
+          include: { _count: { select: { articles: true } } }
+        });
+        return res.json(tags.map(t => ({ id: t.id, name: t.name, articleCount: t._count.articles })));
+      } catch (e) {}
+    }
+    const db = mockDb.getDb();
+    const result = db.tags.map(t => ({
+      id: t.id,
+      name: t.name,
+      articleCount: db.articles.filter(a => a.tags && Array.isArray(a.tags) && a.tags.includes(t.name)).length
+    }));
+    res.json(result);
+  });
+
+  app.post('/api/admin/tags', authenticate, authorize(['ADMIN', 'EDITOR']), async (req: any, res: any) => {
+    const { name } = req.body;
+    if (getDbStatus()) {
+      try {
+        const tag = await prisma.tag.create({ data: { name } });
+        return res.json(tag);
+      } catch (e) {}
+    }
+    const db = mockDb.getDb();
+    const newTag = { id: 'tag-' + Math.random().toString(36).substring(2, 9), name };
+    db.tags.push(newTag);
+    mockDb.saveDb(db);
+    res.json(newTag);
+  });
+
+  app.put('/api/admin/tags/:id', authenticate, authorize(['ADMIN', 'EDITOR']), async (req: any, res: any) => {
+    const { name } = req.body;
+    const { id } = req.params;
+    if (getDbStatus()) {
+      try {
+        const tag = await prisma.tag.update({ where: { id }, data: { name } });
+        return res.json(tag);
+      } catch (e) {}
+    }
+    const db = mockDb.getDb();
+    const tag = db.tags.find(t => t.id === id);
+    if (tag) {
+      tag.name = name;
+      mockDb.saveDb(db);
+      return res.json(tag);
+    }
+    res.status(404).json({ error: 'Not found' });
+  });
+
+  app.delete('/api/admin/tags/:id', authenticate, authorize(['ADMIN']), async (req: any, res: any) => {
+    const { id } = req.params;
+    if (getDbStatus()) {
+      try {
+        await prisma.tag.delete({ where: { id } });
+        return res.json({ success: true });
+      } catch (e) {}
+    }
+    const db = mockDb.getDb();
+    db.tags = db.tags.filter(t => t.id !== id);
+    mockDb.saveDb(db);
+    res.json({ success: true });
+  });
+
+  // --- COMMENTS API ---
+  app.get('/api/admin/comments', authenticate, authorize(['ADMIN', 'EDITOR']), async (req: any, res: any) => {
+    const db = mockDb.getDb();
+    res.json(db.comments);
+  });
+
+  app.put('/api/admin/comments/:id/status', authenticate, authorize(['ADMIN', 'EDITOR']), async (req: any, res: any) => {
+    const { status } = req.body; // PENDING, APPROVED, REJECTED, SPAM
+    const { id } = req.params;
+    const db = mockDb.getDb();
+    const comment = db.comments.find(c => c.id === id);
+    if (comment) {
+      comment.status = status;
+      mockDb.saveDb(db);
+      return res.json(comment);
+    }
+    res.status(404).json({ error: 'Comment not found' });
+  });
+
+  app.delete('/api/admin/comments/:id', authenticate, authorize(['ADMIN']), async (req: any, res: any) => {
+    const { id } = req.params;
+    const db = mockDb.getDb();
+    db.comments = db.comments.filter(c => c.id !== id);
+    mockDb.saveDb(db);
+    res.json({ success: true });
+  });
+
+  // --- USERS API ---
+  app.get('/api/admin/users', authenticate, authorize(['ADMIN']), async (req: any, res: any) => {
+    if (getDbStatus()) {
+      try {
+        const users = await prisma.user.findMany({
+          select: { id: true, email: true, role: true, failedLoginAttempts: true, lockedUntil: true, createdAt: true }
+        });
+        return res.json(users);
+      } catch (e) {}
+    }
+    const db = mockDb.getDb();
+    res.json(db.users.map(u => ({
+      id: u.id,
+      email: u.email,
+      role: u.role,
+      failedLoginAttempts: 0,
+      lockedUntil: null,
+      createdAt: u.createdAt
+    })));
+  });
+
+  app.post('/api/admin/users', authenticate, authorize(['ADMIN']), async (req: any, res: any) => {
+    const { email, password, role } = req.body;
+    const { hashPassword } = await import('./lib/auth.ts');
+    const hashedPassword = await hashPassword(password);
+    if (getDbStatus()) {
+      try {
+        const user = await prisma.user.create({
+          data: { email, password: hashedPassword, role }
+        });
+        return res.json({ id: user.id, email: user.email, role: user.role, createdAt: user.createdAt });
+      } catch (e) {
+        return res.status(400).json({ error: 'User already exists' });
+      }
+    }
+    const db = mockDb.getDb();
+    if (db.users.some(u => u.email === email)) {
+      return res.status(400).json({ error: 'User already exists' });
+    }
+    const newUser = {
+      id: 'user-' + Math.random().toString(36).substring(2, 11),
+      email,
+      passwordHash: hashedPassword,
+      role: role || 'USER',
+      emailVerified: true,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+    db.users.push(newUser);
+    mockDb.saveDb(db);
+    res.json({ id: newUser.id, email: newUser.email, role: newUser.role, createdAt: newUser.createdAt });
+  });
+
+  app.put('/api/admin/users/:id', authenticate, authorize(['ADMIN']), async (req: any, res: any) => {
+    const { role, isLocked } = req.body;
+    const { id } = req.params;
+    if (getDbStatus()) {
+      try {
+        const user = await prisma.user.update({
+          where: { id },
+          data: {
+            role,
+            lockedUntil: isLocked ? new Date(Date.now() + 24 * 60 * 60 * 1000) : null,
+            failedLoginAttempts: isLocked ? 5 : 0
+          }
+        });
+        return res.json(user);
+      } catch (e) {}
+    }
+    const db = mockDb.getDb();
+    const user = db.users.find(u => u.id === id);
+    if (user) {
+      user.role = role;
+      mockDb.saveDb(db);
+      return res.json({ id: user.id, email: user.email, role: user.role, isLocked });
+    }
+    res.status(404).json({ error: 'User not found' });
+  });
+
+  app.delete('/api/admin/users/:id', authenticate, authorize(['ADMIN']), async (req: any, res: any) => {
+    const { id } = req.params;
+    if (getDbStatus()) {
+      try {
+        await prisma.user.delete({ where: { id } });
+        return res.json({ success: true });
+      } catch (e) {}
+    }
+    const db = mockDb.getDb();
+    db.users = db.users.filter(u => u.id !== id);
+    mockDb.saveDb(db);
+    res.json({ success: true });
+  });
+
+  // --- SETTINGS API ---
+  app.get('/api/admin/settings', authenticate, authorize(['ADMIN', 'EDITOR']), async (req: any, res: any) => {
+    const db = mockDb.getDb();
+    res.json(db.settings);
+  });
+
+  app.put('/api/admin/settings', authenticate, authorize(['ADMIN']), async (req: any, res: any) => {
+    const updatedSettings = req.body; // Array of { key, value }
+    const db = mockDb.getDb();
+    for (const setting of updatedSettings) {
+      const match = db.settings.find(s => s.key === setting.key);
+      if (match) {
+        match.value = setting.value;
+      } else {
+        db.settings.push({ id: 'set-' + Math.random().toString(36).substring(2, 9), key: setting.key, value: setting.value });
+      }
+    }
+    mockDb.saveDb(db);
+    res.json(db.settings);
+  });
+
+  // --- SECURITY LOGS ---
+  app.get('/api/admin/logs', authenticate, authorize(['ADMIN']), async (req: any, res: any) => {
+    const db = mockDb.getDb();
+    res.json(db.auditLogs);
+  });
+
   // 4. Vite / Static
   if (process.env.NODE_ENV !== 'production') {
     const vite = await createViteServer({

@@ -4,7 +4,7 @@ import * as ReactRouterDOM from 'react-router-dom';
 import { 
   LayoutDashboard, FileText, Sparkles, MessageSquare, 
   Settings, LogOut, Menu, X, ShieldCheck, Image as ImageIcon, 
-  ScrollText, Palette, MonitorPlay, Loader2
+  ScrollText, Palette, MonitorPlay, Loader2, Folder, Hash, Users, TrendingUp
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext.tsx';
 
@@ -24,12 +24,13 @@ export const AdminLayout: React.FC = () => {
   // --- AUTHENTICATED LAYOUT ---
   const navItems = [
     { label: 'Хянах самбар', path: '/admin/dashboard', icon: <LayoutDashboard size={20} /> },
-    { label: 'Контент', path: '/admin/content', icon: <FileText size={20} /> },
-    { label: 'Зургийн сан', path: '/admin/images', icon: <ImageIcon size={20} /> },
-    { label: 'Медиа солих', path: '/admin/media', icon: <MonitorPlay size={20} /> },
-    { label: 'Гадаад төрх', path: '/admin/appearance', icon: <Palette size={20} /> },
-    { label: 'AI Санал', path: '/admin/ai-suggestions', icon: <Sparkles size={20} /> },
-    { label: 'Чатбот', path: '/admin/chat-settings', icon: <MessageSquare size={20} /> },
+    { label: 'Нийтлэлүүд', path: '/admin/articles', icon: <FileText size={20} /> },
+    { label: 'Ангилал', path: '/admin/categories', icon: <Folder size={20} /> },
+    { label: 'Шошгонууд', path: '/admin/tags', icon: <Hash size={20} /> },
+    { label: 'Медиа сан', path: '/admin/media', icon: <ImageIcon size={20} /> },
+    { label: 'Хэрэглэгчид', path: '/admin/users', icon: <Users size={20} /> },
+    { label: 'Сэтгэгдэл', path: '/admin/comments', icon: <MessageSquare size={20} /> },
+    { label: 'Аналитик', path: '/admin/analytics', icon: <TrendingUp size={20} /> },
     { label: 'Систем лог', path: '/admin/logs', icon: <ScrollText size={20} /> },
     { label: 'Тохиргоо', path: '/admin/settings', icon: <Settings size={20} /> },
   ];

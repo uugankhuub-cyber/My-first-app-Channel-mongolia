@@ -29,6 +29,7 @@ export interface MockArticle {
   categoryId?: string;
   views: number;
   likes: number;
+  tags?: string[];
   publishedAt?: string;
   createdAt: string;
   updatedAt: string;
@@ -40,10 +41,45 @@ export interface MockCategory {
   slug: string;
 }
 
+export interface MockComment {
+  id: string;
+  articleId: string;
+  articleTitle: string;
+  authorName: string;
+  authorEmail: string;
+  content: string;
+  status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'SPAM';
+  createdAt: string;
+}
+
+export interface MockTag {
+  id: string;
+  name: string;
+}
+
+export interface MockAuditLog {
+  id: string;
+  userEmail: string;
+  action: string;
+  details: string;
+  ipAddress: string;
+  createdAt: string;
+}
+
+export interface MockSetting {
+  id: string;
+  key: string;
+  value: string;
+}
+
 interface MockDbState {
   users: MockUser[];
   articles: MockArticle[];
   categories: MockCategory[];
+  comments: MockComment[];
+  tags: MockTag[];
+  auditLogs: MockAuditLog[];
+  settings: MockSetting[];
 }
 
 const defaultState: MockDbState = {
@@ -90,6 +126,31 @@ const defaultState: MockDbState = {
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     }
+  ],
+  comments: [
+    { id: 'com-1', articleId: 'art-1', articleTitle: 'Channel Mongolia тавтай морилно уу', authorName: 'Э.Бат', authorEmail: 'bat@example.com', content: 'Маш сонирхолтой мэдээлэл байна! Дараагийн нийтлэлийг хүлээж байна.', status: 'APPROVED', createdAt: new Date().toISOString() },
+    { id: 'com-2', articleId: 'art-2', articleTitle: 'Монгол дахь хиймэл оюун ухааны ирээдүй', authorName: 'Н.Саруул', authorEmail: 'saruul@example.com', content: 'Манайд хөгжих бүрэн боломжтой сэдэв шүү.', status: 'PENDING', createdAt: new Date().toISOString() },
+    { id: 'com-3', articleId: 'art-1', articleTitle: 'Channel Mongolia тавтай морилно уу', authorName: 'SpamBot', authorEmail: 'spam@spam.com', content: 'Earn money fast here http://fake-spam-link.xyz!', status: 'SPAM', createdAt: new Date().toISOString() }
+  ],
+  tags: [
+    { id: 'tag-1', name: 'Сансар' },
+    { id: 'tag-2', name: 'AI' },
+    { id: 'tag-3', name: 'Технологи' },
+    { id: 'tag-4', name: 'Физик' }
+  ],
+  auditLogs: [
+    { id: 'log-1', userEmail: 'admin@channel.mn', action: 'LOGIN_SUCCESS', details: 'Удирдлагын хэсэгт амжилттай нэвтэрлээ.', ipAddress: '127.0.0.1', createdAt: new Date().toISOString() },
+    { id: 'log-2', userEmail: 'editor@channel.mn', action: 'ARTICLE_CREATE', details: 'Шинэ нийтлэл "Монгол дахь хиймэл оюун ухааны ирээдүй" үүсгэлээ.', ipAddress: '127.0.0.1', createdAt: new Date().toISOString() }
+  ],
+  settings: [
+    { id: 'set-1', key: 'siteName', value: 'Channel Mongolia' },
+    { id: 'set-2', key: 'logoUrl', value: '' },
+    { id: 'set-3', key: 'faviconUrl', value: '' },
+    { id: 'set-4', key: 'contactEmail', value: 'info@channel.mn' },
+    { id: 'set-5', key: 'contactPhone', value: '+976 7000-1234' },
+    { id: 'set-6', key: 'fbLink', value: 'https://facebook.com/channelmongolia' },
+    { id: 'set-7', key: 'seoTitle', value: 'Channel Mongolia - Шинжлэх ухаан, технологи, танин мэдэхүй' },
+    { id: 'set-8', key: 'seoDesc', value: 'Дижитал мэдлэг, мэдээллийн нэгдсэн тавцан' }
   ]
 };
 
@@ -98,7 +159,15 @@ export function getDb(): MockDbState {
   try {
     if (fs.existsSync(MOCK_DB_FILE)) {
       const content = fs.readFileSync(MOCK_DB_FILE, 'utf-8');
-      return JSON.parse(content);
+      const data = JSON.parse(content);
+      
+      // Ensure new collections are populated if missing in existing mock-db.json
+      if (!data.comments) data.comments = defaultState.comments;
+      if (!data.tags) data.tags = defaultState.tags;
+      if (!data.auditLogs) data.auditLogs = defaultState.auditLogs;
+      if (!data.settings) data.settings = defaultState.settings;
+      
+      return data;
     }
   } catch (e) {
     console.error('Error reading mock db, falling back to defaults:', e);

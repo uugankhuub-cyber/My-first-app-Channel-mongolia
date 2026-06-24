@@ -30,14 +30,17 @@ import { AuthProvider } from './context/AuthContext';
 // Admin Components
 import { AdminLayout } from './pages/admin/AdminLayout';
 import { AdminDashboard } from './pages/admin/AdminDashboard';
-import { AdminContent } from './pages/admin/AdminContent';
-import { AdminAISuggestions } from './pages/admin/AdminAISuggestions';
-import { AdminEditor } from './pages/admin/AdminEditor';
-import { AdminImages } from './pages/admin/AdminImages';
-import { AdminChatSettings } from './pages/admin/AdminChatSettings';
+import { AdminLoginPage } from './pages/admin/AdminLoginPage';
+import { AdminArticlesPage } from './pages/admin/AdminArticlesPage';
+import { AdminArticleForm } from './pages/admin/AdminArticleForm';
+import { AdminCategoriesPage } from './pages/admin/AdminCategoriesPage';
+import { AdminTagsPage } from './pages/admin/AdminTagsPage';
+import { AdminMediaPage } from './pages/admin/AdminMediaPage';
+import { AdminUsersPage } from './pages/admin/AdminUsersPage';
+import { AdminCommentsPage } from './pages/admin/AdminCommentsPage';
+import { AdminAnalyticsPage } from './pages/admin/AdminAnalyticsPage';
+import { AdminSettingsPage } from './pages/admin/AdminSettingsPage';
 import { AdminLogs } from './pages/admin/AdminLogs';
-import { AdminAppearance } from './pages/admin/AdminAppearance';
-import { AdminMedia } from './pages/admin/AdminMedia';
 
 import { CATEGORIES } from './constants';
 
@@ -87,6 +90,7 @@ const AnimatedRoutes = () => {
         {/* Public Routes */}
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
+        <Route path="/admin/login" element={<AdminLoginPage />} />
         <Route path="/forgot-password" element={<div className="p-20 text-center text-white">Password Reset Coming Soon...</div>} />
 
         {/* Admin Routes (Protected) */}
@@ -94,15 +98,17 @@ const AnimatedRoutes = () => {
           <Route path="/admin" element={<AdminLayout />}>
              <Route index element={<AdminDashboard />} />
              <Route path="dashboard" element={<AdminDashboard />} />
-             <Route path="content" element={<AdminContent />} />
-             <Route path="images" element={<AdminImages />} />
-             <Route path="media" element={<AdminMedia />} />
-             <Route path="appearance" element={<AdminAppearance />} />
-             <Route path="ai-suggestions" element={<AdminAISuggestions />} />
-             <Route path="chat-settings" element={<AdminChatSettings />} />
+             <Route path="articles" element={<AdminArticlesPage />} />
+             <Route path="articles/create" element={<AdminArticleForm />} />
+             <Route path="articles/edit/:id" element={<AdminArticleForm />} />
+             <Route path="categories" element={<AdminCategoriesPage />} />
+             <Route path="tags" element={<AdminTagsPage />} />
+             <Route path="media" element={<AdminMediaPage />} />
+             <Route path="users" element={<AdminUsersPage />} />
+             <Route path="comments" element={<AdminCommentsPage />} />
+             <Route path="analytics" element={<AdminAnalyticsPage />} />
+             <Route path="settings" element={<AdminSettingsPage />} />
              <Route path="logs" element={<AdminLogs />} />
-             <Route path="content/edit/:id" element={<AdminEditor />} />
-             <Route path="settings" element={<div className="p-8 text-white">Settings Coming Soon...</div>} />
           </Route>
         </Route>
 
