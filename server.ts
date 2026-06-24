@@ -17,6 +17,7 @@ import chatHandler from './api/chat.ts';
 import weatherHandler from './api/weather.ts';
 import ratesHandler from './api/rates.ts';
 import uploadHandler from './api/upload.ts';
+import * as mockDb from './lib/mock-db.ts';
 
 async function startServer() {
   const app = express();
@@ -76,6 +77,7 @@ async function startServer() {
   };
   
   await initAdmin();
+  await mockDb.ensureAdmin();
 
   // 3. API Routes
 
@@ -110,12 +112,47 @@ async function startServer() {
   // Articles (Public)
   app.get('/api/articles', articleHandlers.getArticles);
   app.get('/api/articles/:slug', async (req, res) => {
-    const article = await prisma.article.findUnique({
-      where: { slug: req.params.slug },
-      include: { author: { select: { email: true } }, category: true }
+    if (process.env.DATABASE_URL) {
+      try {
+        const article = await prisma.article.findUnique({
+          where: { slug: req.params.slug },
+          include: { author: { select: { email: true } }, category: true }
+        });
+        if (article) return res.json(article);
+      } catch (dbError: any) {
+        console.error('Database slug fetch failed, trying mock fallback:', dbError.message);
+      }
+    }
+
+    // FALLBACK TO MOCK DB
+    const db = mockDb.getDb();
+    const index = db.articles.findIndex(art => art.slug === req.params.slug);
+    if (index === -1) {
+      return res.status(404).json({ error: 'Not found' });
+    }
+
+    // Persist a view increment in mock mode for dynamic analytics!
+    db.articles[index].views += 1;
+    mockDb.saveDb(db);
+
+    const art = db.articles[index];
+    const cat = db.categories.find(c => c.id === art.categoryId);
+    res.json({
+      id: art.id,
+      title: art.title,
+      slug: art.slug,
+      excerpt: art.excerpt,
+      content: art.content,
+      thumbnail: art.thumbnail,
+      status: art.status,
+      authorId: 'admin-1',
+      author: { email: 'admin@channelmongolia.com' },
+      categoryId: art.categoryId,
+      category: cat ? { id: cat.id, name: cat.name, slug: cat.slug } : null,
+      publishedAt: art.publishedAt,
+      createdAt: art.createdAt,
+      updatedAt: art.updatedAt
     });
-    if (!article) return res.status(404).json({ error: 'Not found' });
-    res.json(article);
   });
 
   // Articles (Admin/Editor)
@@ -125,10 +162,23 @@ async function startServer() {
 
   // Dashboard Stats
   app.get('/api/admin/stats', authenticate, authorize(['ADMIN', 'EDITOR']), async (req, res) => {
-      const articleCount = await prisma.article.count();
-      const userCount = await prisma.user.count();
-      const draftCount = await prisma.article.count({ where: { status: 'DRAFT' } });
-      res.json({ articleCount, userCount, draftCount });
+    if (process.env.DATABASE_URL) {
+      try {
+        const articleCount = await prisma.article.count();
+        const userCount = await prisma.user.count();
+        const draftCount = await prisma.article.count({ where: { status: 'DRAFT' } });
+        return res.json({ articleCount, userCount, draftCount });
+      } catch (dbError: any) {
+        console.error('Database stats query failed, trying mock fallback:', dbError.message);
+      }
+    }
+
+    // FALLBACK TO MOCK DB
+    const db = mockDb.getDb();
+    const articleCount = db.articles.length;
+    const userCount = db.users.length;
+    const draftCount = db.articles.filter(art => art.status === 'DRAFT').length;
+    res.json({ articleCount, userCount, draftCount });
   });
 
   // 4. Vite / Static

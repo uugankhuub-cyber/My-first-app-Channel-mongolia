@@ -1,101 +1,84 @@
-
 import { prisma } from '../lib/prisma.ts';
+import * as mockDb from '../lib/mock-db.ts';
 
-export default async function handler(req: any, res: any) {
-  const { method } = req;
-
-  if (method === 'GET') {
+export default async function handle(req: any, res: any) {
+  if (req.method === 'GET') {
     try {
-      const articles = await prisma.article.findMany({
-        where: { status: 'PUBLISHED' },
-        orderBy: { updatedAt: 'desc' },
-        include: { category: true }
+      if (process.env.DATABASE_URL) {
+        try {
+          const articles = await prisma.article.findMany({
+            where: { status: 'PUBLISHED' },
+            include: { category: true },
+            orderBy: { publishedAt: 'desc' }
+          });
+
+          const mappedData = articles.map(item => ({
+            id: item.id,
+            title: item.title,
+            title_en: item.title,
+            description: item.excerpt || item.content.substring(0, 150),
+            description_en: item.excerpt || item.content.substring(0, 150),
+            contentBody: item.content,
+            contentBody_en: item.content,
+            category: item.category?.name || 'General',
+            category_en: item.category?.name || 'General',
+            thumbnailUrl: item.thumbnail || 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&q=80&w=800',
+            views: 0,
+            publishedDate: item.publishedAt ? new Date(item.publishedAt).toLocaleDateString() : new Date(item.updatedAt).toLocaleDateString(),
+            readTime: '5 мин',
+            readTimeValue: 5,
+            isVideo: false,
+            tags: [],
+            tags_en: [],
+            isTrending: false,
+            isEditorPick: false,
+            likes: 0,
+            status: item.status.toLowerCase()
+          }));
+
+          return res.status(200).json({ data: mappedData });
+        } catch (dbError: any) {
+          console.error('Prisma fetch error in content.ts, using mock DB fallback:', dbError.message);
+        }
+      }
+
+      // FALLBACK TO MOCK DB
+      const db = mockDb.getDb();
+      const publishedArticles = db.articles.filter(art => art.status === 'PUBLISHED');
+      
+      const mappedMockData = publishedArticles.map(art => {
+        const cat = db.categories.find(c => c.id === art.categoryId);
+        return {
+          id: art.id,
+          title: art.title,
+          title_en: art.title_en,
+          description: art.excerpt,
+          description_en: art.excerpt_en,
+          contentBody: art.content,
+          contentBody_en: art.content_en,
+          category: cat ? cat.name : 'General',
+          category_en: cat ? cat.name : 'General',
+          thumbnailUrl: art.thumbnail || 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&q=80&w=800',
+          views: art.views,
+          publishedDate: art.publishedAt ? new Date(art.publishedAt).toLocaleDateString() : new Date().toLocaleDateString(),
+          readTime: `${Math.ceil(art.content.length / 500)} мин`,
+          readTimeValue: Math.ceil(art.content.length / 500) || 3,
+          isVideo: false,
+          tags: [],
+          tags_en: [],
+          isTrending: art.views > 1000,
+          isEditorPick: art.id === 'art-1',
+          likes: art.likes,
+          status: 'published'
+        };
       });
 
-      // Map to frontend format
-      const mappedData = articles.map(item => ({
-        id: item.id,
-        title: item.title,
-        title_en: item.title,
-        description: item.excerpt || item.content.substring(0, 150),
-        description_en: item.excerpt || item.content.substring(0, 150),
-        contentBody: item.content,
-        contentBody_en: item.content,
-        category: item.category?.name || 'General',
-        category_en: item.category?.name || 'General',
-        thumbnailUrl: item.thumbnail || 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&q=80&w=800',
-        views: 0,
-        publishedDate: item.publishedAt ? new Date(item.publishedAt).toLocaleDateString() : new Date(item.updatedAt).toLocaleDateString(),
-        readTime: '5 мин',
-        readTimeValue: 5,
-        isVideo: false,
-        tags: [],
-        tags_en: [],
-        isTrending: false,
-        isEditorPick: false,
-        likes: 0,
-        status: item.status.toLowerCase()
-      }));
-
-      return res.status(200).json({ data: mappedData });
+      return res.status(200).json({ data: mappedMockData, isMock: true });
     } catch (error: any) {
-      console.error('Fetch articles error:', error.message);
-      
-      // FALLBACK MOCK DATA
-      const mockArticles = [
-        {
-          id: 'mock-1',
-          title: 'Welcome to Channel Mongolia',
-          title_en: 'Welcome to Channel Mongolia',
-          description: 'A modern digital knowledge & media platform sharing interesting knowledge, science, and facts.',
-          description_en: 'A modern digital knowledge & media platform sharing interesting knowledge, science, and facts.',
-          contentBody: 'Welcome to our platform. We are dedicated to bringing you the latest in science, technology, and culture.',
-          contentBody_en: 'Welcome to our platform. We are dedicated to bringing you the latest in science, technology, and culture.',
-          category: 'Science',
-          category_en: 'Science',
-          thumbnailUrl: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&q=80&w=800',
-          views: 1250,
-          publishedDate: new Date().toLocaleDateString(),
-          readTime: '3 мин',
-          readTimeValue: 3,
-          isVideo: false,
-          tags: [],
-          tags_en: [],
-          isTrending: true,
-          isEditorPick: true,
-          likes: 45,
-          status: 'published'
-        },
-        {
-          id: 'mock-2',
-          title: 'The Future of AI in Mongolia',
-          title_en: 'The Future of AI in Mongolia',
-          description: 'Exploring how artificial intelligence is shaping the technological landscape of the region.',
-          description_en: 'Exploring how artificial intelligence is shaping the technological landscape of the region.',
-          contentBody: 'Artificial intelligence is making significant strides globally, and Mongolia is no exception.',
-          contentBody_en: 'Artificial intelligence is making significant strides globally, and Mongolia is no exception.',
-          category: 'Technology',
-          category_en: 'Technology',
-          thumbnailUrl: 'https://images.unsplash.com/photo-1677442136019-21780ecad995?auto=format&fit=crop&q=80&w=800',
-          views: 890,
-          publishedDate: new Date().toLocaleDateString(),
-          readTime: '5 мин',
-          readTimeValue: 5,
-          isVideo: false,
-          tags: [],
-          tags_en: [],
-          isTrending: false,
-          isEditorPick: false,
-          likes: 24,
-          status: 'published'
-        }
-      ];
-
-      return res.status(200).json({ data: mockArticles, isMock: true });
+      console.error('Fetch articles overall error:', error.message);
+      return res.status(200).json({ data: [], isMock: true });
     }
   }
 
-  // Admin writes should use the newer article-handlers.ts via /api/admin/articles
-  // But we can keep a fallback here if needed.
   return res.status(405).json({ error: 'Method not allowed' });
 }
