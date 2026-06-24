@@ -63,76 +63,50 @@ export const Home: React.FC = () => {
   };
 
   return (
-    <div className="pb-24 bg-slate-50 dark:bg-[#020617] transition-colors duration-500">
+    <div className="pb-24 bg-background transition-colors duration-500">
       {/* Hero / Header Section */}
-      <section className="relative min-h-[500px] md:min-h-[650px] flex flex-col justify-center overflow-hidden">
-        
-        {/* Background Slider */}
-        <div className="absolute inset-0 z-0">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={HERO_IMAGES[currentHeroIndex]}
-              initial={{ opacity: 0, scale: 1.1 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 2, ease: "easeInOut" }}
-              className="absolute inset-0"
-            >
-              <img
-                src={HERO_IMAGES[currentHeroIndex]}
-                alt=""
-                className="w-full h-full object-cover"
-              />
-            </motion.div>
-          </AnimatePresence>
-          
-          {/* DUAL MODE OVERLAY: Clean White for Light Mode, Cinematic Black for Dark Mode */}
-          <div className="absolute inset-0 bg-gradient-to-b from-white/90 via-white/40 to-white/90 dark:from-black/80 dark:via-black/40 dark:to-black/80 transition-colors duration-500"></div>
-          
-          {/* Animated Particles or Shapes could go here */}
-        </div>
-        
-        <Container className="relative z-10 text-center py-14 md:py-20">
+      <section className="relative pt-24 pb-16 md:pt-32 md:pb-24 overflow-hidden border-b border-border">
+        <Container className="relative z-10">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.2 }}
+            className="max-w-4xl mx-auto text-center"
           >
-            <h1 className="text-5xl md:text-7xl font-extrabold text-slate-900 dark:text-white tracking-tighter mb-6 leading-[1.1] drop-shadow-sm dark:drop-shadow-lg transition-colors duration-300">
+            <motion.div 
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ delay: 0.3 }}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-surface border border-border shadow-sm mb-8"
+            >
+              <Sparkles size={16} className="text-brand-orange" />
+              <span className="text-sm font-semibold text-gradient">
+                Шинэ үеийн мэдлэгийн сан
+              </span>
+            </motion.div>
+            
+            <h1 className="text-5xl md:text-7xl font-black text-text-main mb-6 leading-[1.1] tracking-tight">
               {t('hero_title')} <br className="hidden md:block"/>
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-orange via-brand-purple to-brand-orange bg-[length:200%_auto] animate-gradient-x">
-                {t('hero_title_highlight')}
+              <span className="relative inline-block mt-2">
+                <span className="relative z-10 text-white px-6 py-2 bg-gradient-brand rounded-2xl transform -rotate-2 inline-block shadow-lg">
+                  {t('hero_title_highlight')}
+                </span>
               </span>
             </h1>
-            <p className="text-xl md:text-2xl text-slate-600 dark:text-slate-300 max-w-3xl mx-auto leading-relaxed font-light mb-10 transition-colors duration-300">
+            
+            <p className="text-xl md:text-2xl text-text-muted mb-12 max-w-2xl mx-auto font-medium leading-relaxed">
               {t('hero_subtitle')}
             </p>
-            <div className="flex justify-center gap-4">
+            
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                 <Link to="/categories" className="px-8 py-4 bg-gradient-brand text-white text-base font-bold rounded-full shadow-xl hover:shadow-2xl transition-all flex items-center gap-3">
-                    <span>{t('view_all')}</span>
-                    <ArrowRight size={20} />
+                 <Link to="/categories" className="w-full sm:w-auto px-8 py-4 bg-text-main text-background font-bold rounded-2xl shadow-xl transition-all flex items-center justify-center gap-2">
+                    Мэдлэгтэй танилцах <ArrowRight size={20} />
                  </Link>
                </motion.div>
             </div>
           </motion.div>
         </Container>
-
-        {/* Scroll Indicator */}
-        <motion.div 
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 1.5 }}
-          className="absolute bottom-10 left-1/2 -translate-x-1/2 z-10 hidden md:block"
-        >
-          <div className="w-6 h-10 border-2 border-slate-400 dark:border-slate-600 rounded-full flex justify-center p-1">
-            <motion.div 
-              animate={{ y: [0, 12, 0] }}
-              transition={{ repeat: Infinity, duration: 2 }}
-              className="w-1.5 h-1.5 bg-brand-purple rounded-full"
-            />
-          </div>
-        </motion.div>
       </section>
 
       <Container className="mt-8 md:mt-12">
@@ -262,7 +236,7 @@ export const Home: React.FC = () => {
 
           {/* Sidebar (1/3) -> col-span-4 */}
           <div className="lg:col-span-4">
-             <div className="lg:sticky lg:top-24 space-y-12">
+             <div className="lg:sticky lg:top-24 space-y-12 pb-24">
                 <Sidebar />
              </div>
           </div>

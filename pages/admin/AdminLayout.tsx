@@ -11,12 +11,14 @@ import { useAdmin } from '../../context/AdminContext';
 const { Outlet, NavLink, useNavigate, useLocation } = ReactRouterDOM;
 
 export const AdminLayout: React.FC = () => {
-  const { isAuthenticated, logout, login } = useAdmin();
+  const { isAuthenticated, logout, login, register } = useAdmin();
   const navigate = useNavigate();
   const location = useLocation();
   const [isSidebarOpen, setSidebarOpen] = useState(true);
   
-  // Login State
+  // Login/Signup State
+  const [isSignUp, setIsSignUp] = useState(false);
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -26,14 +28,23 @@ export const AdminLayout: React.FC = () => {
     setError('');
     setLoading(true);
     
-    // Call Context login which calls API
-    const success = await login(password);
+    let success = false;
+    if (isSignUp) {
+      if (!email) {
+        setError('И-мэйл хаяг оруулна уу!');
+        setLoading(false);
+        return;
+      }
+      success = await register(email, password);
+    } else {
+      success = await login(password);
+    }
     
     setLoading(false);
     if (success) {
       navigate('/admin/dashboard');
     } else {
-      setError('Нууц үг буруу байна!');
+      setError(isSignUp ? 'Бүртгүүлэхэд алдаа гарлаа!' : 'Нууц үг буруу байна!');
     }
   };
 
@@ -52,10 +63,27 @@ export const AdminLayout: React.FC = () => {
                 <ShieldCheck className="text-white w-8 h-8" />
              </div>
           </div>
-          <h2 className="text-2xl font-bold text-center text-text-main mb-2">Удирдлагын хэсэг</h2>
-          <p className="text-text-muted text-center mb-8 text-sm">Channel Mongolia Admin</p>
+          <h2 className="text-2xl font-bold text-center text-text-main mb-2">
+            {isSignUp ? 'Бүртгүүлэх' : 'Удирдлагын хэсэг'}
+          </h2>
+          <p className="text-text-muted text-center mb-8 text-sm">
+            {isSignUp ? 'Шинэ хэрэглэгч үүсгэх' : 'Channel Mongolia Admin'}
+          </p>
           
           <form onSubmit={handleLogin} className="space-y-4">
+            {isSignUp && (
+              <div>
+                <label className="block text-sm font-medium text-text-muted mb-1">И-мэйл хаяг</label>
+                <input 
+                  type="email" 
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="w-full px-4 py-3 bg-surfaceHighlight border border-border rounded-xl text-text-main focus:border-brand-purple outline-none transition-colors"
+                  placeholder="admin@example.com"
+                  autoFocus={isSignUp}
+                />
+              </div>
+            )}
             <div>
               <label className="block text-sm font-medium text-text-muted mb-1">Нууц үг</label>
               <input 
@@ -64,7 +92,7 @@ export const AdminLayout: React.FC = () => {
                 onChange={(e) => setPassword(e.target.value)}
                 className="w-full px-4 py-3 bg-surfaceHighlight border border-border rounded-xl text-text-main focus:border-brand-purple outline-none transition-colors"
                 placeholder="••••••••"
-                autoFocus
+                autoFocus={!isSignUp}
               />
             </div>
             
@@ -79,11 +107,18 @@ export const AdminLayout: React.FC = () => {
               disabled={loading}
               className="w-full py-3 bg-gradient-brand text-white font-bold rounded-xl hover:opacity-90 transition-all shadow-md disabled:opacity-50 flex items-center justify-center gap-2"
             >
-              {loading ? <Loader2 className="animate-spin" size={20} /> : 'Нэвтрэх'}
+              {loading ? <Loader2 className="animate-spin" size={20} /> : (isSignUp ? 'Бүртгүүлэх' : 'Нэвтрэх')}
             </button>
-            <div className="text-center mt-4">
-               <button type="button" onClick={() => navigate('/')} className="text-text-muted text-xs hover:text-text-main">
-                  Буцах
+            <div className="text-center mt-4 flex flex-col gap-2">
+               <button 
+                 type="button" 
+                 onClick={() => setIsSignUp(!isSignUp)} 
+                 className="text-brand-purple text-sm font-medium hover:underline"
+               >
+                 {isSignUp ? 'Аль хэдийн бүртгүүлсэн үү? Нэвтрэх' : 'Шинээр бүртгүүлэх'}
+               </button>
+               <button type="button" onClick={() => navigate('/')} className="text-text-muted text-xs hover:text-text-main mt-2">
+                  Нүүр хуудас руу буцах
                </button>
             </div>
           </form>

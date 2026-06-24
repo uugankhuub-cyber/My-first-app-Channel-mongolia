@@ -31,9 +31,6 @@ export const DailyKnowledge: React.FC = () => {
       viewport={{ once: true }}
       className="bg-slate-900/5 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl p-6 relative overflow-hidden shadow-sm dark:shadow-lg group"
     >
-      {/* Decorative Glow */}
-      <div className="absolute top-0 right-0 w-32 h-32 bg-primary-500/10 dark:bg-primary-500/20 rounded-full blur-3xl -mr-16 -mt-16"></div>
-      
       <div className="relative z-10">
         <div className="flex items-center gap-2 mb-4 text-primary-600 dark:text-primary-400">
           <motion.div 

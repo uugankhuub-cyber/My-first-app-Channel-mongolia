@@ -30,9 +30,6 @@ export const Footer: React.FC = () => {
 
   return (
     <footer className="bg-surface border-t border-border mt-16 relative overflow-hidden transition-colors duration-300">
-      {/* Footer Ambient Glow */}
-      <div className="absolute bottom-0 left-0 w-full h-[500px] bg-gradient-to-t from-brand-purple/5 to-transparent pointer-events-none"></div>
-      
       <Container className="relative z-10 pt-16 pb-12">
         <motion.div 
           variants={containerVariants}

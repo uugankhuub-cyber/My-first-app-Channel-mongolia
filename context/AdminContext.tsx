@@ -31,6 +31,7 @@ export interface SiteImages {
 interface AdminContextType {
   isAuthenticated: boolean;
   login: (password: string) => Promise<boolean>;
+  register: (email: string, password: string) => Promise<boolean>;
   logout: () => void;
   token: string | null;
   
@@ -90,6 +91,25 @@ export const AdminProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ password })
+      });
+      const data = await response.json();
+      if (data.success && data.token) {
+        setIsAuthenticated(true);
+        setToken(data.token);
+        localStorage.setItem('cm_admin_auth', 'true');
+        localStorage.setItem('cm_admin_token', data.token);
+        return true;
+      }
+      return false;
+    } catch (e) { return false; }
+  };
+
+  const register = async (email: string, password: string): Promise<boolean> => {
+    try {
+      const response = await fetch('/api/admin-register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
       });
       const data = await response.json();
       if (data.success && data.token) {
@@ -215,7 +235,7 @@ export const AdminProvider: React.FC<{ children: ReactNode }> = ({ children }) =
 
   return (
     <AdminContext.Provider value={{
-      isAuthenticated, login, logout, token,
+      isAuthenticated, login, register, logout, token,
       adminContent: globalContent,
       saveContent, deleteContent, uploadImage,
       aiSuggestions, generateDraftFromAI,

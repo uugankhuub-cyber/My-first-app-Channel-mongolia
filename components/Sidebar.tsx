@@ -103,7 +103,7 @@ export const Sidebar: React.FC = () => {
   };
 
   return (
-    <aside className="space-y-8 sticky top-24">
+    <aside className="space-y-8 relative">
       
       <DailyKnowledge />
 
@@ -135,7 +135,6 @@ export const Sidebar: React.FC = () => {
 
       {/* BLOCK 2: TRENDING - DEFAULT WHITE/SURFACE */}
       <Card className="p-5 overflow-hidden relative">
-        <div className="absolute top-0 right-0 w-32 h-32 bg-brand-orange/5 rounded-full blur-3xl pointer-events-none -mr-10 -mt-10"></div>
         <SidebarHeader title={t('sb_trending')} icon={<Flame size={16} className="text-brand-orange" />} />
         <motion.div 
           variants={containerVariants}
