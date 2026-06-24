@@ -42,9 +42,9 @@ export const KnowledgeCard: React.FC<KnowledgeCardProps> = ({ item, featured = f
   const { t, language } = useLanguage();
   const isEn = language === 'en';
 
-  const title = isEn ? item.title_en : item.title;
-  const description = isEn ? item.description_en : item.description;
-  const category = isEn ? item.category_en : item.category;
+  const title = (isEn ? item.title_en : item.title) || item.title || '';
+  const description = (isEn ? item.description_en : item.description) || item.description || '';
+  const category = (isEn ? item.category_en : item.category) || item.category || '';
 
   const OverlayContent = (
     <>
@@ -101,7 +101,7 @@ export const KnowledgeCard: React.FC<KnowledgeCardProps> = ({ item, featured = f
             <div className="flex items-center gap-3">
                <div className="flex items-center gap-1.5">
                   <Eye size={14} />
-                  <span>{item.views.toLocaleString()}</span>
+                  <span>{(item.views ?? 0).toLocaleString()}</span>
                </div>
                <div className="flex items-center gap-1.5">
                   <Clock size={14} />

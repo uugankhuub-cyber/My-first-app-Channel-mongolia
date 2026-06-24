@@ -11,12 +11,20 @@ import { authenticate, authorize } from './middleware/auth.ts';
 // Handlers
 import * as authHandlers from './api/auth-handlers.ts';
 import * as articleHandlers from './api/article-handlers.ts';
+import * as adminHandlers from './api/admin-handlers.ts';
+import contentHandler from './api/content.ts';
+import chatHandler from './api/chat.ts';
+import weatherHandler from './api/weather.ts';
+import ratesHandler from './api/rates.ts';
+import uploadHandler from './api/upload.ts';
 
 async function startServer() {
   const app = express();
+  app.set('trust proxy', 1); // Trust the first proxy (NGINX)
   const PORT = 3000;
 
   // 1. Security & Middleware
+  app.set('trust proxy', 1); // Required for express-rate-limit behind proxy
   app.use(helmet({
     contentSecurityPolicy: false, // Vite handles CSP in dev
   }));
@@ -33,39 +41,71 @@ async function startServer() {
 
   // 2. Initial Admin Creation
   const initAdmin = async () => {
+    if (!process.env.DATABASE_URL) {
+      console.warn('DATABASE_URL not set. Skipping admin initialization.');
+      return;
+    }
+
     const adminEmail = process.env.INITIAL_ADMIN_EMAIL;
     const adminPassword = process.env.INITIAL_ADMIN_PASSWORD;
 
     if (adminEmail && adminPassword) {
-      const adminExists = await prisma.user.findUnique({ where: { email: adminEmail } });
-      if (!adminExists) {
-        console.log('Creating initial admin account...');
-        const hashedPassword = await hashPassword(adminPassword);
-        await prisma.user.create({
-          data: {
-            email: adminEmail,
-            password: hashedPassword,
-            role: 'ADMIN',
-            emailVerified: true,
-            forcePasswordChange: true, // Mandatory change on first login
-          },
-        });
+      try {
+        // Test connection
+        await prisma.$connect();
+        
+        const adminExists = await prisma.user.findUnique({ where: { email: adminEmail } });
+        if (!adminExists) {
+          console.log('Creating initial admin account...');
+          const hashedPassword = await hashPassword(adminPassword);
+          await prisma.user.create({
+            data: {
+              email: adminEmail,
+              password: hashedPassword,
+              role: 'ADMIN',
+              emailVerified: true,
+              forcePasswordChange: true,
+            },
+          });
+        }
+      } catch (err: any) {
+        console.error('Database connection error in initAdmin:', err.message);
+        // Do not crash the server, just log the error
       }
     }
   };
   
-  try {
-    await initAdmin();
-  } catch (err) {
-    console.error('Failed to initialize admin:', err);
-  }
+  await initAdmin();
 
   // 3. API Routes
+
+  // Helper to wrap legacy handlers (Vercel-style) into Express-style
+  const wrapHandler = (handler: any) => async (req: any, res: any, next: any) => {
+    if (typeof handler !== 'function') {
+      return res.status(500).json({ error: 'Handler not found' });
+    }
+    try {
+      await handler(req, res);
+    } catch (err: any) {
+      console.error('API Error:', err);
+      if (!res.headersSent) {
+        res.status(500).json({ error: 'Internal Server Error', message: err.message });
+      }
+    }
+  };
+
+  app.all('/api/content', wrapHandler(contentHandler));
+  app.all('/api/rates', wrapHandler(ratesHandler));
+  app.all('/api/weather', wrapHandler(weatherHandler));
+  app.all('/api/chat', wrapHandler(chatHandler));
+  app.all('/api/upload', wrapHandler(uploadHandler));
 
   // Auth
   app.post('/api/auth/login', authHandlers.login);
   app.post('/api/auth/register', authHandlers.register);
   app.post('/api/auth/logout', authHandlers.logout);
+  app.post('/api/admin-ai-content', adminHandlers.askAI);
+  app.post('/api/admin-upload', adminHandlers.adminUpload);
 
   // Articles (Public)
   app.get('/api/articles', articleHandlers.getArticles);

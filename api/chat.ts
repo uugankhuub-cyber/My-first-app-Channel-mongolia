@@ -1,7 +1,7 @@
 
 import { GoogleGenAI } from '@google/genai';
 
-export default async function handler(request, response) {
+export default async function handler(request: any, response: any) {
   if (request.method !== 'POST') {
     return response.status(405).json({ error: 'Method not allowed' });
   }
@@ -9,38 +9,38 @@ export default async function handler(request, response) {
   const apiKey = process.env.GEMINI_API_KEY;
 
   if (!apiKey) {
-    // Graceful fallback for demo/dev environments without keys
     return response.status(200).json({ 
-      text: "I can't connect to my brain right now (API Key missing), but I'm listening! Please configure GEMINI_API_KEY in Vercel." 
+      text: "AI Assistant is currently in standby mode (API Key missing). Please configure GEMINI_API_KEY." 
     });
   }
 
   try {
     const { messages, systemInstruction } = request.body;
 
-    // Convert frontend message format to Gemini format
-    // Frontend: { role: 'user' | 'model', text: '...' }
-    // Gemini:   { role: 'user' | 'model', parts: [{ text: '...' }] }
-    const contents = messages.map(msg => ({
+    const ai = new GoogleGenAI({
+      apiKey,
+      httpOptions: {
+        headers: {
+          'User-Agent': 'aistudio-build',
+        }
+      }
+    });
+
+    const contents = messages.map((msg: any) => ({
       role: msg.role === 'model' ? 'model' : 'user',
       parts: [{ text: msg.text }]
     }));
 
-    const ai = new GoogleGenAI({ apiKey });
-    
-    // Correct usage of generateContent with systemInstruction in config
     const geminiResponse = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
+      model: 'gemini-3.5-flash',
       contents: contents,
       config: {
         systemInstruction: systemInstruction || "You are a helpful assistant for Channel Mongolia. Answer in Mongolian or English based on the user's language.",
       }
     });
 
-    const text = geminiResponse.text;
-
-    return response.status(200).json({ text });
-  } catch (error) {
+    return response.status(200).json({ text: geminiResponse.text });
+  } catch (error: any) {
     console.error('Gemini API Error:', error);
     return response.status(500).json({ 
       error: 'Failed to generate response',

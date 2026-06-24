@@ -87,17 +87,18 @@ export const AdminProvider: React.FC<{ children: ReactNode }> = ({ children }) =
 
   const login = async (password: string): Promise<boolean> => {
     try {
-      const response = await fetch('/api/admin-login', {
+      // Use the INITIAL_ADMIN_EMAIL for logging in as admin
+      const email = 'admin@channel.mn'; // Or get from config
+      const response = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password })
+        body: JSON.stringify({ email, password })
       });
       const data = await response.json();
-      if (data.success && data.token) {
+      if (response.ok && data.user) {
         setIsAuthenticated(true);
-        setToken(data.token);
+        // Token is now in HttpOnly cookie, but we can store user info
         localStorage.setItem('cm_admin_auth', 'true');
-        localStorage.setItem('cm_admin_token', data.token);
         return true;
       }
       return false;
@@ -106,24 +107,22 @@ export const AdminProvider: React.FC<{ children: ReactNode }> = ({ children }) =
 
   const register = async (email: string, password: string): Promise<boolean> => {
     try {
-      const response = await fetch('/api/admin-register', {
+      const response = await fetch('/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password })
       });
-      const data = await response.json();
-      if (data.success && data.token) {
-        setIsAuthenticated(true);
-        setToken(data.token);
-        localStorage.setItem('cm_admin_auth', 'true');
-        localStorage.setItem('cm_admin_token', data.token);
+      if (response.ok) {
         return true;
       }
       return false;
     } catch (e) { return false; }
   };
 
-  const logout = () => {
+  const logout = async () => {
+    try {
+      await fetch('/api/auth/logout', { method: 'POST' });
+    } catch (e) {}
     setIsAuthenticated(false);
     setToken(null);
     localStorage.removeItem('cm_admin_auth');

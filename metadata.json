@@ -1,5 +1,6 @@
 {
   "name": "Channel Mongolia",
   "description": "A modern digital knowledge & media platform sharing interesting knowledge, science, and facts in Mongolian and English.",
-  "requestFramePermissions": []
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

@@ -22,7 +22,6 @@
       })();
     </script>
 
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
     <!-- Fonts -->
@@ -40,7 +39,6 @@
               serif: ['Georgia', 'serif'],
             },
             colors: {
-              // Using CSS variables for semantic coloring
               background: 'var(--bg-app)',
               surface: 'var(--bg-surface)',
               surfaceHighlight: 'var(--bg-surface-highlight)',
@@ -49,24 +47,11 @@
                 main: 'var(--text-main)',
                 muted: 'var(--text-muted)',
               },
-              // Brand Colors (Digital Trend - Indigo/Pink)
               brand: {
-                purple: '#6366f1', // Indigo 500
-                orange: '#f472b6', // Pink 400
-                dark: '#020617',   // Slate-950
-                surface: '#0f172a' // Slate-900
-              },
-              primary: {
-                50: '#f5f3ff',
-                100: '#ede9fe',
-                200: '#ddd6fe',
-                300: '#c4b5fd',
-                400: '#a78bfa',
-                500: '#8b5cf6',
-                600: '#7c3aed',
-                700: '#6d28d9',
-                800: '#5b21b6',
-                900: '#4c1d95',
+                purple: '#6366f1', 
+                orange: '#f472b6', 
+                dark: '#020617',   
+                surface: '#0f172a' 
               },
             },
             borderRadius: {
@@ -173,22 +158,7 @@
         -webkit-mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
       }
     </style>
-  <script type="importmap">
-{
-  "imports": {
-    "lucide-react": "https://aistudiocdn.com/lucide-react@^0.556.0",
-    "react-router-dom": "https://aistudiocdn.com/react-router-dom@^6.22.3",
-    "@vitejs/plugin-react": "https://aistudiocdn.com/@vitejs/plugin-react@^5.1.2",
-    "react/": "https://aistudiocdn.com/react@^18.2.0/",
-    "react": "https://aistudiocdn.com/react@^18.2.0",
-    "vite": "https://aistudiocdn.com/vite@^5.1.6",
-    "react-dom/": "https://aistudiocdn.com/react-dom@^18.2.0",
-    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.31.0",
-    "@supabase/supabase-js": "https://esm.sh/@supabase/supabase-js@^2.87.1"
-  }
-}
-</script>
-</head>
+  </head>
   <body>
     <div id="root"></div>
     <script type="module" src="/index.tsx"></script>

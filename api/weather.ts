@@ -1,7 +1,9 @@
 
-export default async function handler(request, response) {
+export default async function handler(request: any, response: any) {
   const apiKey = process.env.OPENWEATHER_API_KEY;
-  const city = request.query.city || 'Ulaanbaatar';
+  // Express req has 'query' if using express.json() and standard route matching,
+  // but let's be safe.
+  const city = (request.query && request.query.city) || 'Ulaanbaatar';
 
   // Fallback mock data if no API key is present (prevents breaking in dev)
   if (!apiKey) {
@@ -17,7 +19,7 @@ export default async function handler(request, response) {
     const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${city}&units=metric&appid=${apiKey}`);
     if (!res.ok) throw new Error('Weather fetch failed');
     
-    const data = await res.json();
+    const data: any = await res.json();
     
     return response.status(200).json({
       temp: Math.round(data.main.temp),
