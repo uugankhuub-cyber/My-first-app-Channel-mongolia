@@ -22,7 +22,7 @@ import * as mockDb from './lib/mock-db.ts';
 async function startServer() {
   const app = express();
   app.set('trust proxy', 1); // Trust the first proxy (NGINX)
-  const PORT = 3000;
+  const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
 
   // 1. Security & Middleware
   app.set('trust proxy', 1); // Required for express-rate-limit behind proxy
