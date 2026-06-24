@@ -41,7 +41,7 @@ export const Card: React.FC<CardProps> = ({
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: "-50px" }}
-        whileHover={hoverEffect ? { y: -8, transition: { duration: 0.3 } } : undefined}
+        whileHover={hoverEffect ? { y: -8, scale: 1.015, transition: { type: "spring", stiffness: 300, damping: 20 } } : undefined}
         className={baseClasses}
         {...(rest as unknown as HTMLMotionProps<"div">)}
       >

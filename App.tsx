@@ -13,6 +13,7 @@ import { PrivacyPage } from './pages/PrivacyPage';
 import { TermsPage } from './pages/TermsPage';
 import { ChatAssistant } from './components/ChatAssistant';
 import { GlobalInfoBar } from './components/GlobalInfoBar';
+import { motion, AnimatePresence } from 'motion/react';
 
 // Contexts
 import { ContentProvider } from './context/ContentContext';
@@ -73,6 +74,58 @@ const PublicLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => 
   </div>
 );
 
+const AnimatedRoutes = () => {
+  const location = useLocation();
+  return (
+    <AnimatePresence mode="wait">
+      <Routes location={location} key={location.pathname}>
+        <Route path="/admin" element={<AdminLayout />}>
+           <Route index element={<AdminDashboard />} />
+           <Route path="dashboard" element={<AdminDashboard />} />
+           <Route path="content" element={<AdminContent />} />
+           <Route path="images" element={<AdminImages />} />
+           <Route path="media" element={<AdminMedia />} />
+           <Route path="appearance" element={<AdminAppearance />} />
+           <Route path="ai-suggestions" element={<AdminAISuggestions />} />
+           <Route path="chat-settings" element={<AdminChatSettings />} />
+           <Route path="logs" element={<AdminLogs />} />
+           <Route path="content/edit/:id" element={<AdminEditor />} />
+           <Route path="settings" element={<div className="p-8 text-white">Settings Coming Soon...</div>} />
+        </Route>
+
+        <Route path="*" element={
+          <PublicLayout>
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={location.pathname}
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -15 }}
+                transition={{ duration: 0.4, ease: 'easeInOut' }}
+              >
+                <Routes location={location}>
+                  <Route path="/" element={<Home />} />
+                  {CATEGORIES.map(cat => (
+                     <Route key={cat.id} path={`/${cat.slug}`} element={<CategoriesPage categorySlug={cat.slug} />} />
+                  ))}
+                  <Route path="/video" element={<CategoriesPage filter="video" />} />
+                  <Route path="/categories" element={<CategoriesPage />} />
+                  <Route path="/niitlel/:id" element={<DetailPage />} />
+                  <Route path="/search" element={<SearchPage />} />
+                  <Route path="/bidnii-tukhai" element={<AboutPage />} />
+                  <Route path="/holboo-barikh" element={<ContactPage />} />
+                  <Route path="/nuuts-lalin-bodlogo" element={<PrivacyPage />} />
+                  <Route path="/uilchilgeenii-nukhtsul" element={<TermsPage />} />
+                </Routes>
+              </motion.div>
+            </AnimatePresence>
+          </PublicLayout>
+        } />
+      </Routes>
+    </AnimatePresence>
+  );
+};
+
 const App: React.FC = () => {
   return (
     <ThemeProvider>
@@ -84,40 +137,7 @@ const App: React.FC = () => {
               <SiteAppearanceManager />
               <Router>
                 <ScrollToTop />
-                <Routes>
-                  <Route path="/admin" element={<AdminLayout />}>
-                     <Route index element={<AdminDashboard />} />
-                     <Route path="dashboard" element={<AdminDashboard />} />
-                     <Route path="content" element={<AdminContent />} />
-                     <Route path="images" element={<AdminImages />} />
-                     <Route path="media" element={<AdminMedia />} />
-                     <Route path="appearance" element={<AdminAppearance />} />
-                     <Route path="ai-suggestions" element={<AdminAISuggestions />} />
-                     <Route path="chat-settings" element={<AdminChatSettings />} />
-                     <Route path="logs" element={<AdminLogs />} />
-                     <Route path="content/edit/:id" element={<AdminEditor />} />
-                     <Route path="settings" element={<div className="p-8 text-white">Settings Coming Soon...</div>} />
-                  </Route>
-
-                  <Route path="*" element={
-                    <PublicLayout>
-                      <Routes>
-                        <Route path="/" element={<Home />} />
-                        {CATEGORIES.map(cat => (
-                           <Route key={cat.id} path={`/${cat.slug}`} element={<CategoriesPage categorySlug={cat.slug} />} />
-                        ))}
-                        <Route path="/video" element={<CategoriesPage filter="video" />} />
-                        <Route path="/categories" element={<CategoriesPage />} />
-                        <Route path="/niitlel/:id" element={<DetailPage />} />
-                        <Route path="/search" element={<SearchPage />} />
-                        <Route path="/bidnii-tukhai" element={<AboutPage />} />
-                        <Route path="/holboo-barikh" element={<ContactPage />} />
-                        <Route path="/nuuts-lalin-bodlogo" element={<PrivacyPage />} />
-                        <Route path="/uilchilgeenii-nukhtsul" element={<TermsPage />} />
-                      </Routes>
-                    </PublicLayout>
-                  } />
-                </Routes>
+                <AnimatedRoutes />
               </Router>
             </AdminProvider>
           </ContentProvider>

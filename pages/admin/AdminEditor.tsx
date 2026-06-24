@@ -101,10 +101,28 @@ export const AdminEditor: React.FC = () => {
       let newText = '';
       if (tag === 'b') newText = `<b>${selection}</b>`;
       if (tag === 'i') newText = `<i>${selection}</i>`;
+      if (tag === 'u') newText = `<u>${selection}</u>`;
       if (tag === 'h2') newText = `<h2>${selection}</h2>`;
       if (tag === 'ul') newText = `<ul>\n<li>${selection}</li>\n</ul>`;
+      if (tag === 'link') newText = `<a href="#">${selection}</a>`;
       
       handleChange('contentBody', before + newText + after);
+  };
+
+  const transformText = (type: 'upper' | 'lower') => {
+      const textarea = document.getElementById('bodyEditor') as HTMLTextAreaElement;
+      if (!textarea) return;
+      
+      const start = textarea.selectionStart;
+      const end = textarea.selectionEnd;
+      const text = textarea.value;
+      const selection = text.substring(start, end);
+      
+      let newSelection = selection;
+      if (type === 'upper') newSelection = selection.toUpperCase();
+      if (type === 'lower') newSelection = selection.toLowerCase();
+      
+      handleChange('contentBody', text.substring(0, start) + newSelection + text.substring(end));
   };
 
   if (loading) return <div className="p-8 text-white">Loading...</div>;
@@ -183,14 +201,18 @@ export const AdminEditor: React.FC = () => {
 
              {/* Body Editor */}
              <div className="bg-[#1E293B] p-6 rounded-xl border border-white/5 min-h-[500px] group relative">
-                <div className="flex justify-between mb-4">
-                    <div className="flex items-center gap-2">
-                        <label className="block text-slate-400 text-xs font-bold uppercase tracking-wider">Content Body (HTML)</label>
-                        <div className="h-4 w-[1px] bg-white/10 mx-2"></div>
-                        <button onClick={() => insertTag('b')} className="p-1 hover:bg-white/10 rounded" title="Bold"><strong className="text-white">B</strong></button>
-                        <button onClick={() => insertTag('i')} className="p-1 hover:bg-white/10 rounded" title="Italic"><em className="text-white">I</em></button>
-                        <button onClick={() => insertTag('h2')} className="p-1 hover:bg-white/10 rounded" title="Header"><Type size={14} className="text-white"/></button>
-                        <button onClick={() => insertTag('ul')} className="p-1 hover:bg-white/10 rounded" title="List"><List size={14} className="text-white"/></button>
+                <div className="flex flex-wrap justify-between mb-4 gap-2">
+                    <div className="flex items-center gap-1">
+                        <label className="block text-slate-400 text-xs font-bold uppercase tracking-wider mr-2">Content</label>
+                        <button onClick={() => insertTag('b')} className="p-1 hover:bg-white/10 rounded text-white" title="Bold">B</button>
+                        <button onClick={() => insertTag('i')} className="p-1 hover:bg-white/10 rounded text-white" title="Italic">I</button>
+                        <button onClick={() => insertTag('u')} className="p-1 hover:bg-white/10 rounded text-white" title="Underline">U</button>
+                        <button onClick={() => insertTag('h2')} className="p-1 hover:bg-white/10 rounded text-white" title="Header"><Type size={14}/></button>
+                        <button onClick={() => insertTag('ul')} className="p-1 hover:bg-white/10 rounded text-white" title="List"><List size={14}/></button>
+                        <button onClick={() => insertTag('link')} className="p-1 hover:bg-white/10 rounded text-white" title="Link">Link</button>
+                        <div className="h-4 w-[1px] bg-white/10 mx-1"></div>
+                        <button onClick={() => transformText('upper')} className="p-1 hover:bg-white/10 rounded text-white text-xs">UP</button>
+                        <button onClick={() => transformText('lower')} className="p-1 hover:bg-white/10 rounded text-white text-xs">low</button>
                     </div>
                     <div className="flex gap-2">
                          <button onClick={() => handleAI('expand', 'contentBody')} className="text-brand-purple hover:text-white text-xs flex items-center gap-1 transition-colors">
