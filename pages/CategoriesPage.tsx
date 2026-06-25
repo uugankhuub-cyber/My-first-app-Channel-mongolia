@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { CATEGORIES } from '../constants';
 import { useContent } from '../context/ContentContext';
 import { KnowledgeCard } from '../components/KnowledgeCard';
-import { Filter, Grid, List as ListIcon, FolderOpen } from 'lucide-react';
+import { Filter, Grid, List as ListIcon, FolderOpen, Play } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 import * as ReactRouterDOM from 'react-router-dom';
 import { Container } from '../components/ui/Container';
@@ -23,6 +23,7 @@ export const CategoriesPage: React.FC<CategoriesPageProps> = ({ categorySlug, fi
   const navigate = useNavigate();
   const { content } = useContent(); // Dynamic Content
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [videoChip, setVideoChip] = useState<string>('all');
 
   const activeSlug = categorySlug || filter || 'all';
 
@@ -47,6 +48,49 @@ export const CategoriesPage: React.FC<CategoriesPageProps> = ({ categorySlug, fi
          : content;
   })();
 
+  // Sub-tags for Video Pills
+  const videoChips = [
+    { id: 'all', label: 'Бүгд', label_en: 'All' },
+    { id: 'space', label: 'Сансар & Физик', label_en: 'Space & Physics' },
+    { id: 'ai', label: 'Хиймэл оюун', label_en: 'AI & Robots' },
+    { id: 'history', label: 'Түүх', label_en: 'History' },
+    { id: 'animals', label: 'Амьтан & Байгаль', label_en: 'Nature' },
+  ];
+
+  const finalContent = (() => {
+    let items = filteredContent;
+    if (activeSlug === 'video' && videoChip !== 'all') {
+      if (videoChip === 'space') {
+        items = items.filter(item => 
+          (item.tags || []).includes('Сансар') || 
+          (item.tags || []).includes('Физик') || 
+          (item.tags_en || []).includes('Space') || 
+          (item.tags_en || []).includes('Physics')
+        );
+      } else if (videoChip === 'ai') {
+        items = items.filter(item => 
+          (item.tags || []).includes('AI') || 
+          (item.tags || []).includes('Робот') || 
+          (item.tags_en || []).includes('AI') || 
+          (item.tags_en || []).includes('Robots')
+        );
+      } else if (videoChip === 'history') {
+        items = items.filter(item => 
+          (item.tags || []).includes('Түүх') || 
+          (item.tags_en || []).includes('History')
+        );
+      } else if (videoChip === 'animals') {
+        items = items.filter(item => 
+          (item.tags || []).includes('Амьтад') || 
+          (item.tags || []).includes('Байгаль') || 
+          (item.tags_en || []).includes('Animals') || 
+          (item.tags_en || []).includes('Nature')
+        );
+      }
+    }
+    return items;
+  })();
+
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -62,6 +106,146 @@ export const CategoriesPage: React.FC<CategoriesPageProps> = ({ categorySlug, fi
     visible: { opacity: 1, y: 0 }
   };
 
+  // YOUTUBE CINEMATIC INTERFACE FOR VIDEOS
+  if (activeSlug === 'video') {
+    return (
+      <div className="min-h-screen bg-slate-950 text-slate-100 py-10 transition-colors duration-500">
+        <Container>
+          {/* YouTube Branding Header */}
+          <div className="border-b border-white/5 pb-6 mb-8">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 bg-red-600 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-red-600/20">
+                  <Play size={24} fill="currentColor" />
+                </div>
+                <div>
+                  <h1 className="text-3xl font-black tracking-tight text-white flex items-center gap-2">
+                    {activeCategoryLabel}
+                  </h1>
+                  <p className="text-slate-400 text-xs uppercase font-bold tracking-widest mt-0.5">Premium Media Hub</p>
+                </div>
+              </div>
+
+              {/* Stats Badge */}
+              <div className="bg-white/5 border border-white/10 rounded-2xl px-4 py-2 text-xs flex items-center gap-2 text-slate-300 w-fit">
+                <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+                <span className="font-bold">{finalContent.length} Нэвтрүүлэг бэлэн байна</span>
+              </div>
+            </div>
+
+            {/* YouTube Category Chips Row */}
+            <div className="flex items-center gap-2 mt-8 overflow-x-auto pb-2 scrollbar-none">
+              {videoChips.map((chip) => {
+                const isSelected = videoChip === chip.id;
+                return (
+                  <button
+                    key={chip.id}
+                    onClick={() => setVideoChip(chip.id)}
+                    className={cn(
+                      "px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all",
+                      isSelected
+                        ? "bg-white text-black shadow-lg"
+                        : "bg-white/10 text-slate-300 hover:bg-white/15"
+                    )}
+                  >
+                    {language === 'en' ? chip.label_en : chip.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Videos Grid - YouTube Home Style */}
+          <AnimatePresence mode="wait">
+            {finalContent.length > 0 ? (
+              <motion.div
+                key={videoChip}
+                variants={containerVariants}
+                initial="hidden"
+                animate="visible"
+                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-6 gap-y-10"
+              >
+                {finalContent.map((item) => {
+                  const title = language === 'en' ? item.title_en : item.title;
+                  return (
+                    <motion.div key={item.id} variants={itemVariants}>
+                      <ReactRouterDOM.Link 
+                        to={`/niitlel/${item.id}`} 
+                        className="group/yt block space-y-3"
+                      >
+                        {/* Thumbnail card with Hover effect */}
+                        <div className="relative aspect-video rounded-2xl overflow-hidden bg-slate-900 border border-white/5">
+                          <img 
+                            src={item.thumbnailUrl} 
+                            alt={title} 
+                            className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover/yt:scale-105"
+                          />
+                          
+                          {/* Duration Stamp */}
+                          <div className="absolute bottom-2 right-2 bg-black/80 px-2 py-0.5 rounded text-[10px] font-bold text-white font-mono uppercase tracking-wider">
+                            {item.readTimeValue ? `${item.readTimeValue}:00` : '3:45'}
+                          </div>
+
+                          {/* Red YouTube Hover Play Button */}
+                          <div className="absolute inset-0 bg-black/30 opacity-0 group-hover/yt:opacity-100 flex items-center justify-center transition-all duration-300 backdrop-blur-[1px]">
+                            <motion.div
+                              whileHover={{ scale: 1.15 }}
+                              className="w-14 h-14 bg-red-600 rounded-full flex items-center justify-center text-white shadow-xl shadow-red-600/30 border border-red-500"
+                            >
+                              <Play size={20} fill="currentColor" className="ml-1" />
+                            </motion.div>
+                          </div>
+                        </div>
+
+                        {/* Title and Channel details */}
+                        <div className="flex gap-3 px-1">
+                          {/* Circular Channel Badge mimicking YouTube channel logo */}
+                          <div className="flex-shrink-0 w-9 h-9 rounded-full bg-gradient-to-tr from-red-600 to-amber-500 flex items-center justify-center text-white font-black text-xs shadow-md border border-white/10 uppercase">
+                            CM
+                          </div>
+
+                          {/* Video details */}
+                          <div className="space-y-1 flex-1">
+                            <h3 className="font-bold text-sm text-slate-100 group-hover/yt:text-red-500 line-clamp-2 leading-snug transition-colors duration-200">
+                              {title}
+                            </h3>
+                            
+                            <div className="text-xs text-slate-400 font-medium space-y-0.5">
+                              <p className="hover:text-slate-200 transition-colors">Channel Mongolia</p>
+                              <p className="flex items-center gap-1.5 font-mono">
+                                <span>{(item.views ?? 0).toLocaleString()} үзсэн</span>
+                                <span>•</span>
+                                <span>{item.publishedDate}</span>
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      </ReactRouterDOM.Link>
+                    </motion.div>
+                  );
+                })}
+              </motion.div>
+            ) : (
+              <motion.div
+                key="empty-state-video"
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="py-32 text-center bg-white/5 rounded-3xl border border-dashed border-white/10 flex flex-col items-center justify-center"
+              >
+                <div className="w-16 h-16 bg-white/5 rounded-2xl flex items-center justify-center text-slate-500 mb-4">
+                  <Play size={32} />
+                </div>
+                <h3 className="text-lg font-bold text-white mb-1">Бичлэг олдсонгүй</h3>
+                <p className="text-slate-400 text-sm max-w-sm mx-auto">Энэ ангилалд тохирох видео контент байхгүй байна.</p>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </Container>
+      </div>
+    );
+  }
+
+  // STANDARD LAYOUT FOR NON-VIDEO CATEGORIES
   return (
     <Container className="py-12">
       
@@ -129,7 +313,7 @@ export const CategoriesPage: React.FC<CategoriesPageProps> = ({ categorySlug, fi
 
         <div className="lg:col-span-3">
             <AnimatePresence mode="wait">
-              {filteredContent.length > 0 ? (
+              {finalContent.length > 0 ? (
                   <motion.div 
                     key={activeSlug + viewMode}
                     variants={containerVariants}
@@ -140,7 +324,7 @@ export const CategoriesPage: React.FC<CategoriesPageProps> = ({ categorySlug, fi
                       viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2' : 'grid-cols-1'
                     )}
                   >
-                      {filteredContent.map(item => (
+                      {finalContent.map(item => (
                           <motion.div key={item.id} variants={itemVariants}>
                             <KnowledgeCard item={item} />
                           </motion.div>

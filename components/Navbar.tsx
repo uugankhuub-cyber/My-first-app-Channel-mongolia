@@ -80,8 +80,8 @@ export const Navbar: React.FC = () => {
     <nav
       className={`sticky top-0 z-50 w-full transition-all duration-300 ${
         scrolled
-          ? "bg-white/90 dark:bg-slate-950/80 backdrop-blur-md shadow-sm border-b border-slate-200/80 dark:border-white/5"
-          : "bg-white/95 dark:bg-slate-950/95 backdrop-blur-sm border-b border-transparent dark:border-white/5"
+          ? "bg-white/90 dark:bg-[#0e111a]/80 backdrop-blur-md shadow-sm border-b border-slate-200/80 dark:border-white/5"
+          : "bg-white/95 dark:bg-[#0e111a]/95 backdrop-blur-sm border-b border-transparent dark:border-white/5"
       }`}
     >
       <div className="relative z-10">
@@ -275,7 +275,7 @@ export const Navbar: React.FC = () => {
               animate={{ x: 0 }}
               exit={{ x: "100%" }}
               transition={{ type: "spring", damping: 25, stiffness: 200 }}
-              className="fixed inset-y-0 right-0 z-[150] w-[85vw] max-w-sm bg-white dark:bg-slate-900 shadow-2xl"
+              className="fixed inset-y-0 right-0 z-[150] w-[85vw] max-w-sm bg-white dark:bg-[#141824] shadow-2xl"
             >
               <div className="flex flex-col h-full">
                 <div className="flex items-center justify-between p-4 border-b border-slate-100 dark:border-white/10">

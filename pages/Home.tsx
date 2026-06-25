@@ -66,6 +66,11 @@ export const Home: React.FC = () => {
     <div className="pb-24 bg-background transition-colors duration-500">
       {/* Hero / Header Section */}
       <section className="relative pt-24 pb-16 md:pt-32 md:pb-24 overflow-hidden border-b border-border">
+        {/* Modern ambient glow backgrounds */}
+        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-brand-purple/10 dark:bg-brand-purple/5 blur-[120px] rounded-full pointer-events-none z-0" />
+        <div className="absolute top-1/3 left-1/3 -translate-x-1/2 -translate-y-1/2 w-[350px] h-[350px] bg-brand-orange/10 dark:bg-brand-orange/5 blur-[100px] rounded-full pointer-events-none z-0" />
+        <div className="absolute inset-0 bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] dark:bg-[radial-gradient(#1e293b_1px,transparent_1px)] [background-size:24px_24px] opacity-40 pointer-events-none z-0" />
+
         <Container className="relative z-10">
           <motion.div
             initial={{ opacity: 0, y: 30 }}

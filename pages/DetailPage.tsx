@@ -174,6 +174,52 @@ export const DetailPage: React.FC = () => {
               </div>
             </motion.div>
 
+            {content.isVideo ? (() => {
+              const getYouTubeId = (url: string | undefined): string | null => {
+                if (!url) return null;
+                const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+                const match = url.match(regExp);
+                return (match && match[2].length === 11) ? match[2] : null;
+              };
+
+              const ytId = getYouTubeId(content.videoUrl);
+              
+              return (
+                <div className="relative mb-12 group/video-container">
+                  {/* Immersive YouTube Ambient Backglow Effect */}
+                  <div 
+                    className="absolute -inset-4 md:-inset-12 bg-cover bg-center rounded-[40px] opacity-70 dark:opacity-60 blur-[60px] md:blur-[110px] pointer-events-none z-0 transition-all duration-1000 scale-[1.05]"
+                    style={{ backgroundImage: `url(${content.thumbnailUrl})` }}
+                  />
+                  
+                  {/* Cinema Theater Frame */}
+                  <motion.div 
+                    initial={{ opacity: 0, y: 15 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.2, duration: 0.6 }}
+                    className="relative z-10 aspect-video w-full bg-black rounded-3xl overflow-hidden shadow-[0_25px_50px_-12px_rgba(0,0,0,0.8)] border border-white/10 dark:border-white/5"
+                  >
+                    <iframe
+                      src={`https://www.youtube.com/embed/${ytId}?autoplay=1&rel=0&modestbranding=1&showinfo=0`}
+                      title={title}
+                      frameBorder="0"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                      allowFullScreen
+                      className="w-full h-full"
+                    />
+                  </motion.div>
+                  
+                  {/* Subtle Theater Ambient lighting indicator */}
+                  <div className="mt-3 flex items-center justify-between text-[10px] text-text-muted px-2 font-mono uppercase tracking-wider relative z-10">
+                    <div className="flex items-center gap-1.5 text-brand-purple">
+                      <span className="w-2 h-2 rounded-full bg-red-600 animate-pulse shadow-sm shadow-red-500" />
+                      <span className="font-bold">Кино Театр Горим</span>
+                    </div>
+                    <span className="opacity-80">Ambient Backglow Viridian</span>
+                  </div>
+                </div>
+              );
+            })() : (
             <motion.div 
               initial={{ opacity: 0, scale: 0.98 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -192,6 +238,7 @@ export const DetailPage: React.FC = () => {
                    </div>
                )}
             </motion.div>
+          )}
 
             <article className="max-w-none">
                {/* Description Intro */}

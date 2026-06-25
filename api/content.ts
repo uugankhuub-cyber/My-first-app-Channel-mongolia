@@ -12,29 +12,38 @@ export default async function handle(req: any, res: any) {
             orderBy: { publishedAt: 'desc' }
           });
 
-          const mappedData = articles.map(item => ({
-            id: item.id,
-            title: item.title,
-            title_en: item.title,
-            description: item.excerpt || item.content.substring(0, 150),
-            description_en: item.excerpt || item.content.substring(0, 150),
-            contentBody: item.content,
-            contentBody_en: item.content,
-            category: item.category?.name || 'General',
-            category_en: item.category?.name || 'General',
-            thumbnailUrl: item.thumbnail || 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&q=80&w=800',
-            views: 0,
-            publishedDate: item.publishedAt ? new Date(item.publishedAt).toLocaleDateString() : new Date(item.updatedAt).toLocaleDateString(),
-            readTime: '5 мин',
-            readTimeValue: 5,
-            isVideo: false,
-            tags: [],
-            tags_en: [],
-            isTrending: false,
-            isEditorPick: false,
-            likes: 0,
-            status: item.status.toLowerCase()
-          }));
+          const mappedData = articles.map(item => {
+            const ytRegex = /(https?:\/\/(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)[a-zA-Z0-9_-\s&?=]+)/i;
+            const match = item.content.match(ytRegex);
+            const isVideoCategory = item.category?.name?.toLowerCase() === 'видео' || item.category?.name?.toLowerCase() === 'video';
+            const isVideo = !!match || isVideoCategory;
+            const videoUrl = match ? match[1] : (isVideo ? 'https://www.youtube.com/watch?v=uD4izuPDy_A' : '');
+
+            return {
+              id: item.id,
+              title: item.title,
+              title_en: item.title,
+              description: item.excerpt || item.content.substring(0, 150),
+              description_en: item.excerpt || item.content.substring(0, 150),
+              contentBody: item.content,
+              contentBody_en: item.content,
+              category: item.category?.name || 'General',
+              category_en: item.category?.name || 'General',
+              thumbnailUrl: item.thumbnail || 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&q=80&w=800',
+              views: 0,
+              publishedDate: item.publishedAt ? new Date(item.publishedAt).toLocaleDateString() : new Date(item.updatedAt).toLocaleDateString(),
+              readTime: '5 мин',
+              readTimeValue: 5,
+              isVideo,
+              videoUrl,
+              tags: [],
+              tags_en: [],
+              isTrending: false,
+              isEditorPick: false,
+              likes: 0,
+              status: item.status.toLowerCase()
+            };
+          });
 
           return res.status(200).json({ data: mappedData });
         } catch (dbError: any) {
@@ -48,6 +57,12 @@ export default async function handle(req: any, res: any) {
       
       const mappedMockData = publishedArticles.map(art => {
         const cat = db.categories.find(c => c.id === art.categoryId);
+        const ytRegex = /(https?:\/\/(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)[a-zA-Z0-9_-\s&?=]+)/i;
+        const match = art.content.match(ytRegex);
+        const isVideoCategory = cat?.name?.toLowerCase() === 'видео' || cat?.name?.toLowerCase() === 'video';
+        const isVideo = !!match || isVideoCategory;
+        const videoUrl = match ? match[1] : (isVideo ? 'https://www.youtube.com/watch?v=uD4izuPDy_A' : '');
+
         return {
           id: art.id,
           title: art.title,
@@ -63,7 +78,8 @@ export default async function handle(req: any, res: any) {
           publishedDate: art.publishedAt ? new Date(art.publishedAt).toLocaleDateString() : new Date().toLocaleDateString(),
           readTime: `${Math.ceil(art.content.length / 500)} мин`,
           readTimeValue: Math.ceil(art.content.length / 500) || 3,
-          isVideo: false,
+          isVideo,
+          videoUrl,
           tags: [],
           tags_en: [],
           isTrending: art.views > 1000,
