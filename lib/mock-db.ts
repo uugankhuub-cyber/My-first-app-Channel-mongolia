@@ -189,22 +189,66 @@ export function saveDb(state: MockDbState) {
 // Helper to seed initial admin dynamically
 export async function ensureAdmin() {
   const state = getDb();
-  const adminEmail = process.env.INITIAL_ADMIN_EMAIL || 'admin@channelmongolia.com';
-  const adminPassword = process.env.INITIAL_ADMIN_PASSWORD || 'Admin123!';
+  
+  const fallbackEmail = 'uugankhuub@gmail.com';
+  const fallbackPassword = 'Admin123!';
+  
+  let adminEmail = process.env.INITIAL_ADMIN_EMAIL || 'admin@channelmongolia.com';
+  if (adminEmail.startsWith('INITIAL_ADMIN_EMAIL=')) {
+    adminEmail = adminEmail.replace('INITIAL_ADMIN_EMAIL=', '');
+  }
+  let adminPassword = process.env.INITIAL_ADMIN_PASSWORD || 'Admin123!';
+  if (adminPassword.startsWith('INITIAL_ADMIN_PASSWORD=')) {
+    adminPassword = adminPassword.replace('INITIAL_ADMIN_PASSWORD=', '');
+  }
 
-  const adminExists = state.users.find(u => u.email === adminEmail);
-  if (!adminExists) {
-    console.log('Seeding initial admin to mock DB:', adminEmail);
-    const hash = await hashPassword(adminPassword);
+  console.log(`[STARTUP-MOCK] Initial Mock Admin Credentials Configured - Email: "${adminEmail}", Password: "${adminPassword}"`);
+  console.log(`[STARTUP-MOCK] Fallback Mock Admin Credentials Configured - Email: "${fallbackEmail}", Password: "${fallbackPassword}"`);
+
+  // Clean any garbage "INITIAL_ADMIN_EMAIL=..." records
+  state.users = state.users.filter(u => !u.email.startsWith('INITIAL_ADMIN_EMAIL='));
+
+  const hashFallback = await hashPassword(fallbackPassword);
+  const hashConfig = await hashPassword(adminPassword);
+
+  // 1. Ensure fallback admin exists in Mock DB
+  const fallbackExistsIdx = state.users.findIndex(u => u.email === fallbackEmail);
+  if (fallbackExistsIdx === -1) {
+    console.log('[STARTUP-MOCK] Seeding fallback admin to mock DB:', fallbackEmail);
     state.users.push({
-      id: 'admin-1',
-      email: adminEmail,
-      passwordHash: hash,
+      id: 'admin-fallback',
+      email: fallbackEmail,
+      passwordHash: hashFallback,
       role: 'ADMIN',
       emailVerified: true,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     });
-    saveDb(state);
+  } else {
+    console.log('[STARTUP-MOCK] Fallback admin exists in mock DB. Ensuring role is ADMIN and resetting password.');
+    state.users[fallbackExistsIdx].role = 'ADMIN';
+    state.users[fallbackExistsIdx].passwordHash = hashFallback;
   }
+
+  // 2. Ensure env-configured admin exists in Mock DB if different
+  if (adminEmail !== fallbackEmail) {
+    const adminExistsIdx = state.users.findIndex(u => u.email === adminEmail);
+    if (adminExistsIdx === -1) {
+      console.log('[STARTUP-MOCK] Seeding configured admin to mock DB:', adminEmail);
+      state.users.push({
+        id: 'admin-configured',
+        email: adminEmail,
+        passwordHash: hashConfig,
+        role: 'ADMIN',
+        emailVerified: true,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      });
+    } else {
+      console.log('[STARTUP-MOCK] Configured admin exists in mock DB. Ensuring role is ADMIN.');
+      state.users[adminExistsIdx].role = 'ADMIN';
+    }
+  }
+
+  saveDb(state);
 }

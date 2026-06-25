@@ -14,19 +14,24 @@ const isDbAvailable = () => {
 
 export const login = async (req: any, res: any) => {
   const { email, password } = req.body;
+  console.log(`[AUTH-LOGIN] Login attempt initiated for email: "${email}"`);
 
   try {
     if (isDbAvailable()) {
+      console.log('[AUTH-LOGIN] Prisma DB is connected/available. Querying Prisma.');
       try {
         const user = await prisma.user.findUnique({ where: { email } });
 
         if (user) {
+          console.log(`[AUTH-LOGIN] Found user "${email}" in Prisma DB. Role: ${user.role}`);
           // Check locking
           if (user.lockedUntil && user.lockedUntil > new Date()) {
+            console.log(`[AUTH-LOGIN] User account "${email}" is locked until ${user.lockedUntil}`);
             return res.status(403).json({ error: 'Account locked. Try again later.' });
           }
 
           const isValid = await comparePassword(password, user.password);
+          console.log(`[AUTH-LOGIN] Password comparison result in Prisma for "${email}": ${isValid}`);
 
           if (!isValid) {
             // Increment failed attempts
@@ -39,6 +44,7 @@ export const login = async (req: any, res: any) => {
               where: { id: user.id },
               data: { failedLoginAttempts: failedAttempts, lockedUntil },
             });
+            console.log(`[AUTH-LOGIN] Invalid credentials entered for "${email}" in Prisma DB.`);
             return res.status(401).json({ error: 'Invalid credentials' });
           }
 
@@ -50,15 +56,17 @@ export const login = async (req: any, res: any) => {
 
           // Check for email verification
           if (!user.emailVerified && user.role !== 'ADMIN') {
+            console.log(`[AUTH-LOGIN] User "${email}" is not verified (non-admin).`);
             return res.status(403).json({ error: 'Email not verified. Please check your inbox.' });
           }
 
           const tokens = generateTokens(user.id, user.role);
 
-          // Set HttpOnly cookies
-          res.cookie('accessToken', tokens.accessToken, { httpOnly: true, secure: true, sameSite: 'strict', maxAge: 15 * 60 * 1000 });
-          res.cookie('refreshToken', tokens.refreshToken, { httpOnly: true, secure: true, sameSite: 'strict', maxAge: 7 * 24 * 60 * 60 * 1000 });
+          // Set HttpOnly cookies with sameSite: 'lax' for robust iframe preview and top-level navigation support
+          res.cookie('accessToken', tokens.accessToken, { httpOnly: true, secure: true, sameSite: 'lax', maxAge: 15 * 60 * 1000 });
+          res.cookie('refreshToken', tokens.refreshToken, { httpOnly: true, secure: true, sameSite: 'lax', maxAge: 7 * 24 * 60 * 60 * 1000 });
 
+          console.log(`[AUTH-LOGIN] Login successful for "${email}" via Prisma. Role: ${user.role}`);
           return res.json({
             user: {
               id: user.id,
@@ -67,10 +75,14 @@ export const login = async (req: any, res: any) => {
               forcePasswordChange: user.forcePasswordChange,
             }
           });
+        } else {
+          console.log(`[AUTH-LOGIN] User "${email}" not found in Prisma DB. Falling back to Mock DB.`);
         }
       } catch (dbError: any) {
-        console.error('Database query failed in login, falling back to mock DB:', dbError.message);
+        console.error('[AUTH-LOGIN] Database query failed in login, falling back to mock DB:', dbError.message);
       }
+    } else {
+      console.log('[AUTH-LOGIN] Prisma DB is NOT available. Using Mock DB directly.');
     }
 
     // FALLBACK TO MOCK DB
@@ -79,20 +91,26 @@ export const login = async (req: any, res: any) => {
     const user = db.users.find(u => u.email === email);
 
     if (!user) {
+      console.log(`[AUTH-LOGIN] User "${email}" not found in Mock DB.`);
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
+    console.log(`[AUTH-LOGIN] Found user "${email}" in Mock DB. Role: ${user.role}`);
     const isValid = await comparePassword(password, user.passwordHash);
+    console.log(`[AUTH-LOGIN] Password comparison result in Mock DB for "${email}": ${isValid}`);
+    
     if (!isValid) {
+      console.log(`[AUTH-LOGIN] Invalid credentials entered for "${email}" in Mock DB.`);
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
     const tokens = generateTokens(user.id, user.role);
 
-    // Set HttpOnly cookies
-    res.cookie('accessToken', tokens.accessToken, { httpOnly: true, secure: true, sameSite: 'strict', maxAge: 15 * 60 * 1000 });
-    res.cookie('refreshToken', tokens.refreshToken, { httpOnly: true, secure: true, sameSite: 'strict', maxAge: 7 * 24 * 60 * 60 * 1000 });
+    // Set HttpOnly cookies with sameSite: 'lax' for robust iframe preview and top-level navigation support
+    res.cookie('accessToken', tokens.accessToken, { httpOnly: true, secure: true, sameSite: 'lax', maxAge: 15 * 60 * 1000 });
+    res.cookie('refreshToken', tokens.refreshToken, { httpOnly: true, secure: true, sameSite: 'lax', maxAge: 7 * 24 * 60 * 60 * 1000 });
 
+    console.log(`[AUTH-LOGIN] Login successful for "${email}" via Mock DB. Role: ${user.role}`);
     res.json({
       user: {
         id: user.id,
@@ -103,7 +121,7 @@ export const login = async (req: any, res: any) => {
     });
 
   } catch (error: any) {
-    console.error('Login error:', error);
+    console.error('[AUTH-LOGIN] Unexpected login error:', error);
     res.status(500).json({ error: 'Login failed' });
   }
 };
@@ -134,8 +152,8 @@ export const register = async (req: any, res: any) => {
         const tokens = generateTokens(user.id, user.role);
 
         // Set HttpOnly cookies
-        res.cookie('accessToken', tokens.accessToken, { httpOnly: true, secure: true, sameSite: 'strict', maxAge: 15 * 60 * 1000 });
-        res.cookie('refreshToken', tokens.refreshToken, { httpOnly: true, secure: true, sameSite: 'strict', maxAge: 7 * 24 * 60 * 60 * 1000 });
+        res.cookie('accessToken', tokens.accessToken, { httpOnly: true, secure: true, sameSite: 'lax', maxAge: 15 * 60 * 1000 });
+        res.cookie('refreshToken', tokens.refreshToken, { httpOnly: true, secure: true, sameSite: 'lax', maxAge: 7 * 24 * 60 * 60 * 1000 });
 
         return res.json({
           message: 'Registration successful. Please verify your email.',
@@ -180,8 +198,8 @@ export const register = async (req: any, res: any) => {
     const tokens = generateTokens(newUser.id, newUser.role);
 
     // Set HttpOnly cookies
-    res.cookie('accessToken', tokens.accessToken, { httpOnly: true, secure: true, sameSite: 'strict', maxAge: 15 * 60 * 1000 });
-    res.cookie('refreshToken', tokens.refreshToken, { httpOnly: true, secure: true, sameSite: 'strict', maxAge: 7 * 24 * 60 * 60 * 1000 });
+    res.cookie('accessToken', tokens.accessToken, { httpOnly: true, secure: true, sameSite: 'lax', maxAge: 15 * 60 * 1000 });
+    res.cookie('refreshToken', tokens.refreshToken, { httpOnly: true, secure: true, sameSite: 'lax', maxAge: 7 * 24 * 60 * 60 * 1000 });
 
     res.json({
       message: 'Registration successful. Account pre-verified for seamless testing!',

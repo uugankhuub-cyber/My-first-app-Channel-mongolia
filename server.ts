@@ -49,33 +49,98 @@ async function startServer() {
   await checkConnection();
 
   const initAdmin = async () => {
-    if (!getDbStatus()) {
-      console.warn('Database is not healthy/connected. Skipping database admin initialization.');
+    const isDbConnected = getDbStatus();
+    console.log(`[STARTUP] Prisma DB connected status: ${isDbConnected}`);
+
+    const fallbackEmail = 'uugankhuub@gmail.com';
+    const fallbackPassword = 'Admin123!';
+
+    let adminEmail = process.env.INITIAL_ADMIN_EMAIL || fallbackEmail;
+    if (adminEmail.startsWith('INITIAL_ADMIN_EMAIL=')) {
+      adminEmail = adminEmail.replace('INITIAL_ADMIN_EMAIL=', '');
+    }
+    let adminPassword = process.env.INITIAL_ADMIN_PASSWORD || fallbackPassword;
+    if (adminPassword.startsWith('INITIAL_ADMIN_PASSWORD=')) {
+      adminPassword = adminPassword.replace('INITIAL_ADMIN_PASSWORD=', '');
+    }
+
+    console.log(`[STARTUP] Initial Admin Credentials Configured - Email: "${adminEmail}", Password: "${adminPassword}"`);
+    console.log(`[STARTUP] Fallback Admin Credentials Configured - Email: "${fallbackEmail}", Password: "${fallbackPassword}"`);
+
+    if (!isDbConnected) {
+      console.warn('Database is not healthy/connected. Skipping Prisma admin initialization.');
       return;
     }
 
-    const adminEmail = process.env.INITIAL_ADMIN_EMAIL;
-    const adminPassword = process.env.INITIAL_ADMIN_PASSWORD;
-
-    if (adminEmail && adminPassword) {
+    try {
+      // Clean any garbage "INITIAL_ADMIN_EMAIL=..." records from Prisma
       try {
+        const deleteCount = await prisma.user.deleteMany({
+          where: {
+            email: {
+              startsWith: 'INITIAL_ADMIN_EMAIL='
+            }
+          }
+        });
+        if (deleteCount.count > 0) {
+          console.log(`[STARTUP-DB] Deleted ${deleteCount.count} garbage admin records from Prisma.`);
+        }
+      } catch (e: any) {
+        console.error('[STARTUP-DB] Error cleaning garbage admin records from Prisma:', e.message);
+      }
+
+      // 1. Create or update fallback admin in Prisma
+      const fallbackExists = await prisma.user.findUnique({ where: { email: fallbackEmail } });
+      const hashedFallbackPassword = await hashPassword(fallbackPassword);
+      if (!fallbackExists) {
+        console.log(`[STARTUP-DB] Creating fallback admin account in Prisma: ${fallbackEmail}`);
+        await prisma.user.create({
+          data: {
+            email: fallbackEmail,
+            password: hashedFallbackPassword,
+            role: 'ADMIN',
+            emailVerified: true,
+            forcePasswordChange: false,
+          },
+        });
+      } else {
+        console.log(`[STARTUP-DB] Fallback admin already exists in Prisma: ${fallbackEmail}. Ensuring role is ADMIN and resetting password.`);
+        await prisma.user.update({
+          where: { email: fallbackEmail },
+          data: {
+            role: 'ADMIN',
+            password: hashedFallbackPassword,
+          }
+        });
+      }
+
+      // 2. Create or update env-configured admin if different
+      if (adminEmail !== fallbackEmail) {
         const adminExists = await prisma.user.findUnique({ where: { email: adminEmail } });
+        const hashedPassword = await hashPassword(adminPassword);
         if (!adminExists) {
-          console.log('Creating initial admin account...');
-          const hashedPassword = await hashPassword(adminPassword);
+          console.log(`[STARTUP-DB] Creating configured admin account in Prisma: ${adminEmail}`);
           await prisma.user.create({
             data: {
               email: adminEmail,
               password: hashedPassword,
               role: 'ADMIN',
               emailVerified: true,
-              forcePasswordChange: true,
+              forcePasswordChange: false,
             },
           });
+        } else {
+          console.log(`[STARTUP-DB] Configured admin already exists in Prisma: ${adminEmail}. Ensuring role is ADMIN.`);
+          await prisma.user.update({
+            where: { email: adminEmail },
+            data: {
+              role: 'ADMIN',
+            }
+          });
         }
-      } catch (err: any) {
-        console.error('Database query error in initAdmin:', err.message);
       }
+    } catch (err: any) {
+      console.error('[STARTUP-DB] Database query error in initAdmin:', err.message);
     }
   };
   
