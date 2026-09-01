@@ -5,7 +5,7 @@ export async function ensurePrismaAdmin() {
   if (!getDbStatus()) return;
 
   const adminEmail = process.env.INITIAL_ADMIN_EMAIL || 'admin@channelmongolia.mn';
-  const adminPassword = process.env.INITIAL_ADMIN_PASSWORD || 'admin';
+  const adminPassword = process.env.INITIAL_ADMIN_PASSWORD || 'Admin123!';
 
   try {
     const existingAdmin = await prisma.user.findUnique({ where: { email: adminEmail } });
