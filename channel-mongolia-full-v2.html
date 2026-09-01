@@ -1,0 +1,769 @@
+<!DOCTYPE html>
+<html lang="mn">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Channel Mongolia — Full Platform v2.0</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<script>
+(function(){var t=localStorage.getItem('cm_theme');var d=window.matchMedia('(prefers-color-scheme:dark)').matches;if(t==='dark'||(!t&&d))document.documentElement.classList.add('dark')})();
+</script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#f5f6f8;--sf:#fff;--sfh:#eef1f5;--tx:#0c1222;--txm:#596474;--bd:#dde2ea;
+--ac:#5b5df0;--acs:rgba(91,93,240,.08);--acg:rgba(91,93,240,.25);--rs:#e84393;--rss:rgba(232,67,147,.08);
+--r:14px;--rs2:10px;--sh:0 1px 3px rgba(0,0,0,.04),0 4px 14px rgba(0,0,0,.03);
+--shh:0 8px 30px rgba(0,0,0,.08);--f:'Inter',system-ui,sans-serif;--mw:1160px;
+--green:#10b981;--yellow:#f59e0b;--red:#ef4444}
+html.dark{--bg:#0b0e18;--sf:#12162a;--sfh:#1a1f36;--tx:#e8ecf4;--txm:#8892a4;--bd:#1e2440;
+--ac:#7577f8;--acs:rgba(117,119,248,.1);--acg:rgba(117,119,248,.2);--rs:#f06292;--rss:rgba(240,98,146,.1);
+--sh:0 1px 3px rgba(0,0,0,.2),0 4px 14px rgba(0,0,0,.15);--shh:0 8px 30px rgba(0,0,0,.3)}
+body{font-family:var(--f);background:var(--bg);color:var(--tx);line-height:1.6;-webkit-font-smoothing:antialiased;transition:background .35s,color .35s}
+a{color:inherit;text-decoration:none}button{font-family:inherit;cursor:pointer;border:none;background:none}
+img{display:block;max-width:100%;height:auto}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-thumb{background:var(--bd);border-radius:3px}
+.ctr{max-width:var(--mw);margin:0 auto;padding:0 20px}
+.grad-text{background:linear-gradient(135deg,var(--ac),var(--rs));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.grad-bg{background:linear-gradient(135deg,var(--ac),var(--rs))}
+.badge-s{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:.68rem;font-weight:700}
+.badge-green{background:rgba(16,185,129,.12);color:var(--green)}.badge-yellow{background:rgba(245,158,11,.12);color:var(--yellow)}
+.badge-red{background:rgba(239,68,68,.12);color:var(--red)}.badge-blue{background:var(--acs);color:var(--ac)}
+
+/* ═══ PUBLIC NAV ═══ */
+.p-nav{position:sticky;top:0;z-index:100;background:var(--sf);border-bottom:1px solid var(--bd);transition:.3s}
+.p-nav.scrolled{box-shadow:0 1px 12px rgba(0,0,0,.06)}
+.p-nav-inner{display:flex;align-items:center;height:56px;gap:16px}
+.logo{font-weight:800;font-size:1.2rem;letter-spacing:-.02em;white-space:nowrap}
+.p-nav-links{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;flex:1;padding:0 8px}
+.p-nav-links::-webkit-scrollbar{display:none}
+.p-nav-links a{padding:6px 14px;border-radius:8px;font-size:.82rem;font-weight:600;color:var(--txm);white-space:nowrap;transition:.2s}
+.p-nav-links a:hover,.p-nav-links a.active{color:var(--ac);background:var(--acs)}
+.nav-acts{display:flex;align-items:center;gap:6px;flex-shrink:0}
+.n-btn{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;color:var(--txm);transition:.2s}
+.n-btn:hover{background:var(--sfh);color:var(--tx)}
+
+/* ═══ HERO ═══ */
+.hero{padding:60px 0 48px;position:relative;overflow:hidden;border-bottom:1px solid var(--bd)}
+.hero-bg .orb{position:absolute;border-radius:50%;filter:blur(100px);opacity:.12}
+html.dark .hero-bg .orb{opacity:.06}
+.orb1{width:400px;height:400px;background:var(--ac);top:-100px;left:50%;transform:translateX(-50%)}
+.orb2{width:280px;height:280px;background:var(--rs);top:40px;left:20%}
+.hero-ct{position:relative;z-index:1;max-width:680px;margin:0 auto;text-align:center}
+.hero h1{font-size:clamp(2.2rem,5.5vw,3.6rem);font-weight:900;line-height:1.08;letter-spacing:-.03em;margin-bottom:12px}
+.hero h1 .hl{display:inline-block;padding:4px 20px;margin-top:8px;color:#fff;border-radius:var(--r);transform:rotate(-1.5deg)}
+.hero p{font-size:1.1rem;color:var(--txm);max-width:500px;margin:0 auto 32px;line-height:1.7}
+.hero-cta{display:inline-flex;align-items:center;gap:8px;padding:14px 32px;border-radius:var(--r);background:var(--tx);color:var(--bg);font-weight:700;font-size:.92rem;transition:.25s;box-shadow:var(--sh)}
+.hero-cta:hover{transform:translateY(-2px);box-shadow:var(--shh)}
+
+/* ═══ CARDS ═══ */
+.card{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);overflow:hidden;transition:.35s;box-shadow:var(--sh)}
+.card:hover{box-shadow:var(--shh);transform:translateY(-3px)}
+.card-img{position:relative;overflow:hidden;aspect-ratio:16/9;background:var(--sfh)}
+.card-img img{width:100%;height:100%;object-fit:cover;transition:transform .6s}.card:hover .card-img img{transform:scale(1.05)}
+.card-img .cat-badge{position:absolute;top:10px;left:10px;padding:4px 10px;border-radius:6px;background:rgba(0,0,0,.55);backdrop-filter:blur(8px);font-size:.68rem;font-weight:700;color:#fff}
+.card-body{padding:18px 20px 20px}
+.card-body h3{font-size:1.05rem;font-weight:700;line-height:1.35;margin-bottom:8px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;transition:.2s}
+.card:hover .card-body h3{color:var(--ac)}
+.card-body p{font-size:.85rem;color:var(--txm);line-height:1.6;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin-bottom:14px}
+.card-meta{display:flex;gap:14px;font-size:.72rem;color:var(--txm);font-weight:500}
+.grid-2{display:grid;grid-template-columns:1fr;gap:20px}
+@media(min-width:640px){.grid-2{grid-template-columns:1fr 1fr}}
+.section{margin-top:48px}
+.sec-head{display:flex;align-items:center;gap:12px;margin-bottom:24px}
+.sec-head .bar{width:4px;height:28px;border-radius:4px}
+.sec-head h2{font-size:1.35rem;font-weight:800;letter-spacing:-.02em}
+
+/* ═══ SIDEBAR ═══ */
+.main-grid{display:grid;grid-template-columns:1fr;gap:40px;margin-top:48px;padding-bottom:80px}
+@media(min-width:960px){.main-grid{grid-template-columns:1fr 340px}}
+.sidebar{display:flex;flex-direction:column;gap:24px}
+@media(min-width:960px){.sidebar{position:sticky;top:72px;align-self:start}}
+.sb-card{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:20px;box-shadow:var(--sh)}
+.sb-card.tinted{background:var(--acs);border-color:rgba(91,93,240,.12)}
+.sb-head{display:flex;align-items:center;gap:8px;margin-bottom:16px;padding-left:10px;border-left:2px solid var(--ac);font-size:.72rem;font-weight:700}
+.sb-item{display:flex;gap:10px;padding:8px;border-radius:var(--rs2);transition:.2s;cursor:pointer}
+.sb-item:hover{background:var(--acs)}
+.sb-item .rank{width:22px;height:22px;border-radius:6px;background:var(--sfh);display:flex;align-items:center;justify-content:center;font-size:.65rem;font-weight:800;flex-shrink:0;color:var(--txm)}
+.sb-item .rank.top{background:var(--rs);color:#fff}
+.sb-item .thumb{width:56px;height:40px;border-radius:8px;overflow:hidden;flex-shrink:0;background:var(--sfh)}
+.sb-item .thumb img{width:100%;height:100%;object-fit:cover}
+.sb-item h4{font-size:.82rem;font-weight:600;line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.sb-item .meta{font-size:.65rem;color:var(--txm);margin-top:3px}
+.cat-pills{display:flex;flex-wrap:wrap;gap:6px}
+.cat-pill{padding:6px 14px;border-radius:8px;font-size:.78rem;font-weight:600;background:var(--sf);border:1px solid var(--bd);color:var(--txm);transition:.2s}
+.cat-pill:hover{background:var(--ac);color:#fff;border-color:var(--ac)}
+.daily{border-radius:var(--r);padding:24px;color:#fff;position:relative;overflow:hidden}
+.daily .label{font-size:.68rem;font-weight:700;opacity:.7;letter-spacing:.06em;margin-bottom:8px}
+.daily h3{font-size:1rem;font-weight:700;line-height:1.5;margin-bottom:14px}
+.daily .acts{display:flex;gap:8px}
+.daily .acts button{padding:8px 18px;border-radius:8px;font-size:.78rem;font-weight:700;transition:.2s}
+.daily .ay{background:rgba(255,255,255,.2);color:#fff;border:1px solid rgba(255,255,255,.3)}
+.daily .an{color:rgba(255,255,255,.6);border:1px solid rgba(255,255,255,.15)}
+
+/* ═══ FOOTER ═══ */
+.footer{background:var(--sf);border-top:1px solid var(--bd);margin-top:64px;padding:48px 0 32px;transition:.3s}
+.footer-grid{display:grid;grid-template-columns:1fr;gap:32px;margin-bottom:40px}
+@media(min-width:640px){.footer-grid{grid-template-columns:1.5fr 1fr 1fr 1fr}}
+.footer h4{font-size:.72rem;font-weight:700;margin-bottom:16px;letter-spacing:.04em}
+.footer ul{list-style:none}.footer li{margin-bottom:10px}
+.footer li a{font-size:.85rem;color:var(--txm);transition:.2s}.footer li a:hover{color:var(--ac)}
+.social-row{display:flex;gap:6px}
+.social-btn{width:34px;height:34px;border-radius:8px;background:var(--sfh);display:flex;align-items:center;justify-content:center;color:var(--txm);transition:.25s}
+.social-btn:hover{background:var(--ac);color:#fff;transform:translateY(-2px)}
+.footer-bottom{border-top:1px solid var(--bd);padding-top:20px;display:flex;justify-content:space-between;font-size:.72rem;color:var(--txm);opacity:.6;flex-wrap:wrap;gap:8px}
+
+/* ═══ ADMIN LAYOUT ═══ */
+.admin-wrap{display:flex;min-height:100vh;background:var(--bg)}
+.admin-sb{width:260px;background:var(--sf);border-right:1px solid var(--bd);position:fixed;top:0;left:0;bottom:0;z-index:200;
+  transform:translateX(0);transition:transform .3s;display:flex;flex-direction:column}
+.admin-sb.closed{transform:translateX(-100%)}
+@media(max-width:1023px){.admin-sb{transform:translateX(-100%)}.admin-sb.open{transform:translateX(0)}}
+.admin-sb-head{height:56px;display:flex;align-items:center;padding:0 20px;border-bottom:1px solid var(--bd);gap:10px}
+.admin-sb-user{padding:16px 20px;border-bottom:1px solid var(--bd);display:flex;align-items:center;gap:12px}
+.admin-sb-user .avatar{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;font-size:.85rem;flex-shrink:0}
+.admin-sb-user .info{min-width:0}.admin-sb-user .info span{display:block;font-size:.78rem;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.admin-sb-user .info small{font-size:.62rem;color:var(--txm);font-weight:700;letter-spacing:.04em}
+.admin-sb nav{flex:1;overflow-y:auto;padding:12px 10px}
+.admin-sb nav a{display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:var(--rs2);font-size:.85rem;font-weight:600;color:var(--txm);transition:.2s;margin-bottom:2px}
+.admin-sb nav a:hover{background:var(--sfh);color:var(--tx)}
+.admin-sb nav a.active{background:var(--ac);color:#fff;box-shadow:0 4px 12px rgba(91,93,240,.25)}
+.admin-sb nav a svg{flex-shrink:0}
+.admin-sb-footer{padding:12px;border-top:1px solid var(--bd)}
+.admin-sb-footer button{display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:var(--rs2);font-size:.85rem;font-weight:600;color:var(--red);width:100%;transition:.2s}
+.admin-sb-footer button:hover{background:rgba(239,68,68,.08)}
+.admin-main{flex:1;margin-left:260px;min-height:100vh;transition:margin .3s}
+@media(max-width:1023px){.admin-main{margin-left:0}}
+.admin-top{height:56px;background:var(--sf);border-bottom:1px solid var(--bd);display:flex;align-items:center;padding:0 24px;gap:12px;position:sticky;top:0;z-index:50}
+.admin-content{padding:24px}
+.admin-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:199}
+@media(max-width:1023px){.admin-overlay.open{display:block}}
+
+/* Admin Cards */
+.stat-card{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:20px;box-shadow:var(--sh)}
+.stat-card .val{font-size:1.8rem;font-weight:800;margin-top:6px}
+.stat-card .label{font-size:.78rem;color:var(--txm);font-weight:600}
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px}
+.admin-table{width:100%;border-collapse:collapse}
+.admin-table th{text-align:left;padding:12px 16px;font-size:.72rem;font-weight:700;color:var(--txm);border-bottom:1px solid var(--bd);letter-spacing:.04em}
+.admin-table td{padding:12px 16px;font-size:.85rem;border-bottom:1px solid var(--bd)}
+.admin-table tr:hover td{background:var(--acs)}
+.admin-panel{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);overflow:hidden;box-shadow:var(--sh)}
+.admin-panel-head{padding:16px 20px;border-bottom:1px solid var(--bd);font-weight:700;font-size:.95rem;display:flex;align-items:center;justify-content:space-between}
+.admin-panel-body{padding:20px}
+.form-group{margin-bottom:16px}
+.form-group label{display:block;font-size:.75rem;font-weight:700;color:var(--txm);margin-bottom:6px}
+.form-input{width:100%;padding:10px 14px;border-radius:var(--rs2);border:1px solid var(--bd);background:var(--sfh);font-size:.85rem;color:var(--tx);outline:none;transition:.25s}
+.form-input:focus{border-color:var(--ac);box-shadow:0 0 0 3px var(--acg)}
+textarea.form-input{resize:vertical;min-height:100px}
+select.form-input{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23596474' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:10px 20px;border-radius:var(--rs2);font-size:.82rem;font-weight:700;transition:.25s}
+.btn-primary{background:var(--ac);color:#fff;box-shadow:0 2px 8px rgba(91,93,240,.3)}.btn-primary:hover{transform:translateY(-1px);box-shadow:0 4px 14px rgba(91,93,240,.4)}
+.btn-danger{background:rgba(239,68,68,.1);color:var(--red)}.btn-danger:hover{background:rgba(239,68,68,.2)}
+.btn-ghost{background:var(--sfh);color:var(--tx)}.btn-ghost:hover{background:var(--bd)}
+.btn-sm{padding:6px 14px;font-size:.75rem}
+
+/* Login */
+.login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+.login-card{width:100%;max-width:420px;background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:40px;box-shadow:var(--shh)}
+.login-card h1{font-size:1.5rem;font-weight:800;margin-bottom:6px;text-align:center}
+.login-card p{font-size:.85rem;color:var(--txm);text-align:center;margin-bottom:28px}
+.err-msg{padding:10px 14px;border-radius:var(--rs2);background:rgba(239,68,68,.08);color:var(--red);font-size:.82rem;font-weight:600;margin-bottom:16px}
+.success-msg{padding:10px 14px;border-radius:var(--rs2);background:rgba(16,185,129,.08);color:var(--green);font-size:.82rem;font-weight:600;margin-bottom:16px}
+
+/* Chart placeholder */
+.chart-bar{display:flex;align-items:end;gap:8px;height:160px;padding-top:10px}
+.chart-bar .bar-col{flex:1;border-radius:6px 6px 0 0;transition:.3s;min-width:20px;position:relative}
+.chart-bar .bar-col:hover{opacity:.8}
+.chart-bar .bar-label{position:absolute;bottom:-22px;left:50%;transform:translateX(-50%);font-size:.6rem;color:var(--txm);white-space:nowrap}
+
+/* Chat */
+.chat-btn{position:fixed;bottom:24px;right:24px;z-index:90;width:52px;height:52px;border-radius:50%;color:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 20px rgba(91,93,240,.35);transition:.25s}
+.chat-btn:hover{transform:scale(1.1)}
+
+@media(max-width:767px){.p-nav-links{display:none}.hero{padding:40px 0 32px}.hero h1{font-size:2rem}}
+@media(prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+
+/* Tabs */
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--bd);margin-bottom:20px}
+.tabs button{padding:10px 18px;font-size:.82rem;font-weight:600;color:var(--txm);border-bottom:2px solid transparent;transition:.2s}
+.tabs button.active{color:var(--ac);border-bottom-color:var(--ac)}
+.tabs button:hover{color:var(--tx)}
+</style>
+</head>
+<body>
+
+<div id="app"></div>
+
+<script>
+// ══════════════════════════════════════
+// MOCK DATABASE (localStorage backed)
+// ══════════════════════════════════════
+const DB_KEY = 'cm_db_v2';
+const defaultDB = {
+  users: [
+    {id:'u1',email:'admin@channelmongolia.mn',password:'Admin123!',role:'ADMIN',createdAt:'2024-01-01'},
+    {id:'u2',email:'editor@channelmongolia.mn',password:'Editor123!',role:'EDITOR',createdAt:'2024-03-15'},
+    {id:'u3',email:'user@test.mn',password:'User123!',role:'USER',createdAt:'2024-06-20'}
+  ],
+  articles: [
+    {id:'a1',title:'Хар нүхний нууц: Бидний мэдэхгүй ертөнц',slug:'har-nuhnii-nuuts',excerpt:'Хар нүх гэж юу вэ? Түүний цаана цаг хугацаа хэрхэн өөрчлөгддөг тухай.',content:'Хар нүх бол орон зай, цаг хугацааны онцгой бүс юм...',thumbnail:'https://images.unsplash.com/photo-1462331940025-496dfbfc7564?w=600&q=80',status:'PUBLISHED',categoryId:'c1',views:15420,likes:1200,tags:['Сансар','Физик'],publishedAt:'2024-10-24',createdAt:'2024-10-24'},
+    {id:'a2',title:'Өнгөний сэтгэл зүй: Цэнхэр өнгө',slug:'ongnii-setgel-zui',excerpt:'Өнгө бидний сэтгэл санаанд хэрхэн нөлөөлдөг вэ?',content:'Өнгөний сэтгэл зүй бол маш сонирхолтой салбар...',thumbnail:'https://images.unsplash.com/photo-1541701494587-cb58502866ab?w=600&q=80',status:'PUBLISHED',categoryId:'c3',views:8200,likes:850,tags:['Сэтгэл зүй'],publishedAt:'2024-10-22',createdAt:'2024-10-22'},
+    {id:'a3',title:'Хиймэл оюун ухаан хүн төрөлхтнийг орлох уу?',slug:'ai-hiin-torolhtnig',excerpt:'Технологийн хурдацтай хөгжил бидний ирээдүйг хэрхэн өөрчлөх вэ?',content:'AI технологи маш хурдацтай хөгжиж байна...',thumbnail:'https://images.unsplash.com/photo-1677442136019-21780ecad995?w=600&q=80',status:'PUBLISHED',categoryId:'c1',views:23000,likes:3400,tags:['AI','Ирээдүй'],publishedAt:'2024-10-20',createdAt:'2024-10-20'},
+    {id:'a4',title:'Чингис хааны цэргийн тактик',slug:'chingis-haanii-taktik',excerpt:'Монголын эзэнт гүрний хамгийн аугаа стратегиуд.',content:'Чингис хаан дэлхийн түүхэнд маш том нөлөө үзүүлсэн...',thumbnail:'https://images.unsplash.com/photo-1580309237429-661ea0007218?w=600&q=80',status:'PUBLISHED',categoryId:'c2',views:45000,likes:5200,tags:['Түүх','Чингис Хаан'],publishedAt:'2024-10-18',createdAt:'2024-10-18'},
+    {id:'a5',title:'Квант физикийг энгийнээр тайлбарлах нь',slug:'kvant-fizik',excerpt:'Шинжлэх ухааны хамгийн хэцүү сэдвийг энгийнээр.',content:'Квант физик бол атомын түвшинд байгаа жижиг хэсгүүдийг судалдаг...',thumbnail:'https://images.unsplash.com/photo-1635070041078-e363dbe005cb?w=600&q=80',status:'DRAFT',categoryId:'c1',views:1200,likes:0,tags:['Физик'],publishedAt:null,createdAt:'2024-10-15'},
+    {id:'a6',title:'Дэлхийн хамгийн хачирхалтай 10 амьтан',slug:'hachirhaltai-amitan',excerpt:'Та сонсож байгаагүй сонин хачин амьтдын тухай.',content:'Дэлхий дээр маш олон сонирхолтой амьтад амьдардаг...',thumbnail:'https://images.unsplash.com/photo-1474511320723-9a56873571b7?w=600&q=80',status:'PUBLISHED',categoryId:'c4',views:32000,likes:1500,tags:['Байгаль','Амьтад'],publishedAt:'2024-10-12',createdAt:'2024-10-12'}
+  ],
+  categories: [
+    {id:'c1',name:'Шинжлэх ухаан',slug:'science'},{id:'c2',name:'Түүх, газарзүй',slug:'history'},
+    {id:'c3',name:'Хүмүүс',slug:'people'},{id:'c4',name:'Амьтан, ургамал',slug:'animals'},
+    {id:'c5',name:'Монгол',slug:'mongol'},{id:'c6',name:'Дэлхий',slug:'world'},
+    {id:'c7',name:'Урлаг',slug:'art'},{id:'c8',name:'Спорт',slug:'sport'}
+  ],
+  comments: [
+    {id:'cm1',articleId:'a1',articleTitle:'Хар нүхний нууц',author:'Батболд',email:'bat@test.mn',content:'Маш сонирхолтой нийтлэл байна!',status:'APPROVED',createdAt:'2024-10-25'},
+    {id:'cm2',articleId:'a3',articleTitle:'Хиймэл оюун ухаан',author:'Сарнай',email:'sarnai@test.mn',content:'AI-ийн талаар дэлгэрэнгүй бичнэ үү.',status:'PENDING',createdAt:'2024-10-26'},
+    {id:'cm3',articleId:'a4',articleTitle:'Чингис хааны тактик',author:'Spam Bot',email:'spam@spam.com',content:'Buy cheap products...',status:'SPAM',createdAt:'2024-10-27'}
+  ],
+  tags: [{id:'t1',name:'Сансар'},{id:'t2',name:'Физик'},{id:'t3',name:'AI'},{id:'t4',name:'Түүх'},{id:'t5',name:'Байгаль'},{id:'t6',name:'Сэтгэл зүй'}],
+  settings: [
+    {key:'siteName',value:'Channel Mongolia'},{key:'contactEmail',value:'info@channelmongolia.mn'},
+    {key:'contactPhone',value:'+976 7000-1234'},{key:'seoTitle',value:'Channel Mongolia - Мэдлэгийн платформ'},
+    {key:'seoDesc',value:'Монгол хэл дээрх мэдлэг, мэдээллийн нэгдсэн систем'}
+  ],
+  logs: [
+    {id:'l1',user:'admin@channelmongolia.mn',action:'LOGIN',details:'Амжилттай нэвтэрлээ',ip:'192.168.1.1',time:'2024-10-27 09:00'},
+    {id:'l2',user:'admin@channelmongolia.mn',action:'CREATE',details:'Шинэ нийтлэл үүсгэлээ: Хар нүхний нууц',ip:'192.168.1.1',time:'2024-10-27 09:15'},
+    {id:'l3',user:'editor@channelmongolia.mn',action:'LOGIN',details:'Амжилттай нэвтэрлээ',ip:'192.168.1.2',time:'2024-10-27 10:00'},
+    {id:'l4',user:'admin@channelmongolia.mn',action:'UPDATE',details:'Тохиргоо шинэчлэлт',ip:'192.168.1.1',time:'2024-10-27 11:30'}
+  ]
+};
+
+function getDB(){try{const d=JSON.parse(localStorage.getItem(DB_KEY));return d&&d.users?d:JSON.parse(JSON.stringify(defaultDB))}catch{return JSON.parse(JSON.stringify(defaultDB))}}
+function saveDB(d){localStorage.setItem(DB_KEY,JSON.stringify(d))}
+function resetDB(){localStorage.removeItem(DB_KEY);location.reload()}
+
+// ══════════════════════════════════════
+// STATE & ROUTING
+// ══════════════════════════════════════
+let state = {
+  page: 'home', // home, admin-login, admin-dashboard, admin-articles, admin-article-form, admin-categories, admin-tags, admin-users, admin-comments, admin-analytics, admin-settings, admin-logs
+  user: JSON.parse(sessionStorage.getItem('cm_user')||'null'),
+  editArticleId: null,
+  message: null
+};
+
+function navigate(page, data){
+  state.page = page;
+  if(data) Object.assign(state, data);
+  state.message = null;
+  render();
+  window.scrollTo(0,0);
+}
+
+function setMsg(type, text){state.message={type,text};render();}
+
+// ══════════════════════════════════════
+// AUTH
+// ══════════════════════════════════════
+function login(email, password){
+  const db = getDB();
+  const user = db.users.find(u=>u.email===email && u.password===password);
+  if(!user) return false;
+  if(user.role==='USER') return 'no_access';
+  state.user = {id:user.id,email:user.email,role:user.role};
+  sessionStorage.setItem('cm_user',JSON.stringify(state.user));
+  db.logs.push({id:'l'+Date.now(),user:email,action:'LOGIN',details:'Амжилттай нэвтэрлээ',ip:'127.0.0.1',time:new Date().toLocaleString('mn-MN')});
+  saveDB(db);
+  return true;
+}
+function logout(){state.user=null;sessionStorage.removeItem('cm_user');navigate('home');}
+
+// ══════════════════════════════════════
+// SVG ICONS (inline)
+// ══════════════════════════════════════
+const IC = {
+  dashboard:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="5" x="14" y="12" rx="1"/><rect width="7" height="9" x="3" y="16" rx="1"/></svg>',
+  article:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/></svg>',
+  folder:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/></svg>',
+  tag:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2H2v10l9.29 9.29c.94.94 2.48.94 3.42 0l6.58-6.58c.94-.94.94-2.48 0-3.42L12 2Z"/><path d="M7 7h.01"/></svg>',
+  users:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>',
+  comment:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></svg>',
+  chart:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>',
+  settings:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>',
+  log:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 12h-5"/><path d="M15 8h-5"/><path d="M19 6V5a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-1"/></svg>',
+  logout:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></svg>',
+  menu:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg>',
+  x:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg>',
+  plus:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5v14"/></svg>',
+  edit:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>',
+  trash:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>',
+  save:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15.2 3a2 2 0 0 1 1.4.6l3.8 3.8a2 2 0 0 1 .6 1.4V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/><path d="M17 21v-7a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v7"/><path d="M7 3v4a1 1 0 0 0 1 1h7"/></svg>',
+  eye:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>',
+  arrow:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>',
+  back:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>',
+  moon:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>',
+  sun:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>',
+  shield:'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></svg>',
+  sparkle:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3z"/></svg>',
+  check:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6 9 17l-5-5"/></svg>'
+};
+
+// ══════════════════════════════════════
+// RENDER ENGINE
+// ══════════════════════════════════════
+function render(){
+  const app = document.getElementById('app');
+  const p = state.page;
+  if(p==='home') app.innerHTML = renderPublic();
+  else if(p==='admin-login') app.innerHTML = renderAdminLogin();
+  else if(p.startsWith('admin-')) app.innerHTML = renderAdmin();
+  bindEvents();
+}
+
+// ═══ PUBLIC SITE ═══
+function renderPublic(){
+  const db = getDB();
+  const articles = db.articles.filter(a=>a.status==='PUBLISHED');
+  const sorted = [...articles].sort((a,b)=>b.views-a.views);
+  const featured = sorted[0];
+  const latest = articles.slice(1,5);
+  const trending = sorted.slice(0,4);
+  const facts=['Зөгийн бал хэзээ ч мууддаггүй цорын ганц хүнс юм.','Наймаалж гурван зүрхтэй байдаг.','Хүн амьдралынхаа туршид дунджаар дэлхийг 3 удаа тойрох хэмжээний алхдаг.'];
+  const fact = facts[Math.floor(Math.random()*facts.length)];
+
+  function cardHTML(a){
+    const cat = db.categories.find(c=>c.id===a.categoryId);
+    const v = a.views>=1000?(a.views/1000).toFixed(1)+'K':a.views;
+    return `<div class="card"><div class="card-img"><img src="${a.thumbnail}" alt="${a.title}" loading="lazy"/><span class="cat-badge">${cat?cat.name:''}</span></div><div class="card-body"><h3>${a.title}</h3><p>${a.excerpt}</p><div class="card-meta"><span>${IC.eye} ${v}</span></div></div></div>`;
+  }
+  function sbItem(a,i){
+    const v=(a.views/1000).toFixed(1)+'k';
+    return `<div class="sb-item"><div class="rank ${i===0?'top':''}">${i+1}</div><div class="thumb"><img src="${a.thumbnail}" alt="" loading="lazy"/></div><div><h4>${a.title}</h4><div class="meta">${IC.eye} ${v}</div></div></div>`;
+  }
+
+  return `
+  <header class="p-nav" id="nav"><div class="ctr"><div class="p-nav-inner">
+    <a href="#" class="logo grad-text" onclick="navigate('home');return false">Channel Mongolia</a>
+    <div class="p-nav-links">
+      <a href="#" class="active">Нүүр</a><a href="#">Монгол</a><a href="#">Дэлхий</a><a href="#">Шинжлэх ухаан</a><a href="#">Түүх</a><a href="#">Видео</a>
+    </div>
+    <div class="nav-acts">
+      <button class="n-btn" onclick="toggleTheme()">${document.documentElement.classList.contains('dark')?IC.sun:IC.moon}</button>
+      <button class="n-btn" onclick="navigate('admin-login')" title="Админ">${IC.shield}</button>
+      <button class="n-btn" onclick="toggleMob()" style="display:none" id="mobBtn">${IC.menu}</button>
+    </div>
+  </div></div></header>
+
+  <section class="hero"><div class="hero-bg"><div class="orb orb1"></div><div class="orb orb2"></div></div>
+  <div class="ctr"><div class="hero-ct">
+    <div style="display:inline-flex;align-items:center;gap:6px;padding:6px 16px;border-radius:100px;background:var(--sf);border:1px solid var(--bd);font-size:.78rem;font-weight:600;color:var(--txm);margin-bottom:24px;box-shadow:var(--sh)">${IC.sparkle} Шинэ үеийн мэдлэгийн сан</div>
+    <h1>Сонирхолтой мэдлэгийг <span class="hl grad-bg">энгийнээр</span></h1>
+    <p>Өдөр бүр шинэ сонин хачин баримт, шинжлэх ухаан, түүхийн тайлбарууд</p>
+    <a class="hero-cta" href="#content" onclick="document.getElementById('content').scrollIntoView({behavior:'smooth'});return false">Мэдлэгтэй танилцах ${IC.arrow}</a>
+  </div></div></section>
+
+  <div class="ctr" id="content">
+    ${featured?`<div class="section"><div class="sec-head"><div class="bar grad-bg"></div><h2>Онцлох мэдлэг</h2></div>
+    <div class="card" style="display:grid;grid-template-columns:1fr" id="featCard">
+      <div class="card-img" style="aspect-ratio:21/9"><img src="${featured.thumbnail}" alt="${featured.title}"/><span class="cat-badge">${(db.categories.find(c=>c.id===featured.categoryId)||{}).name||''}</span></div>
+      <div class="card-body"><h3 style="font-size:1.4rem">${featured.title}</h3><p>${featured.excerpt}</p><div class="card-meta"><span>${IC.eye} ${(featured.views/1000).toFixed(1)}K</span></div></div>
+    </div></div>`:''}
+
+    <div class="main-grid">
+      <div>
+        <div class="section"><div class="sec-head"><div class="bar grad-bg"></div><h2>Шинээр нэмэгдсэн</h2></div>
+        <div class="grid-2">${latest.map(cardHTML).join('')}</div></div>
+
+        <div style="border:1px dashed var(--bd);border-radius:var(--r);padding:40px 20px;text-align:center;background:var(--sfh);margin:40px 0">
+          <span style="font-size:.68rem;font-weight:700;color:var(--txm);opacity:.4;letter-spacing:.15em">СУРТАЛЧИЛГАА</span></div>
+
+        <div class="section"><div class="sec-head"><div class="bar grad-bg"></div><h2>Тренд мэдлэг</h2></div>
+        <div class="grid-2">${trending.map(cardHTML).join('')}</div></div>
+      </div>
+
+      <div class="sidebar">
+        <div class="daily grad-bg"><div class="label">💡 ӨНӨӨДРИЙН МЭДЛЭГ</div><h3>${fact}</h3>
+        <div class="acts"><button class="ay">👍 Таалагдсан</button><button class="an">Дараагийнх</button></div></div>
+        <div class="sb-card tinted"><div class="sb-head">${IC.eye} Хамгийн их үзсэн</div>${sorted.slice(0,5).map((a,i)=>sbItem(a,i)).join('')}</div>
+        <div class="sb-card"><div class="sb-head">${IC.folder} Ангиллаар үзэх</div><div class="cat-pills">${db.categories.map(c=>`<a href="#" class="cat-pill">${c.name}</a>`).join('')}</div></div>
+        <div style="text-align:center;padding:28px 24px;background:linear-gradient(135deg,var(--sf),var(--sfh));border:1px solid var(--bd);border-radius:var(--r)">
+          <div style="font-size:.65rem;font-weight:700;color:var(--ac);letter-spacing:.08em;margin-bottom:8px">ӨНӨӨДРИЙН БОДОЛ</div>
+          <blockquote style="font-style:italic;font-size:1.05rem;line-height:1.7;margin:12px 0 16px">"Мэдлэг бол хүч."</blockquote>
+          <cite style="font-style:normal;font-size:.72rem;font-weight:700;color:var(--txm)">Francis Bacon</cite>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer"><div class="ctr">
+    <div class="footer-grid">
+      <div><div class="grad-text" style="font-weight:800;font-size:1.1rem;margin-bottom:12px">Channel Mongolia</div>
+        <p style="font-size:.85rem;color:var(--txm);line-height:1.7;max-width:300px;margin-bottom:16px">Сонирхолтой баримт, шинжлэх ухаан, технологийн мэдлэгийг хамгийн энгийнээр.</p>
+        <div class="social-row">${['F','IG','YT','X'].map(s=>`<a href="#" class="social-btn">${s}</a>`).join('')}</div></div>
+      <div><h4>Холбоос</h4><ul><li><a href="#">Бидний тухай</a></li><li><a href="#">Холбоо барих</a></li></ul></div>
+      <div><h4>Ангилал</h4><ul><li><a href="#">Шинжлэх ухаан</a></li><li><a href="#">Түүх</a></li><li><a href="#">Видео</a></li></ul></div>
+      <div><h4>Хууль</h4><ul><li><a href="#">Нууцлалын бодлого</a></li><li><a href="#">Үйлчилгээний нөхцөл</a></li></ul></div>
+    </div>
+    <div class="footer-bottom"><span>© 2025 Channel Mongolia. Бүх эрх хуулиар хамгаалагдсан.</span><span style="font-family:monospace">v2.0</span></div>
+  </div></footer>`;
+}
+
+// ═══ ADMIN LOGIN ═══
+function renderAdminLogin(){
+  return `<div class="login-wrap"><div class="login-card">
+    <div style="text-align:center;margin-bottom:24px;color:var(--ac)">${IC.shield}</div>
+    <h1>Админ нэвтрэх</h1>
+    <p>Channel Mongolia удирдлагын систем</p>
+    ${state.message?`<div class="${state.message.type==='error'?'err-msg':'success-msg'}">${state.message.text}</div>`:''}
+    <form onsubmit="handleLogin(event)">
+      <div class="form-group"><label>Имэйл</label><input class="form-input" type="email" id="loginEmail" value="admin@channelmongolia.mn" required/></div>
+      <div class="form-group"><label>Нууц үг</label><input class="form-input" type="password" id="loginPass" value="Admin123!" required/></div>
+      <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;padding:14px">Нэвтрэх ${IC.arrow}</button>
+    </form>
+    <div style="text-align:center;margin-top:16px"><a href="#" onclick="navigate('home');return false" style="font-size:.82rem;color:var(--ac);font-weight:600">${IC.back} Нүүр хуудас руу буцах</a></div>
+  </div></div>`;
+}
+function handleLogin(e){
+  e.preventDefault();
+  const email=document.getElementById('loginEmail').value;
+  const pass=document.getElementById('loginPass').value;
+  const result=login(email,pass);
+  if(result===true) navigate('admin-dashboard');
+  else if(result==='no_access') setMsg('error','Удирдлагын хэсэгт нэвтрэх эрхгүй хэрэглэгч.');
+  else setMsg('error','Имэйл эсвэл нууц үг буруу байна.');
+}
+
+// ═══ ADMIN PANEL ═══
+function renderAdmin(){
+  if(!state.user) return renderAdminLogin();
+  const db=getDB();
+  const p=state.page;
+  const navItems=[
+    {label:'Хянах самбар',page:'admin-dashboard',icon:IC.dashboard},
+    {label:'Нийтлэлүүд',page:'admin-articles',icon:IC.article},
+    {label:'Ангилал',page:'admin-categories',icon:IC.folder},
+    {label:'Шошго',page:'admin-tags',icon:IC.tag},
+    {label:'Хэрэглэгчид',page:'admin-users',icon:IC.users},
+    {label:'Сэтгэгдэл',page:'admin-comments',icon:IC.comment},
+    {label:'Аналитик',page:'admin-analytics',icon:IC.chart},
+    {label:'Тохиргоо',page:'admin-settings',icon:IC.settings},
+    {label:'Систем лог',page:'admin-logs',icon:IC.log}
+  ];
+
+  let content='';
+  if(p==='admin-dashboard') content=renderDashboard(db);
+  else if(p==='admin-articles') content=renderArticles(db);
+  else if(p==='admin-article-form') content=renderArticleForm(db);
+  else if(p==='admin-categories') content=renderCategories(db);
+  else if(p==='admin-tags') content=renderTags(db);
+  else if(p==='admin-users') content=renderUsers(db);
+  else if(p==='admin-comments') content=renderComments(db);
+  else if(p==='admin-analytics') content=renderAnalytics(db);
+  else if(p==='admin-settings') content=renderSettings(db);
+  else if(p==='admin-logs') content=renderLogs(db);
+
+  return `<div class="admin-wrap">
+    <aside class="admin-sb" id="adminSb">
+      <div class="admin-sb-head"><span class="grad-text" style="font-weight:800;font-size:1.1rem">CM Admin</span>
+        <button onclick="document.getElementById('adminSb').classList.remove('open');document.getElementById('adminOv').classList.remove('open')" style="margin-left:auto;color:var(--txm);display:none" class="mob-close">${IC.x}</button></div>
+      <div class="admin-sb-user"><div class="avatar grad-bg">${state.user.email[0].toUpperCase()}</div>
+        <div class="info"><span>${state.user.email}</span><small>${state.user.role}</small></div></div>
+      <nav>${navItems.map(n=>`<a href="#" class="${p===n.page?'active':''}" onclick="navigate('${n.page}');closeSb();return false">${n.icon}${n.label}</a>`).join('')}</nav>
+      <div class="admin-sb-footer"><button onclick="logout()">${IC.logout} Гарах</button></div>
+    </aside>
+    <div class="admin-overlay" id="adminOv" onclick="closeSb()"></div>
+    <div class="admin-main">
+      <div class="admin-top">
+        <button class="n-btn" onclick="openSb()" style="display:none" id="sbToggle">${IC.menu}</button>
+        <span style="font-weight:700;font-size:.95rem">${navItems.find(n=>n.page===p)?.label||'Админ'}</span>
+        <div style="margin-left:auto;display:flex;gap:8px">
+          <button class="n-btn" onclick="toggleTheme()">${document.documentElement.classList.contains('dark')?IC.sun:IC.moon}</button>
+          <a href="#" class="n-btn" onclick="navigate('home');return false" title="Сайт руу">${IC.eye}</a>
+        </div>
+      </div>
+      <div class="admin-content">
+        ${state.message?`<div class="${state.message.type==='error'?'err-msg':'success-msg'}" style="margin-bottom:16px">${state.message.text}</div>`:''}
+        ${content}
+      </div>
+    </div>
+  </div>`;
+}
+
+function openSb(){document.getElementById('adminSb').classList.add('open');document.getElementById('adminOv').classList.add('open')}
+function closeSb(){document.getElementById('adminSb')?.classList.remove('open');document.getElementById('adminOv')?.classList.remove('open')}
+
+// ─── DASHBOARD ───
+function renderDashboard(db){
+  const pub=db.articles.filter(a=>a.status==='PUBLISHED').length;
+  const draft=db.articles.filter(a=>a.status==='DRAFT').length;
+  const totalViews=db.articles.reduce((s,a)=>s+a.views,0);
+  const pendingComments=db.comments.filter(c=>c.status==='PENDING').length;
+  return `
+  <div class="stat-grid">
+    <div class="stat-card"><div class="label">Нийтлэгдсэн</div><div class="val" style="color:var(--green)">${pub}</div></div>
+    <div class="stat-card"><div class="label">Ноорог</div><div class="val" style="color:var(--yellow)">${draft}</div></div>
+    <div class="stat-card"><div class="label">Нийт үзэлт</div><div class="val">${(totalViews/1000).toFixed(1)}K</div></div>
+    <div class="stat-card"><div class="label">Шинэ сэтгэгдэл</div><div class="val" style="color:var(--ac)">${pendingComments}</div></div>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:24px">
+    <div class="admin-panel"><div class="admin-panel-head">Сүүлд нийтэлсэн</div>
+      <div>${db.articles.filter(a=>a.status==='PUBLISHED').slice(0,5).map(a=>`
+        <div style="padding:12px 20px;border-bottom:1px solid var(--bd);display:flex;align-items:center;gap:12px">
+          <img src="${a.thumbnail}" style="width:48px;height:36px;border-radius:8px;object-fit:cover"/>
+          <div style="flex:1;min-width:0"><div style="font-size:.85rem;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${a.title}</div>
+          <div style="font-size:.7rem;color:var(--txm)">${a.publishedAt||''}</div></div>
+          <span class="badge-s badge-green">${IC.check} Active</span>
+        </div>`).join('')}
+      </div>
+    </div>
+    <div class="admin-panel"><div class="admin-panel-head">Үзэлтийн график</div>
+      <div class="admin-panel-body">
+        <div class="chart-bar">
+          ${['Дав','Мяг','Лха','Пүр','Баа','Бям','Ням'].map((d,i)=>{
+            const h=[45,55,70,65,85,95,75][i];
+            return `<div class="bar-col" style="height:${h}%;background:var(--ac);opacity:${.5+i*.07}"><span class="bar-label">${d}</span></div>`;
+          }).join('')}
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+// ─── ARTICLES ───
+function renderArticles(db){
+  return `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+    <div><span style="font-size:.85rem;color:var(--txm)">${db.articles.length} нийтлэл</span></div>
+    <button class="btn btn-primary" onclick="navigate('admin-article-form',{editArticleId:null})">${IC.plus} Шинэ нийтлэл</button>
+  </div>
+  <div class="admin-panel"><table class="admin-table"><thead><tr>
+    <th>Гарчиг</th><th>Ангилал</th><th>Төлөв</th><th>Үзэлт</th><th>Огноо</th><th>Үйлдэл</th>
+  </tr></thead><tbody>
+    ${db.articles.map(a=>{
+      const cat=db.categories.find(c=>c.id===a.categoryId);
+      const badge=a.status==='PUBLISHED'?'badge-green':a.status==='DRAFT'?'badge-yellow':'badge-red';
+      const label=a.status==='PUBLISHED'?'Нийтэлсэн':a.status==='DRAFT'?'Ноорог':'Архив';
+      return `<tr>
+        <td><div style="display:flex;align-items:center;gap:10px"><img src="${a.thumbnail}" style="width:48px;height:36px;border-radius:6px;object-fit:cover"/><span style="font-weight:600">${a.title}</span></div></td>
+        <td>${cat?cat.name:'-'}</td>
+        <td><span class="badge-s ${badge}">${label}</span></td>
+        <td>${a.views.toLocaleString()}</td>
+        <td style="font-size:.78rem;color:var(--txm)">${a.publishedAt||a.createdAt}</td>
+        <td><div style="display:flex;gap:6px">
+          <button class="btn btn-ghost btn-sm" onclick="navigate('admin-article-form',{editArticleId:'${a.id}'})">${IC.edit} Засах</button>
+          <button class="btn btn-danger btn-sm" onclick="deleteArticle('${a.id}')">${IC.trash}</button>
+        </div></td>
+      </tr>`;
+    }).join('')}
+  </tbody></table></div>`;
+}
+function deleteArticle(id){if(!confirm('Устгах уу?'))return;const db=getDB();db.articles=db.articles.filter(a=>a.id!==id);saveDB(db);setMsg('success','Нийтлэл устгагдлаа.');navigate('admin-articles');}
+
+// ─── ARTICLE FORM ───
+function renderArticleForm(db){
+  const a=state.editArticleId?db.articles.find(x=>x.id===state.editArticleId):null;
+  return `<div style="max-width:800px">
+    <div style="margin-bottom:20px"><a href="#" onclick="navigate('admin-articles');return false" style="font-size:.85rem;color:var(--ac);font-weight:600">${IC.back} Буцах</a></div>
+    <div class="admin-panel"><div class="admin-panel-head">${a?'Нийтлэл засах':'Шинэ нийтлэл'}</div>
+    <div class="admin-panel-body">
+      <form onsubmit="saveArticle(event)">
+        <div class="form-group"><label>Гарчиг</label><input class="form-input" id="af_title" value="${a?a.title:''}" required/></div>
+        <div class="form-group"><label>Slug</label><input class="form-input" id="af_slug" value="${a?a.slug:''}" required/></div>
+        <div class="form-group"><label>Товч тайлбар</label><textarea class="form-input" id="af_excerpt">${a?a.excerpt:''}</textarea></div>
+        <div class="form-group"><label>Агуулга</label><textarea class="form-input" id="af_content" style="min-height:200px">${a?a.content:''}</textarea></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+          <div class="form-group"><label>Зураг URL</label><input class="form-input" id="af_thumb" value="${a?a.thumbnail:''}" placeholder="https://..."/></div>
+          <div class="form-group"><label>Ангилал</label><select class="form-input" id="af_cat">
+            <option value="">-- Сонгох --</option>${db.categories.map(c=>`<option value="${c.id}" ${a&&a.categoryId===c.id?'selected':''}>${c.name}</option>`).join('')}
+          </select></div>
+        </div>
+        <div class="form-group"><label>Төлөв</label><select class="form-input" id="af_status">
+          <option value="DRAFT" ${a&&a.status==='DRAFT'?'selected':''}>Ноорог</option>
+          <option value="PUBLISHED" ${a&&a.status==='PUBLISHED'?'selected':''}>Нийтлэх</option>
+          <option value="ARCHIVED" ${a&&a.status==='ARCHIVED'?'selected':''}>Архив</option>
+        </select></div>
+        <input type="hidden" id="af_id" value="${a?a.id:''}"/>
+        <button type="submit" class="btn btn-primary">${IC.save} Хадгалах</button>
+      </form>
+    </div></div>
+  </div>`;
+}
+function saveArticle(e){
+  e.preventDefault();const db=getDB();const id=document.getElementById('af_id').value;
+  const data={title:document.getElementById('af_title').value,slug:document.getElementById('af_slug').value,excerpt:document.getElementById('af_excerpt').value,
+    content:document.getElementById('af_content').value,thumbnail:document.getElementById('af_thumb').value||'https://picsum.photos/800/450?random='+Date.now(),
+    status:document.getElementById('af_status').value,categoryId:document.getElementById('af_cat').value};
+  if(id){const a=db.articles.find(x=>x.id===id);if(a)Object.assign(a,data,{updatedAt:new Date().toISOString()});}
+  else{db.articles.push({id:'a'+Date.now(),...data,views:0,likes:0,tags:[],publishedAt:data.status==='PUBLISHED'?new Date().toISOString().split('T')[0]:null,createdAt:new Date().toISOString().split('T')[0]});}
+  saveDB(db);setMsg('success','Амжилттай хадгалагдлаа!');navigate('admin-articles');
+}
+
+// ─── CATEGORIES ───
+function renderCategories(db){
+  return `<div style="display:flex;justify-content:space-between;margin-bottom:20px">
+    <span style="font-size:.85rem;color:var(--txm)">${db.categories.length} ангилал</span>
+    <button class="btn btn-primary" onclick="addCategory()">${IC.plus} Нэмэх</button>
+  </div>
+  <div class="admin-panel"><table class="admin-table"><thead><tr><th>Нэр</th><th>Slug</th><th>Нийтлэл тоо</th><th>Үйлдэл</th></tr></thead><tbody>
+    ${db.categories.map(c=>{
+      const count=db.articles.filter(a=>a.categoryId===c.id).length;
+      return `<tr><td style="font-weight:600">${c.name}</td><td style="font-family:monospace;font-size:.78rem;color:var(--txm)">${c.slug}</td><td>${count}</td>
+      <td><div style="display:flex;gap:6px"><button class="btn btn-ghost btn-sm" onclick="editCategory('${c.id}')">${IC.edit}</button><button class="btn btn-danger btn-sm" onclick="deleteCategory('${c.id}')">${IC.trash}</button></div></td></tr>`;
+    }).join('')}
+  </tbody></table></div>`;
+}
+function addCategory(){const n=prompt('Ангиллын нэр:');if(!n)return;const db=getDB();db.categories.push({id:'c'+Date.now(),name:n,slug:n.toLowerCase().replace(/\s+/g,'-')});saveDB(db);render();}
+function editCategory(id){const db=getDB();const c=db.categories.find(x=>x.id===id);if(!c)return;const n=prompt('Нэр:',c.name);if(!n)return;c.name=n;c.slug=n.toLowerCase().replace(/\s+/g,'-');saveDB(db);render();}
+function deleteCategory(id){if(!confirm('Устгах уу?'))return;const db=getDB();db.categories=db.categories.filter(c=>c.id!==id);saveDB(db);render();}
+
+// ─── TAGS ───
+function renderTags(db){
+  return `<div style="display:flex;justify-content:space-between;margin-bottom:20px">
+    <span style="font-size:.85rem;color:var(--txm)">${db.tags.length} шошго</span>
+    <button class="btn btn-primary" onclick="addTag()">${IC.plus} Нэмэх</button>
+  </div>
+  <div class="admin-panel"><table class="admin-table"><thead><tr><th>Нэр</th><th>Нийтлэлд ашигласан</th><th>Үйлдэл</th></tr></thead><tbody>
+    ${db.tags.map(t=>{
+      const count=db.articles.filter(a=>a.tags&&a.tags.includes(t.name)).length;
+      return `<tr><td><span class="badge-s badge-blue">${t.name}</span></td><td>${count}</td><td><button class="btn btn-danger btn-sm" onclick="deleteTag('${t.id}')">${IC.trash}</button></td></tr>`;
+    }).join('')}
+  </tbody></table></div>`;
+}
+function addTag(){const n=prompt('Шошгоны нэр:');if(!n)return;const db=getDB();db.tags.push({id:'t'+Date.now(),name:n});saveDB(db);render();}
+function deleteTag(id){if(!confirm('Устгах уу?'))return;const db=getDB();db.tags=db.tags.filter(t=>t.id!==id);saveDB(db);render();}
+
+// ─── USERS ───
+function renderUsers(db){
+  return `<div style="display:flex;justify-content:space-between;margin-bottom:20px">
+    <span style="font-size:.85rem;color:var(--txm)">${db.users.length} хэрэглэгч</span>
+    <button class="btn btn-primary" onclick="addUser()">${IC.plus} Нэмэх</button>
+  </div>
+  <div class="admin-panel"><table class="admin-table"><thead><tr><th>Имэйл</th><th>Эрх</th><th>Бүртгэсэн</th><th>Үйлдэл</th></tr></thead><tbody>
+    ${db.users.map(u=>{
+      const badge=u.role==='ADMIN'?'badge-red':u.role==='EDITOR'?'badge-blue':'badge-green';
+      return `<tr><td style="font-weight:600">${u.email}</td><td><span class="badge-s ${badge}">${u.role}</span></td><td style="font-size:.78rem;color:var(--txm)">${u.createdAt}</td>
+      <td><div style="display:flex;gap:6px"><button class="btn btn-ghost btn-sm" onclick="changeRole('${u.id}')">${IC.edit} Эрх</button>${u.role!=='ADMIN'?`<button class="btn btn-danger btn-sm" onclick="deleteUser('${u.id}')">${IC.trash}</button>`:''}</div></td></tr>`;
+    }).join('')}
+  </tbody></table></div>`;
+}
+function addUser(){const e=prompt('Имэйл:');if(!e)return;const p=prompt('Нууц үг:');if(!p)return;const db=getDB();if(db.users.find(u=>u.email===e)){alert('Хэрэглэгч бүртгэлтэй байна.');return;}db.users.push({id:'u'+Date.now(),email:e,password:p,role:'USER',createdAt:new Date().toISOString().split('T')[0]});saveDB(db);render();}
+function changeRole(id){const db=getDB();const u=db.users.find(x=>x.id===id);if(!u)return;const roles=['USER','EDITOR','ADMIN'];const cur=roles.indexOf(u.role);u.role=roles[(cur+1)%3];saveDB(db);render();}
+function deleteUser(id){if(!confirm('Устгах уу?'))return;const db=getDB();db.users=db.users.filter(u=>u.id!==id);saveDB(db);render();}
+
+// ─── COMMENTS ───
+function renderComments(db){
+  return `<div style="margin-bottom:20px"><span style="font-size:.85rem;color:var(--txm)">${db.comments.length} сэтгэгдэл (${db.comments.filter(c=>c.status==='PENDING').length} шинэ)</span></div>
+  <div class="admin-panel"><table class="admin-table"><thead><tr><th>Зохиогч</th><th>Нийтлэл</th><th>Сэтгэгдэл</th><th>Төлөв</th><th>Үйлдэл</th></tr></thead><tbody>
+    ${db.comments.map(c=>{
+      const badge=c.status==='APPROVED'?'badge-green':c.status==='PENDING'?'badge-yellow':c.status==='SPAM'?'badge-red':'badge-blue';
+      return `<tr><td><div><div style="font-weight:600;font-size:.85rem">${c.author}</div><div style="font-size:.7rem;color:var(--txm)">${c.email}</div></div></td>
+      <td style="font-size:.82rem">${c.articleTitle}</td><td style="font-size:.82rem;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${c.content}</td>
+      <td><span class="badge-s ${badge}">${c.status}</span></td>
+      <td><div style="display:flex;gap:4px;flex-wrap:wrap">
+        ${c.status!=='APPROVED'?`<button class="btn btn-ghost btn-sm" onclick="commentStatus('${c.id}','APPROVED')">${IC.check}</button>`:''}
+        ${c.status!=='SPAM'?`<button class="btn btn-danger btn-sm" onclick="commentStatus('${c.id}','SPAM')">Spam</button>`:''}
+        <button class="btn btn-danger btn-sm" onclick="deleteComment('${c.id}')">${IC.trash}</button>
+      </div></td></tr>`;
+    }).join('')}
+  </tbody></table></div>`;
+}
+function commentStatus(id,s){const db=getDB();const c=db.comments.find(x=>x.id===id);if(c)c.status=s;saveDB(db);render();}
+function deleteComment(id){const db=getDB();db.comments=db.comments.filter(c=>c.id!==id);saveDB(db);render();}
+
+// ─── ANALYTICS ───
+function renderAnalytics(db){
+  const totalViews=db.articles.reduce((s,a)=>s+a.views,0);
+  const totalLikes=db.articles.reduce((s,a)=>s+(a.likes||0),0);
+  const avgViews=Math.round(totalViews/db.articles.length);
+  const days=['Дав','Мяг','Лха','Пүр','Баа','Бям','Ням'];
+  const vals=[1240,1450,1680,1900,2200,2500,2100];
+  const maxV=Math.max(...vals);
+  const sources=[{n:'Шууд',v:40,c:'var(--ac)'},{n:'Сошиал',v:35,c:'#3b82f6'},{n:'Хайлт',v:18,c:'var(--green)'},{n:'Бусад',v:7,c:'var(--yellow)'}];
+  const topArticles=[...db.articles].sort((a,b)=>b.views-a.views).slice(0,5);
+  return `
+  <div class="stat-grid" style="margin-bottom:24px">
+    <div class="stat-card"><div class="label">Нийт үзэлт</div><div class="val">${(totalViews/1000).toFixed(1)}K</div></div>
+    <div class="stat-card"><div class="label">Дундаж үзэлт</div><div class="val">${(avgViews/1000).toFixed(1)}K</div></div>
+    <div class="stat-card"><div class="label">Нийт таалагдсан</div><div class="val" style="color:var(--rs)">${(totalLikes/1000).toFixed(1)}K</div></div>
+    <div class="stat-card"><div class="label">Хэрэглэгчид</div><div class="val" style="color:var(--ac)">${db.users.length}</div></div>
+  </div>
+  <div style="display:grid;grid-template-columns:2fr 1fr;gap:16px">
+    <div class="admin-panel"><div class="admin-panel-head">7 хоногийн үзэлт</div><div class="admin-panel-body">
+      <div class="chart-bar">${days.map((d,i)=>`<div class="bar-col" style="height:${(vals[i]/maxV)*100}%;background:var(--ac);opacity:${.5+i*.07}"><span class="bar-label">${d}</span></div>`).join('')}</div>
+    </div></div>
+    <div class="admin-panel"><div class="admin-panel-head">Урсгалын эх үүсвэр</div><div class="admin-panel-body">
+      ${sources.map(s=>`<div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+        <div style="width:10px;height:10px;border-radius:3px;background:${s.c};flex-shrink:0"></div>
+        <span style="flex:1;font-size:.82rem">${s.n}</span>
+        <div style="width:120px;height:8px;background:var(--sfh);border-radius:4px;overflow:hidden"><div style="height:100%;width:${s.v}%;background:${s.c};border-radius:4px"></div></div>
+        <span style="font-size:.78rem;font-weight:700;width:30px;text-align:right">${s.v}%</span>
+      </div>`).join('')}
+    </div></div>
+  </div>
+  <div class="admin-panel" style="margin-top:16px"><div class="admin-panel-head">Шилдэг нийтлэлүүд</div>
+    <table class="admin-table"><thead><tr><th>Нийтлэл</th><th>Үзэлт</th><th>Таалагдсан</th></tr></thead><tbody>
+    ${topArticles.map(a=>`<tr><td style="font-weight:600">${a.title}</td><td>${a.views.toLocaleString()}</td><td>${(a.likes||0).toLocaleString()}</td></tr>`).join('')}
+    </tbody></table></div>`;
+}
+
+// ─── SETTINGS ───
+function renderSettings(db){
+  const g=k=>db.settings.find(s=>s.key===k)?.value||'';
+  return `<div style="max-width:700px">
+  <form onsubmit="saveSettings(event)">
+    <div class="admin-panel" style="margin-bottom:16px"><div class="admin-panel-head">Ерөнхий тохиргоо</div><div class="admin-panel-body">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+        <div class="form-group"><label>Вэбсайтын нэр</label><input class="form-input" id="s_name" value="${g('siteName')}"/></div>
+        <div class="form-group"><label>Холбоо барих имэйл</label><input class="form-input" id="s_email" value="${g('contactEmail')}"/></div>
+      </div>
+      <div class="form-group"><label>Утасны дугаар</label><input class="form-input" id="s_phone" value="${g('contactPhone')}"/></div>
+    </div></div>
+    <div class="admin-panel" style="margin-bottom:16px"><div class="admin-panel-head">SEO тохиргоо</div><div class="admin-panel-body">
+      <div class="form-group"><label>SEO гарчиг</label><input class="form-input" id="s_seo_title" value="${g('seoTitle')}"/></div>
+      <div class="form-group"><label>SEO тайлбар</label><textarea class="form-input" id="s_seo_desc">${g('seoDesc')}</textarea></div>
+    </div></div>
+    <div style="display:flex;gap:12px">
+      <button type="submit" class="btn btn-primary">${IC.save} Хадгалах</button>
+      <button type="button" class="btn btn-danger" onclick="if(confirm('Бүх өгөгдлийг анхны байдалд оруулах уу?'))resetDB()">Анхны байдалд оруулах</button>
+    </div>
+  </form></div>`;
+}
+function saveSettings(e){
+  e.preventDefault();const db=getDB();
+  const fields=[{key:'siteName',el:'s_name'},{key:'contactEmail',el:'s_email'},{key:'contactPhone',el:'s_phone'},{key:'seoTitle',el:'s_seo_title'},{key:'seoDesc',el:'s_seo_desc'}];
+  fields.forEach(f=>{const v=document.getElementById(f.el).value;const s=db.settings.find(x=>x.key===f.key);if(s)s.value=v;else db.settings.push({key:f.key,value:v});});
+  saveDB(db);setMsg('success','Тохиргоо амжилттай хадгалагдлаа!');
+}
+
+// ─── LOGS ───
+function renderLogs(db){
+  return `<div class="admin-panel"><table class="admin-table"><thead><tr><th>Хэрэглэгч</th><th>Үйлдэл</th><th>Дэлгэрэнгүй</th><th>IP</th><th>Цаг</th></tr></thead><tbody>
+    ${db.logs.map(l=>{
+      const badge=l.action==='LOGIN'?'badge-green':l.action==='CREATE'?'badge-blue':'badge-yellow';
+      return `<tr><td style="font-size:.82rem">${l.user}</td><td><span class="badge-s ${badge}">${l.action}</span></td><td style="font-size:.82rem;color:var(--txm)">${l.details}</td><td style="font-family:monospace;font-size:.75rem;color:var(--txm)">${l.ip}</td><td style="font-size:.78rem;color:var(--txm)">${l.time}</td></tr>`;
+    }).join('')}
+  </tbody></table></div>`;
+}
+
+// ══════════════════════════════════════
+// UTILITIES
+// ══════════════════════════════════════
+function toggleTheme(){
+  document.documentElement.classList.toggle('dark');
+  localStorage.setItem('cm_theme',document.documentElement.classList.contains('dark')?'dark':'light');
+  render();
+}
+function bindEvents(){
+  // Mobile menu button visibility
+  const mb=document.getElementById('mobBtn');if(mb&&window.innerWidth<768)mb.style.display='flex';
+  const sb=document.getElementById('sbToggle');if(sb&&window.innerWidth<1024)sb.style.display='flex';
+  const mc=document.querySelectorAll('.mob-close');mc.forEach(b=>{if(window.innerWidth<1024)b.style.display='block';});
+  // Nav scroll
+  window.onscroll=()=>{const n=document.getElementById('nav');if(n)n.classList.toggle('scrolled',window.scrollY>10);};
+}
+window.addEventListener('resize',bindEvents);
+
+// ═══ INIT ═══
+render();
+</script>
+</body>
+</html>
