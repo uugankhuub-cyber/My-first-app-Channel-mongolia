@@ -55,8 +55,8 @@ export const AdminLayout: React.FC = () => {
                    {user?.email[0].toUpperCase()}
                 </div>
                 <div className="flex flex-col min-w-0">
-                   <span className="text-xs font-bold text-white truncate">{user?.email}</span>
-                   <span className="text-[10px] text-slate-400 uppercase tracking-tighter">{user?.role}</span>
+                   <span className="text-xs font-bold text-text-main truncate">{user?.email}</span>
+                   <span className="text-[10px] text-text-muted uppercase tracking-tighter">{user?.role}</span>
                 </div>
              </div>
           </div>

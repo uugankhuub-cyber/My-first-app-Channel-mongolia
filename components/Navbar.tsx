@@ -80,20 +80,20 @@ export const Navbar: React.FC = () => {
     <nav
       className={`sticky top-0 z-50 w-full transition-all duration-300 ${
         scrolled
-          ? "bg-white/90 dark:bg-[#0e111a]/80 backdrop-blur-md shadow-sm border-b border-slate-200/80 dark:border-white/5"
-          : "bg-white/95 dark:bg-[#0e111a]/95 backdrop-blur-sm border-b border-transparent dark:border-white/5"
+          ? "bg-white/90 dark:bg-background/90 backdrop-blur-md shadow-[0_1px_12px_rgba(0,0,0,0.06)] border-b border-slate-200/80 dark:border-white/5"
+          : "bg-white/95 dark:bg-background/95 backdrop-blur-sm border-b border-transparent dark:border-white/5"
       }`}
     >
       <div className="relative z-10">
         {/* ROW 1: Brand, Search, Utilities */}
         <Container>
-          <div className="flex h-16 items-center justify-between gap-6">
+          <div className="flex h-14 items-center justify-between gap-6">
             {/* Logo */}
             <Link
               to="/"
               className="flex-shrink-0 flex items-center gap-2 group"
             >
-              <span className="font-bold text-xl md:text-2xl tracking-tight text-gradient transition-all duration-300 group-hover:opacity-90">
+              <span className="font-bold text-xl tracking-tight text-gradient transition-all duration-300 group-hover:opacity-90">
                 Channel Mongolia
               </span>
             </Link>
@@ -233,7 +233,7 @@ export const Navbar: React.FC = () => {
         </Container>
 
         {/* ROW 2: Navigation Categories */}
-        <div className="border-t border-slate-100 dark:border-white/5 w-full overflow-hidden">
+        <div className="border-t border-slate-100 dark:border-white/5 w-full hidden md:block overflow-hidden">
           <Container className="relative">
             <div className="flex items-center h-12 md:h-14 gap-2 overflow-x-auto no-scrollbar px-1 py-2">
               {mainNavItems.map((item) => (
@@ -245,7 +245,7 @@ export const Navbar: React.FC = () => {
                     ${
                       isActive
                         ? "bg-brand-purple text-white font-semibold shadow-md shadow-brand-purple/20 ring-1 ring-inset ring-white/10"
-                        : "text-slate-600 dark:text-slate-400 font-medium hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5"
+                        : "text-slate-600 dark:text-slate-400 font-medium hover:text-brand-purple dark:hover:text-white hover:bg-brand-purple/10 dark:hover:bg-brand-purple/10"
                     }
                   `}
                 >
@@ -274,8 +274,8 @@ export const Navbar: React.FC = () => {
               initial={{ x: "100%" }}
               animate={{ x: 0 }}
               exit={{ x: "100%" }}
-              transition={{ type: "spring", damping: 25, stiffness: 200 }}
-              className="fixed inset-y-0 right-0 z-[150] w-[85vw] max-w-sm bg-white dark:bg-[#141824] shadow-2xl"
+              transition={{ ease: [0.4, 0, 0.2, 1], duration: 0.3 }}
+              className="fixed inset-y-0 right-0 z-[150] w-[85vw] max-w-sm bg-white dark:bg-background shadow-2xl"
             >
               <div className="flex flex-col h-full">
                 <div className="flex items-center justify-between p-4 border-b border-slate-100 dark:border-white/10">

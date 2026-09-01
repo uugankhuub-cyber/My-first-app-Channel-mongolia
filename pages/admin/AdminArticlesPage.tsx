@@ -122,15 +122,15 @@ export const AdminArticlesPage: React.FC = () => {
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-white tracking-tight flex items-center gap-2">
+          <h1 className="text-2xl font-bold text-text-main tracking-tight flex items-center gap-2">
             <FileText className="text-brand-purple" />
             <span>Нийтлэлийн удирдлага</span>
           </h1>
-          <p className="text-slate-400 text-sm">Вэбсайт дахь нийтлэлүүдийг засварлах, устгах, төлөв өөрчлөх хэсэг</p>
+          <p className="text-text-muted text-sm">Вэбсайт дахь нийтлэлүүдийг засварлах, устгах, төлөв өөрчлөх хэсэг</p>
         </div>
         <Link 
           to="/admin/articles/create"
-          className="inline-flex items-center gap-2 px-5 py-3 bg-gradient-brand text-white rounded-xl text-sm font-bold shadow-lg shadow-brand-purple/20 hover:shadow-brand-purple/35 hover:-translate-y-0.5 active:translate-y-0 transition-all self-start"
+          className="inline-flex items-center gap-2 px-5 py-3 bg-gradient-brand text-text-main rounded-xl text-sm font-bold shadow-lg shadow-brand-purple/20 hover:shadow-brand-purple/35 hover:-translate-y-0.5 active:translate-y-0 transition-all self-start"
         >
           <Plus size={18} />
           Шинэ Нийтлэл Бичих
@@ -152,33 +152,33 @@ export const AdminArticlesPage: React.FC = () => {
             {message.type === 'success' ? <CheckCircle size={18} /> : <AlertTriangle size={18} />}
             <span>{message.text}</span>
           </div>
-          <button onClick={() => setMessage(null)} className="text-slate-400 hover:text-white">
+          <button onClick={() => setMessage(null)} className="text-text-muted hover:text-text-main">
             <X size={16} />
           </button>
         </motion.div>
       )}
 
       {/* Search and Filters panel */}
-      <div className="bg-[#131B2E]/50 backdrop-blur-md border border-white/10 rounded-2xl p-4 flex flex-col md:flex-row gap-4 items-center">
+      <div className="bg-surfaceHighlight backdrop-blur-md border border-border rounded-2xl p-4 flex flex-col md:flex-row gap-4 items-center">
         {/* Search */}
         <div className="relative w-full md:flex-1">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-text-muted" size={18} />
           <input 
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Нийтлэлийн гарчиг болон агуулгаар хайх..."
-            className="w-full pl-11 pr-4 py-3 bg-[#0B0F19]/80 border border-white/5 rounded-xl text-white text-sm outline-none focus:border-brand-purple/50 transition-colors"
+            className="w-full pl-11 pr-4 py-3 bg-background border border-border rounded-xl text-text-main text-sm outline-none focus:border-brand-purple/50 transition-colors"
           />
         </div>
 
         {/* Status filter */}
         <div className="flex items-center gap-2 w-full md:w-auto">
-          <Filter className="text-slate-500 hidden md:block" size={16} />
+          <Filter className="text-text-muted hidden md:block" size={16} />
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="w-full md:w-44 px-3 py-3 bg-[#0B0F19]/80 border border-white/5 rounded-xl text-slate-300 text-sm outline-none focus:border-brand-purple/50 transition-colors"
+            className="w-full md:w-44 px-3 py-3 bg-background border border-border rounded-xl text-text-main text-sm outline-none focus:border-brand-purple/50 transition-colors"
           >
             <option value="">Бүх төлөв</option>
             <option value="PUBLISHED">Нийтлэгдсэн</option>
@@ -191,7 +191,7 @@ export const AdminArticlesPage: React.FC = () => {
         <select
           value={categoryFilter}
           onChange={(e) => setCategoryFilter(e.target.value)}
-          className="w-full md:w-48 px-3 py-3 bg-[#0B0F19]/80 border border-white/5 rounded-xl text-slate-300 text-sm outline-none focus:border-brand-purple/50 transition-colors"
+          className="w-full md:w-48 px-3 py-3 bg-background border border-border rounded-xl text-text-main text-sm outline-none focus:border-brand-purple/50 transition-colors"
         >
           <option value="">Бүх ангилал</option>
           {categories.map(c => (
@@ -202,30 +202,30 @@ export const AdminArticlesPage: React.FC = () => {
         {/* Reload button */}
         <button 
           onClick={fetchData}
-          className="p-3 bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white rounded-xl border border-white/5 transition-colors self-stretch md:self-auto flex items-center justify-center"
+          className="p-3 bg-surfaceHighlight hover:bg-white/10 text-text-muted hover:text-text-main rounded-xl border border-border transition-colors self-stretch md:self-auto flex items-center justify-center"
         >
           <RefreshCw size={16} className={loading ? 'animate-spin' : ''} />
         </button>
       </div>
 
       {/* Main Table */}
-      <div className="bg-[#131B2E]/40 border border-white/10 rounded-2xl overflow-hidden">
+      <div className="bg-surface border border-border rounded-2xl overflow-hidden">
         {loading ? (
           <div className="p-12 text-center space-y-3">
             <div className="w-10 h-10 border-2 border-brand-purple border-t-transparent rounded-full animate-spin mx-auto"></div>
-            <p className="text-slate-400 text-sm">Нийтлэлүүдийг ачаалж байна...</p>
+            <p className="text-text-muted text-sm">Нийтлэлүүдийг ачаалж байна...</p>
           </div>
         ) : articles.length === 0 ? (
           <div className="p-12 text-center space-y-2">
             <FileText size={48} className="text-slate-600 mx-auto" />
-            <h3 className="text-white font-bold text-lg">Нийтлэл олдсонгүй</h3>
-            <p className="text-slate-400 text-sm max-w-md mx-auto">Хайлтын илэрц олдсонгүй эсвэл системд одоогоор ямар нэг нийтлэл байхгүй байна.</p>
+            <h3 className="text-text-main font-bold text-lg">Нийтлэл олдсонгүй</h3>
+            <p className="text-text-muted text-sm max-w-md mx-auto">Хайлтын илэрц олдсонгүй эсвэл системд одоогоор ямар нэг нийтлэл байхгүй байна.</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="bg-[#0B0F19]/60 border-b border-white/10 text-slate-400 text-[11px] font-bold uppercase tracking-wider">
+                <tr className="bg-surfaceHighlight border-b border-border text-text-muted text-[11px] font-bold uppercase tracking-wider">
                   <th className="p-4 pl-6">Гарчиг</th>
                   <th className="p-4">Ангилал</th>
                   <th className="p-4">Төлөв</th>
@@ -234,13 +234,13 @@ export const AdminArticlesPage: React.FC = () => {
                   <th className="p-4 pr-6 text-right">Үйлдэл</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-white/5">
+              <tbody className="divide-y divide-border">
                 {articles.map((item) => (
                   <tr key={item.id} className="hover:bg-white/[0.02] transition-colors group">
                     {/* Title */}
                     <td className="p-4 pl-6">
                       <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 rounded-lg bg-slate-800/80 border border-white/5 overflow-hidden flex-shrink-0 flex items-center justify-center">
+                        <div className="w-12 h-12 rounded-lg bg-surfaceHighlight/80 border border-border overflow-hidden flex-shrink-0 flex items-center justify-center">
                           <img 
                             src={item.thumbnailUrl || 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&q=80&w=100'} 
                             alt="" 
@@ -251,17 +251,17 @@ export const AdminArticlesPage: React.FC = () => {
                           />
                         </div>
                         <div className="min-w-0">
-                          <h4 className="text-sm font-semibold text-white truncate max-w-[280px]" title={item.title}>
+                          <h4 className="text-sm font-semibold text-text-main truncate max-w-[280px]" title={item.title}>
                             {item.title}
                           </h4>
-                          <span className="text-[10px] text-slate-500 font-mono select-all">/{item.slug}</span>
+                          <span className="text-[10px] text-text-muted font-mono select-all">/{item.slug}</span>
                         </div>
                       </div>
                     </td>
 
                     {/* Category */}
                     <td className="p-4">
-                      <span className="text-sm text-slate-300 font-medium">
+                      <span className="text-sm text-text-main font-medium">
                         {item.category ? item.category.name : 'Ерөнхий'}
                       </span>
                     </td>
@@ -281,7 +281,7 @@ export const AdminArticlesPage: React.FC = () => {
                         </span>
                       )}
                       {item.status === 'ARCHIVED' && (
-                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-slate-500/10 text-slate-400 border border-slate-500/10">
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-slate-500/10 text-text-muted border border-slate-500/10">
                           <Archive size={12} />
                           Архивласан
                         </span>
@@ -289,12 +289,12 @@ export const AdminArticlesPage: React.FC = () => {
                     </td>
 
                     {/* Views */}
-                    <td className="p-4 text-slate-300 text-sm font-mono">
+                    <td className="p-4 text-text-main text-sm font-mono">
                       {item.views.toLocaleString()}
                     </td>
 
                     {/* Date */}
-                    <td className="p-4 text-slate-400 text-sm font-mono">
+                    <td className="p-4 text-text-muted text-sm font-mono">
                       {item.publishedAt ? new Date(item.publishedAt).toLocaleDateString() : 'Огноогүй'}
                     </td>
 
@@ -307,7 +307,7 @@ export const AdminArticlesPage: React.FC = () => {
                             onClick={() => handleStatusChange(item.id, 'PUBLISHED')}
                             disabled={actionLoading === item.id}
                             title="Нийтлэх"
-                            className="p-1.5 hover:bg-green-500/10 text-slate-400 hover:text-green-400 rounded-lg border border-transparent transition-all"
+                            className="p-1.5 hover:bg-green-500/10 text-text-muted hover:text-green-400 rounded-lg border border-transparent transition-all"
                           >
                             <Check size={16} />
                           </button>
@@ -316,7 +316,7 @@ export const AdminArticlesPage: React.FC = () => {
                             onClick={() => handleStatusChange(item.id, 'DRAFT')}
                             disabled={actionLoading === item.id}
                             title="Ноороглох"
-                            className="p-1.5 hover:bg-amber-500/10 text-slate-400 hover:text-amber-400 rounded-lg border border-transparent transition-all"
+                            className="p-1.5 hover:bg-amber-500/10 text-text-muted hover:text-amber-400 rounded-lg border border-transparent transition-all"
                           >
                             <Ban size={16} />
                           </button>
@@ -325,7 +325,7 @@ export const AdminArticlesPage: React.FC = () => {
                         <Link
                           to={`/admin/articles/edit/${item.id}`}
                           title="Засах"
-                          className="p-1.5 hover:bg-brand-purple/10 text-slate-400 hover:text-brand-purple rounded-lg border border-transparent transition-all"
+                          className="p-1.5 hover:bg-brand-purple/10 text-text-muted hover:text-brand-purple rounded-lg border border-transparent transition-all"
                         >
                           <Edit size={16} />
                         </Link>
@@ -336,7 +336,7 @@ export const AdminArticlesPage: React.FC = () => {
                             onClick={() => handleDelete(item.id)}
                             disabled={actionLoading === item.id}
                             title="Устгах"
-                            className="p-1.5 hover:bg-red-500/10 text-slate-400 hover:text-red-400 rounded-lg border border-transparent transition-all"
+                            className="p-1.5 hover:bg-red-500/10 text-text-muted hover:text-red-400 rounded-lg border border-transparent transition-all"
                           >
                             <Trash2 size={16} />
                           </button>

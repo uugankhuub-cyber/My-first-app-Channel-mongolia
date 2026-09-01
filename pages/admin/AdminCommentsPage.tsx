@@ -108,11 +108,11 @@ export const AdminCommentsPage: React.FC = () => {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-white tracking-tight flex items-center gap-2">
+        <h1 className="text-2xl font-bold text-text-main tracking-tight flex items-center gap-2">
           <MessageSquare className="text-brand-purple" />
           <span>Сэтгэгдлийн хяналт</span>
         </h1>
-        <p className="text-slate-400 text-sm">Вэбсайт дахь уншигчдын сэтгэгдлийг зөвшөөрөх, спамаас хамгаалах хяналтын хэсэг</p>
+        <p className="text-text-muted text-sm">Вэбсайт дахь уншигчдын сэтгэгдлийг зөвшөөрөх, спамаас хамгаалах хяналтын хэсэг</p>
       </div>
 
       {/* Messages */}
@@ -130,20 +130,20 @@ export const AdminCommentsPage: React.FC = () => {
             {message.type === 'success' ? <CheckCircle size={18} /> : <AlertTriangle size={18} />}
             <span>{message.text}</span>
           </div>
-          <button onClick={() => setMessage(null)} className="text-slate-400 hover:text-white">
+          <button onClick={() => setMessage(null)} className="text-text-muted hover:text-text-main">
             <X size={16} />
           </button>
         </motion.div>
       )}
 
       {/* Filter panel */}
-      <div className="bg-[#131B2E]/50 border border-white/10 rounded-2xl p-4 flex flex-col sm:flex-row gap-4 items-center justify-between">
+      <div className="bg-surfaceHighlight border border-border rounded-2xl p-4 flex flex-col sm:flex-row gap-4 items-center justify-between">
         <div className="flex items-center gap-2 w-full sm:w-auto">
-          <span className="text-slate-400 text-xs font-semibold">Шүүх:</span>
+          <span className="text-text-muted text-xs font-semibold">Шүүх:</span>
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="px-3 py-2 bg-[#0B0F19]/80 border border-white/5 rounded-xl text-slate-300 text-xs outline-none focus:border-brand-purple/50 transition-colors cursor-pointer"
+            className="px-3 py-2 bg-background border border-border rounded-xl text-text-main text-xs outline-none focus:border-brand-purple/50 transition-colors cursor-pointer"
           >
             <option value="">Бүх сэтгэгдэл</option>
             <option value="PENDING">Хүлээгдэж буй</option>
@@ -155,24 +155,24 @@ export const AdminCommentsPage: React.FC = () => {
 
         <button 
           onClick={fetchComments}
-          className="p-2.5 bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white rounded-xl border border-white/5 transition-colors self-end sm:self-auto"
+          className="p-2.5 bg-surfaceHighlight hover:bg-white/10 text-text-muted hover:text-text-main rounded-xl border border-border transition-colors self-end sm:self-auto"
         >
           <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
         </button>
       </div>
 
       {/* Main Listing List */}
-      <div className="bg-[#131B2E]/40 border border-white/10 rounded-2xl overflow-hidden divide-y divide-white/5">
+      <div className="bg-surface border border-border rounded-2xl overflow-hidden divide-y divide-border">
         {loading ? (
           <div className="p-12 text-center space-y-3">
             <div className="w-10 h-10 border-2 border-brand-purple border-t-transparent rounded-full animate-spin mx-auto"></div>
-            <p className="text-slate-400 text-sm">Сэтгэгдлүүдийг ачаалж байна...</p>
+            <p className="text-text-muted text-sm">Сэтгэгдлүүдийг ачаалж байна...</p>
           </div>
         ) : filteredComments.length === 0 ? (
           <div className="p-12 text-center space-y-2">
             <MessageSquare size={44} className="text-slate-600 mx-auto" />
-            <h3 className="text-white font-bold text-md">Сэтгэгдэл олдсонгүй</h3>
-            <p className="text-slate-400 text-xs">Энэ шүүлтүүрт тохирох сэтгэгдэл одоогоор алга байна.</p>
+            <h3 className="text-text-main font-bold text-md">Сэтгэгдэл олдсонгүй</h3>
+            <p className="text-text-muted text-xs">Энэ шүүлтүүрт тохирох сэтгэгдэл одоогоор алга байна.</p>
           </div>
         ) : (
           filteredComments.map((item) => (
@@ -180,18 +180,18 @@ export const AdminCommentsPage: React.FC = () => {
               
               {/* Left Author badge */}
               <div className="flex items-center gap-2.5 md:w-56 flex-shrink-0">
-                <div className="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center text-slate-400 text-xs">
+                <div className="w-8 h-8 rounded-full bg-surfaceHighlight flex items-center justify-center text-text-muted text-xs">
                   <User size={14} />
                 </div>
                 <div className="min-w-0">
-                  <h4 className="text-xs font-bold text-white truncate" title={item.authorName}>{item.authorName}</h4>
-                  <p className="text-[10px] text-slate-500 font-mono truncate" title={item.authorEmail}>{item.authorEmail}</p>
+                  <h4 className="text-xs font-bold text-text-main truncate" title={item.authorName}>{item.authorName}</h4>
+                  <p className="text-[10px] text-text-muted font-mono truncate" title={item.authorEmail}>{item.authorEmail}</p>
                 </div>
               </div>
 
               {/* Center Content block */}
               <div className="flex-1 space-y-1.5 min-w-0">
-                <div className="flex flex-wrap items-center gap-2 text-[10px] text-slate-500">
+                <div className="flex flex-wrap items-center gap-2 text-[10px] text-text-muted">
                   <span className="font-semibold flex items-center gap-1">
                     <FileText size={10} />
                     {item.articleTitle}
@@ -215,7 +215,7 @@ export const AdminCommentsPage: React.FC = () => {
                   )}
                 </div>
 
-                <p className="text-slate-300 text-sm leading-relaxed whitespace-pre-wrap">{item.content}</p>
+                <p className="text-text-main text-sm leading-relaxed whitespace-pre-wrap">{item.content}</p>
               </div>
 
               {/* Right Action buttons */}
@@ -235,7 +235,7 @@ export const AdminCommentsPage: React.FC = () => {
                   <button
                     onClick={() => handleStatusUpdate(item.id, 'REJECTED')}
                     disabled={actionLoading === item.id}
-                    className="p-1.5 bg-slate-500/10 hover:bg-slate-500/20 text-slate-400 rounded-lg transition-colors"
+                    className="p-1.5 bg-slate-500/10 hover:bg-slate-500/20 text-text-muted rounded-lg transition-colors"
                     title="Татгалзах"
                   >
                     <Ban size={14} />

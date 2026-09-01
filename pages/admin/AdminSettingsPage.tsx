@@ -105,11 +105,11 @@ export const AdminSettingsPage: React.FC = () => {
     <div className="space-y-6 max-w-4xl mx-auto">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-white tracking-tight flex items-center gap-2">
+        <h1 className="text-2xl font-bold text-text-main tracking-tight flex items-center gap-2">
           <Settings className="text-brand-purple" />
           <span>Системийн тохиргоо</span>
         </h1>
-        <p className="text-slate-400 text-sm">Вэбсайтын мета мэдээлэл, хайлтын оновчлол болон холбоо барих мэдээллийг тохируулах хэсэг</p>
+        <p className="text-text-muted text-sm">Вэбсайтын мета мэдээлэл, хайлтын оновчлол болон холбоо барих мэдээллийг тохируулах хэсэг</p>
       </div>
 
       {/* Messages */}
@@ -127,23 +127,23 @@ export const AdminSettingsPage: React.FC = () => {
             {message.type === 'success' ? <CheckCircle size={18} /> : <AlertTriangle size={18} />}
             <span>{message.text}</span>
           </div>
-          <button onClick={() => setMessage(null)} className="text-slate-400 hover:text-white">
+          <button onClick={() => setMessage(null)} className="text-text-muted hover:text-text-main">
             <X size={16} />
           </button>
         </motion.div>
       )}
 
       {loading ? (
-        <div className="bg-[#131B2E]/40 border border-white/10 rounded-2xl p-12 text-center space-y-3">
+        <div className="bg-surface border border-border rounded-2xl p-12 text-center space-y-3">
           <div className="w-10 h-10 border-2 border-brand-purple border-t-transparent rounded-full animate-spin mx-auto"></div>
-          <p className="text-slate-400 text-sm">Системийн тохиргоог уншиж байна...</p>
+          <p className="text-text-muted text-sm">Системийн тохиргоог уншиж байна...</p>
         </div>
       ) : (
         <form onSubmit={handleSubmit} className="space-y-6">
           
           {/* General Settings */}
-          <div className="bg-[#131B2E]/40 border border-white/10 rounded-2xl p-6 space-y-5">
-            <h3 className="text-white font-bold text-sm border-b border-white/5 pb-3 flex items-center gap-2">
+          <div className="bg-surface border border-border rounded-2xl p-6 space-y-5">
+            <h3 className="text-text-main font-bold text-sm border-b border-border pb-3 flex items-center gap-2">
               <Globe size={16} className="text-brand-purple" />
               <span>Ерөнхий тохиргоо</span>
             </h3>
@@ -151,21 +151,21 @@ export const AdminSettingsPage: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* Site Name */}
               <div className="space-y-1.5">
-                <label className="text-slate-300 text-xs font-semibold">Вэбсайтын нэр (Site Name)</label>
+                <label className="text-text-main text-xs font-semibold">Вэбсайтын нэр (Site Name)</label>
                 <input 
                   type="text"
                   required
                   value={siteName}
                   onChange={(e) => setSiteName(e.target.value)}
-                  className="w-full px-4 py-2.5 bg-[#0B0F19]/80 border border-white/5 rounded-xl text-white text-sm outline-none focus:border-brand-purple/50 transition-colors"
+                  className="w-full px-4 py-2.5 bg-background border border-border rounded-xl text-text-main text-sm outline-none focus:border-brand-purple/50 transition-colors"
                 />
               </div>
 
               {/* FB Link */}
               <div className="space-y-1.5">
-                <label className="text-slate-300 text-xs font-semibold">Фэйсбүүк хуудасны холбоос</label>
+                <label className="text-text-main text-xs font-semibold">Фэйсбүүк хуудасны холбоос</label>
                 <div className="relative">
-                  <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500">
+                  <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-text-muted">
                     <Facebook size={14} />
                   </span>
                   <input 
@@ -173,7 +173,7 @@ export const AdminSettingsPage: React.FC = () => {
                     value={fbLink}
                     onChange={(e) => setFbLink(e.target.value)}
                     placeholder="https://facebook.com/..."
-                    className="w-full pl-10 pr-4 py-2.5 bg-[#0B0F19]/80 border border-white/5 rounded-xl text-white text-sm outline-none focus:border-brand-purple/50 transition-colors font-mono"
+                    className="w-full pl-10 pr-4 py-2.5 bg-background border border-border rounded-xl text-text-main text-sm outline-none focus:border-brand-purple/50 transition-colors font-mono"
                   />
                 </div>
               </div>
@@ -182,9 +182,9 @@ export const AdminSettingsPage: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* Contact Email */}
               <div className="space-y-1.5">
-                <label className="text-slate-300 text-xs font-semibold">Холбоо барих Имэйл</label>
+                <label className="text-text-main text-xs font-semibold">Холбоо барих Имэйл</label>
                 <div className="relative">
-                  <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500">
+                  <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-text-muted">
                     <Mail size={14} />
                   </span>
                   <input 
@@ -192,16 +192,16 @@ export const AdminSettingsPage: React.FC = () => {
                     value={contactEmail}
                     onChange={(e) => setContactEmail(e.target.value)}
                     placeholder="info@channel.mn"
-                    className="w-full pl-10 pr-4 py-2.5 bg-[#0B0F19]/80 border border-white/5 rounded-xl text-white text-sm outline-none focus:border-brand-purple/50 transition-colors font-mono"
+                    className="w-full pl-10 pr-4 py-2.5 bg-background border border-border rounded-xl text-text-main text-sm outline-none focus:border-brand-purple/50 transition-colors font-mono"
                   />
                 </div>
               </div>
 
               {/* Contact Phone */}
               <div className="space-y-1.5">
-                <label className="text-slate-300 text-xs font-semibold">Утасны дугаар</label>
+                <label className="text-text-main text-xs font-semibold">Утасны дугаар</label>
                 <div className="relative">
-                  <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500">
+                  <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-text-muted">
                     <Phone size={14} />
                   </span>
                   <input 
@@ -209,7 +209,7 @@ export const AdminSettingsPage: React.FC = () => {
                     value={contactPhone}
                     onChange={(e) => setContactPhone(e.target.value)}
                     placeholder="+976 7000-1234"
-                    className="w-full pl-10 pr-4 py-2.5 bg-[#0B0F19]/80 border border-white/5 rounded-xl text-white text-sm outline-none focus:border-brand-purple/50 transition-colors font-mono"
+                    className="w-full pl-10 pr-4 py-2.5 bg-background border border-border rounded-xl text-text-main text-sm outline-none focus:border-brand-purple/50 transition-colors font-mono"
                   />
                 </div>
               </div>
@@ -217,46 +217,46 @@ export const AdminSettingsPage: React.FC = () => {
           </div>
 
           {/* SEO Default settings */}
-          <div className="bg-[#131B2E]/40 border border-white/10 rounded-2xl p-6 space-y-5">
-            <h3 className="text-white font-bold text-sm border-b border-white/5 pb-3 flex items-center gap-2">
+          <div className="bg-surface border border-border rounded-2xl p-6 space-y-5">
+            <h3 className="text-text-main font-bold text-sm border-b border-border pb-3 flex items-center gap-2">
               <ShieldCheck size={16} className="text-brand-purple" />
               <span>Үндсэн SEO тохиргоо (Хайлтын систем оновчлол)</span>
             </h3>
 
             {/* Default SEO title */}
             <div className="space-y-1.5">
-              <label className="text-slate-300 text-xs font-semibold">Үндсэн SEO Гарчиг (SEO Title Template)</label>
+              <label className="text-text-main text-xs font-semibold">Үндсэн SEO Гарчиг (SEO Title Template)</label>
               <input 
                 type="text"
                 value={seoTitle}
                 onChange={(e) => setSeoTitle(e.target.value)}
                 placeholder="Channel Mongolia - Шинжлэх ухаан, технологийн тавцан"
-                className="w-full px-4 py-2.5 bg-[#0B0F19]/80 border border-white/5 rounded-xl text-white text-sm outline-none focus:border-brand-purple/50 transition-colors"
+                className="w-full px-4 py-2.5 bg-background border border-border rounded-xl text-text-main text-sm outline-none focus:border-brand-purple/50 transition-colors"
               />
             </div>
 
             {/* Default SEO Description */}
             <div className="space-y-1.5">
-              <label className="text-slate-300 text-xs font-semibold">Үндсэн SEO Тайлбар (SEO Description Template)</label>
+              <label className="text-text-main text-xs font-semibold">Үндсэн SEO Тайлбар (SEO Description Template)</label>
               <textarea 
                 value={seoDesc}
                 onChange={(e) => setSeoDesc(e.target.value)}
                 placeholder="Монгол хэл дээрх мэдлэг, мэдээллийн нэгдсэн систем..."
                 rows={3}
-                className="w-full px-4 py-2.5 bg-[#0B0F19]/80 border border-white/5 rounded-xl text-white text-sm outline-none focus:border-brand-purple/50 transition-colors resize-none"
+                className="w-full px-4 py-2.5 bg-background border border-border rounded-xl text-text-main text-sm outline-none focus:border-brand-purple/50 transition-colors resize-none"
               />
             </div>
           </div>
 
           {/* Database stats and status panel */}
-          <div className="bg-[#131B2E]/40 border border-white/10 rounded-2xl p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="bg-surface border border-border rounded-2xl p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div className="flex items-start gap-3">
               <div className="p-2.5 bg-green-500/10 text-green-400 rounded-xl mt-0.5">
                 <Database size={18} />
               </div>
               <div>
-                <h4 className="text-white font-bold text-sm">Файлын сангийн синхрончлол</h4>
-                <p className="text-slate-400 text-xs mt-0.5">MockDB болон Prisma системүүд амжилттай холбогдон ажиллаж байна.</p>
+                <h4 className="text-text-main font-bold text-sm">Файлын сангийн синхрончлол</h4>
+                <p className="text-text-muted text-xs mt-0.5">MockDB болон Prisma системүүд амжилттай холбогдон ажиллаж байна.</p>
               </div>
             </div>
 
@@ -265,7 +265,7 @@ export const AdminSettingsPage: React.FC = () => {
               <button
                 type="submit"
                 disabled={saving}
-                className="inline-flex items-center gap-2 px-5 py-3 bg-gradient-brand text-white rounded-xl text-xs font-bold shadow-md hover:-translate-y-0.5 transition-all self-start md:self-auto"
+                className="inline-flex items-center gap-2 px-5 py-3 bg-gradient-brand text-text-main rounded-xl text-xs font-bold shadow-md hover:-translate-y-0.5 transition-all self-start md:self-auto"
               >
                 {saving ? <RefreshCw size={14} className="animate-spin" /> : <Save size={14} />}
                 Тохиргоог Хадгалах

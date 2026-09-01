@@ -48,8 +48,8 @@
                 muted: 'var(--text-muted)',
               },
               brand: {
-                purple: '#6366f1', 
-                orange: '#f472b6', 
+                purple: '#5b5df0', 
+                orange: '#e84393', 
                 dark: '#020617',   
                 surface: '#0f172a' 
               },
@@ -60,11 +60,11 @@
               '3xl': '24px',
             },
             boxShadow: {
-              'glow': '0 0 20px -5px rgba(99, 102, 241, 0.3)',
-              'glow-orange': '0 0 20px -5px rgba(244, 114, 182, 0.3)',
+              'glow': '0 0 20px -5px rgba(91, 93, 240, 0.3)',
+              'glow-orange': '0 0 20px -5px rgba(232, 67, 147, 0.3)',
               'soft': '0 10px 40px -10px rgba(0, 0, 0, 0.05)',
-              'card': '0 2px 8px -1px rgba(0, 0, 0, 0.04), 0 1px 4px -1px rgba(0, 0, 0, 0.02)',
-              'card-hover': '0 12px 24px -4px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04)',
+              'card': 'var(--shadow-card)',
+              'card-hover': 'var(--shadow-hover)',
             },
             animation: {
               'gradient-x': 'gradient-x 15s ease infinite',
@@ -88,23 +88,27 @@
     </script>
     <style>
       :root {
-        /* Light Mode Tokens - Softened Modern Editorial */
-        --bg-app: #f6f8fa; /* Soft elegant off-white with hint of slate */
-        --bg-surface: #ffffff; /* Pure white surface cards */
-        --bg-surface-highlight: #edf1f7; /* Soft highlighted slate grey */
-        --text-main: #0f172a; /* Slate-900 */
-        --text-muted: #475569; /* Slate-600 */
-        --border-color: #e2e8f0; /* Slate-200 */
+        /* Light Mode Tokens - Clean Editorial */
+        --bg-app: #f5f6f8;
+        --bg-surface: #ffffff;
+        --bg-surface-highlight: #eef1f5;
+        --text-main: #0c1222;
+        --text-muted: #596474;
+        --border-color: #dde2ea;
+        --shadow-card: 0 1px 3px rgba(0,0,0,.04), 0 4px 14px rgba(0,0,0,.03);
+        --shadow-hover: 0 8px 30px rgba(0,0,0,.08);
       }
       
       html.dark {
         /* Dark Mode Tokens - Softened Modern Cosmic Slate */
-        --bg-app: #0e111a; /* Softened dark midnight slate */
-        --bg-surface: #141824; /* Soft elegant dark surface card */
-        --bg-surface-highlight: #1d2132; /* Slightly lighter state */
-        --text-main: #f1f5f9; /* Slate-100 */
-        --text-muted: #94a3b8; /* Slate-400 */
-        --border-color: #1e2439; /* Beautiful matching soft border */
+        --bg-app: #0b0e18;
+        --bg-surface: #12162a;
+        --bg-surface-highlight: #1a1f36;
+        --text-main: #e8ecf4;
+        --text-muted: #8892a4;
+        --border-color: #1e2440;
+        --shadow-card: 0 1px 3px rgba(0,0,0,.2), 0 4px 14px rgba(0,0,0,.15);
+        --shadow-hover: 0 8px 30px rgba(0,0,0,.3);
       }
 
       body {
@@ -141,7 +145,7 @@
       }
       
       .text-gradient {
-        background: linear-gradient(135deg, #6366f1 0%, #f472b6 100%);
+        background: linear-gradient(135deg, #5b5df0 0%, #e84393 100%);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         background-clip: text;
@@ -149,7 +153,7 @@
       }
       
       .bg-gradient-brand {
-        background: linear-gradient(135deg, #6366f1 0%, #f472b6 100%);
+        background: linear-gradient(135deg, #5b5df0 0%, #e84393 100%);
       }
 
       /* Mobile Category Fade Mask */

@@ -16,18 +16,18 @@ export const AdminImages: React.FC = () => {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-2xl font-bold text-white mb-2">Зургийн сан</h1>
-        <p className="text-slate-400">Сайт дээр ашиглах зургуудыг удирдах</p>
+        <h1 className="text-2xl font-bold text-text-main mb-2">Зургийн сан</h1>
+        <p className="text-text-muted">Сайт дээр ашиглах зургуудыг удирдах</p>
       </div>
 
-      <div className="bg-[#1E293B] p-6 rounded-xl border border-white/5">
-         <h3 className="font-bold text-white mb-4">Шинэ зураг оруулах</h3>
+      <div className="bg-surface shadow-[var(--shadow-card)] p-6 rounded-xl border border-border">
+         <h3 className="font-bold text-text-main mb-4">Шинэ зураг оруулах</h3>
          <ImageUploader />
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
          {uploadedImages.map(img => (
-            <div key={img.id} className="bg-[#1E293B] rounded-xl border border-white/5 overflow-hidden group">
+            <div key={img.id} className="bg-surface shadow-[var(--shadow-card)] rounded-xl border border-border overflow-hidden group">
                <div className="aspect-square relative bg-black/20">
                   <img src={img.url} alt={img.name} className="w-full h-full object-cover" />
                   <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
@@ -40,7 +40,7 @@ export const AdminImages: React.FC = () => {
                      </button>
                      <button 
                         onClick={() => deleteImage(img.id)}
-                        className="p-2 bg-red-500 text-white rounded-full hover:scale-110 transition-transform"
+                        className="p-2 bg-red-500 text-text-main rounded-full hover:scale-110 transition-transform"
                         title="Устгах"
                      >
                         <Trash2 size={16} />
@@ -48,16 +48,16 @@ export const AdminImages: React.FC = () => {
                   </div>
                </div>
                <div className="p-3">
-                  <p className="text-white text-sm font-medium truncate" title={img.name}>{img.name}</p>
+                  <p className="text-text-main text-sm font-medium truncate" title={img.name}>{img.name}</p>
                   <div className="flex justify-between items-center mt-1">
-                     <span className="text-xs text-slate-500">{(img.size / 1024).toFixed(1)} KB</span>
-                     <span className="text-xs text-slate-500">{new Date(img.uploadedAt).toLocaleDateString()}</span>
+                     <span className="text-xs text-text-muted">{(img.size / 1024).toFixed(1)} KB</span>
+                     <span className="text-xs text-text-muted">{new Date(img.uploadedAt).toLocaleDateString()}</span>
                   </div>
                </div>
             </div>
          ))}
          {uploadedImages.length === 0 && (
-            <div className="col-span-full py-12 text-center text-slate-500 border-2 border-dashed border-slate-700 rounded-xl">
+            <div className="col-span-full py-12 text-center text-text-muted border-2 border-dashed border-slate-700 rounded-xl">
                Одоогоор зураг байхгүй байна.
             </div>
          )}

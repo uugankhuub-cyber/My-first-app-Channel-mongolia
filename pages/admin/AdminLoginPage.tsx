@@ -81,7 +81,7 @@ export const AdminLoginPage: React.FC = () => {
       {/* Back to Home */}
       <button 
         onClick={() => navigate('/')}
-        className="absolute top-6 left-6 text-slate-400 hover:text-white flex items-center gap-2 text-sm bg-white/5 hover:bg-white/10 px-4 py-2 rounded-full border border-white/5 transition-colors"
+        className="absolute top-6 left-6 text-text-muted hover:text-text-main flex items-center gap-2 text-sm bg-surfaceHighlight hover:bg-white/10 px-4 py-2 rounded-full border border-border transition-colors"
       >
         <ArrowLeft size={16} />
         Үндсэн сайт руу буцах
@@ -95,15 +95,15 @@ export const AdminLoginPage: React.FC = () => {
         className="w-full max-w-md"
       >
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-brand rounded-2xl shadow-lg shadow-brand-purple/25 border border-white/10 mb-4">
-            <Shield className="text-white" size={32} />
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-brand rounded-2xl shadow-lg shadow-brand-purple/25 border border-border mb-4">
+            <Shield className="text-text-main" size={32} />
           </div>
-          <h1 className="text-3xl font-extrabold text-white tracking-tight">Channel Mongolia</h1>
-          <p className="text-slate-400 mt-2 text-sm font-medium">Удирдлагын Системд Нэвтрэх</p>
+          <h1 className="text-3xl font-extrabold text-text-main tracking-tight">Channel Mongolia</h1>
+          <p className="text-text-muted mt-2 text-sm font-medium">Удирдлагын Системд Нэвтрэх</p>
         </div>
 
         {/* Card */}
-        <div className="bg-[#131B2E]/60 backdrop-blur-xl border border-white/10 rounded-3xl p-8 shadow-2xl relative overflow-hidden">
+        <div className="bg-[#131B2E]/60 backdrop-blur-xl border border-border rounded-3xl p-8 shadow-2xl relative overflow-hidden">
           {error && (
             <motion.div 
               initial={{ opacity: 0, y: -10 }}
@@ -118,16 +118,16 @@ export const AdminLoginPage: React.FC = () => {
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Email Field */}
             <div className="space-y-2">
-              <label className="text-xs font-bold uppercase tracking-wider text-slate-400">Имэйл хаяг</label>
+              <label className="text-xs font-bold uppercase tracking-wider text-text-muted">Имэйл хаяг</label>
               <div className="relative">
-                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
+                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-text-muted" size={18} />
                 <input 
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="admin@channel.mn"
                   required
-                  className="w-full pl-12 pr-4 py-3.5 bg-[#0B0F19]/80 border border-white/10 focus:border-brand-purple rounded-2xl text-white text-sm outline-none transition-colors placeholder:text-slate-600"
+                  className="w-full pl-12 pr-4 py-3.5 bg-background border border-border focus:border-brand-purple rounded-2xl text-text-main text-sm outline-none transition-colors placeholder:text-slate-600"
                 />
               </div>
             </div>
@@ -135,7 +135,7 @@ export const AdminLoginPage: React.FC = () => {
             {/* Password Field */}
             <div className="space-y-2">
               <div className="flex justify-between items-center">
-                <label className="text-xs font-bold uppercase tracking-wider text-slate-400">Нууц үг</label>
+                <label className="text-xs font-bold uppercase tracking-wider text-text-muted">Нууц үг</label>
                 <button 
                   type="button" 
                   onClick={() => alert('Нууц үг сэргээх хүсэлтийг системийн админд илгээнэ үү.')}
@@ -145,14 +145,14 @@ export const AdminLoginPage: React.FC = () => {
                 </button>
               </div>
               <div className="relative">
-                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
+                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-text-muted" size={18} />
                 <input 
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
                   required
-                  className="w-full pl-12 pr-4 py-3.5 bg-[#0B0F19]/80 border border-white/10 focus:border-brand-purple rounded-2xl text-white text-sm outline-none transition-colors placeholder:text-slate-600"
+                  className="w-full pl-12 pr-4 py-3.5 bg-background border border-border focus:border-brand-purple rounded-2xl text-text-main text-sm outline-none transition-colors placeholder:text-slate-600"
                 />
               </div>
             </div>
@@ -164,18 +164,18 @@ export const AdminLoginPage: React.FC = () => {
                   type="checkbox"
                   checked={rememberMe}
                   onChange={(e) => setRememberMe(e.target.checked)}
-                  className="rounded border-white/10 bg-[#0B0F19] text-brand-purple focus:ring-brand-purple"
+                  className="rounded border-border bg-[#0B0F19] text-brand-purple focus:ring-brand-purple"
                 />
-                <span className="text-xs text-slate-400 font-medium">Намайг сана</span>
+                <span className="text-xs text-text-muted font-medium">Намайг сана</span>
               </label>
-              <span className="text-xs text-slate-500">Аюулгүй холболт</span>
+              <span className="text-xs text-text-muted">Аюулгүй холболт</span>
             </div>
 
             {/* Submit */}
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-4 rounded-2xl bg-gradient-brand text-white font-bold hover:shadow-lg hover:shadow-brand-purple/20 transition-all flex items-center justify-center gap-2 active:scale-98 disabled:opacity-70"
+              className="w-full py-4 rounded-2xl bg-gradient-brand text-text-main font-bold hover:shadow-lg hover:shadow-brand-purple/20 transition-all flex items-center justify-center gap-2 active:scale-98 disabled:opacity-70"
             >
               {loading ? (
                 <>

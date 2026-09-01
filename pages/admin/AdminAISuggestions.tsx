@@ -27,11 +27,11 @@ export const AdminAISuggestions: React.FC = () => {
     <div className="max-w-5xl mx-auto">
       <div className="flex items-center justify-between mb-8">
         <div>
-           <h1 className="text-2xl font-bold text-white mb-2 flex items-center gap-2">
+           <h1 className="text-2xl font-bold text-text-main mb-2 flex items-center gap-2">
               <Sparkles className="text-brand-purple" />
               AI Санал болгож буй сэдвүүд
            </h1>
-           <p className="text-slate-400">Хэрэглэгчийн хандалт дээр үндэслэн AI систем дараах сэдвүүдийг санал болгож байна.</p>
+           <p className="text-text-muted">Хэрэглэгчийн хандалт дээр үндэслэн AI систем дараах сэдвүүдийг санал болгож байна.</p>
         </div>
       </div>
 
@@ -39,10 +39,10 @@ export const AdminAISuggestions: React.FC = () => {
         {aiSuggestions.map((suggestion) => (
            <div 
              key={suggestion.id} 
-             className={`bg-[#1E293B] p-6 rounded-xl border transition-all ${
+             className={`bg-surface shadow-[var(--shadow-card)] p-6 rounded-xl border transition-all ${
                 suggestion.isUsed 
                   ? 'border-green-500/30 opacity-60' 
-                  : 'border-white/5 hover:border-brand-purple/50 shadow-lg'
+                  : 'border-border hover:border-brand-purple/50 shadow-lg'
              }`}
            >
               <div className="flex flex-col md:flex-row md:items-start justify-between gap-6">
@@ -58,8 +58,8 @@ export const AdminAISuggestions: React.FC = () => {
                           </span>
                        )}
                     </div>
-                    <h3 className="text-xl font-bold text-white mb-3">{suggestion.topic}</h3>
-                    <p className="text-slate-400 text-sm leading-relaxed border-l-2 border-slate-700 pl-4">
+                    <h3 className="text-xl font-bold text-text-main mb-3">{suggestion.topic}</h3>
+                    <p className="text-text-muted text-sm leading-relaxed border-l-2 border-slate-700 pl-4">
                        " {suggestion.reason} "
                     </p>
                  </div>
@@ -70,8 +70,8 @@ export const AdminAISuggestions: React.FC = () => {
                        disabled={suggestion.isUsed || generatingId === suggestion.id}
                        className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm transition-all ${
                           suggestion.isUsed
-                             ? 'bg-slate-800 text-slate-500 cursor-not-allowed'
-                             : 'bg-white text-gray-900 hover:bg-brand-purple hover:text-white shadow-glow'
+                             ? 'bg-surfaceHighlight text-text-muted cursor-not-allowed'
+                             : 'bg-white text-gray-900 hover:bg-brand-purple hover:text-text-main shadow-glow'
                        }`}
                     >
                        {generatingId === suggestion.id ? (
@@ -97,7 +97,7 @@ export const AdminAISuggestions: React.FC = () => {
         ))}
         
         {aiSuggestions.length === 0 && (
-           <div className="text-center py-20 text-slate-500">
+           <div className="text-center py-20 text-text-muted">
               Одоогоор шинэ санал байхгүй байна.
            </div>
         )}

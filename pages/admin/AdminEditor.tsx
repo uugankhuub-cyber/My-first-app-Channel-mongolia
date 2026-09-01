@@ -125,34 +125,34 @@ export const AdminEditor: React.FC = () => {
       handleChange('contentBody', text.substring(0, start) + newSelection + text.substring(end));
   };
 
-  if (loading) return <div className="p-8 text-white">Loading...</div>;
-  if (!formData.id) return <div className="p-8 text-white">Content not found</div>;
+  if (loading) return <div className="p-8 text-text-main">Loading...</div>;
+  if (!formData.id) return <div className="p-8 text-text-main">Content not found</div>;
 
   return (
     <div className="max-w-6xl mx-auto pb-20">
        {/* Toolbar */}
-       <div className="flex items-center justify-between mb-8 sticky top-0 bg-[#0F172A]/95 backdrop-blur-md py-4 z-40 border-b border-white/5">
+       <div className="flex items-center justify-between mb-8 sticky top-0 bg-[#0F172A]/95 backdrop-blur-md py-4 z-40 border-b border-border">
           <div className="flex items-center gap-4">
-             <button onClick={() => navigate('/admin/content')} className="p-2 hover:bg-white/10 rounded-lg text-slate-400 hover:text-white">
+             <button onClick={() => navigate('/admin/content')} className="p-2 hover:bg-white/10 rounded-lg text-text-muted hover:text-text-main">
                 <ArrowLeft size={20} />
              </button>
              <div>
-                <h1 className="text-xl font-bold text-white">
+                <h1 className="text-xl font-bold text-text-main">
                    {formData.status === 'draft' ? 'Draft Editor' : 'Edit Article'}
                 </h1>
-                <span className="text-xs text-slate-500">ID: {formData.id}</span>
+                <span className="text-xs text-text-muted">ID: {formData.id}</span>
              </div>
           </div>
           <div className="flex items-center gap-3">
              <button 
                onClick={() => handleSave('draft')}
-               className="px-4 py-2 bg-white/5 hover:bg-white/10 text-white rounded-lg font-medium text-sm transition-colors"
+               className="px-4 py-2 bg-surfaceHighlight hover:bg-white/10 text-text-main rounded-lg font-medium text-sm transition-colors"
              >
                 Save Draft
              </button>
              <button 
                onClick={() => handleSave('published')}
-               className="px-6 py-2 bg-gradient-brand text-white rounded-lg font-bold text-sm shadow-glow hover:opacity-90 transition-opacity flex items-center gap-2"
+               className="px-6 py-2 bg-gradient-brand text-text-main rounded-lg font-bold text-sm shadow-glow hover:opacity-90 transition-opacity flex items-center gap-2"
              >
                 <Save size={16} />
                 Publish
@@ -166,26 +166,26 @@ export const AdminEditor: React.FC = () => {
           <div className="lg:col-span-2 space-y-6">
              
              {/* Title */}
-             <div className="bg-[#1E293B] p-6 rounded-xl border border-white/5 group relative">
-                <label className="block text-slate-400 text-xs font-bold mb-2 uppercase tracking-wider">Title</label>
+             <div className="bg-surface shadow-[var(--shadow-card)] p-6 rounded-xl border border-border group relative">
+                <label className="block text-text-muted text-xs font-bold mb-2 uppercase tracking-wider">Title</label>
                 <input 
                    type="text" 
                    value={formData.title || ''} 
                    onChange={(e) => handleChange('title', e.target.value)}
-                   className="w-full bg-[#0F172A] border border-white/10 rounded-lg px-4 py-3 text-white font-bold text-lg focus:border-brand-purple outline-none"
+                   className="w-full bg-[#0F172A] border border-border rounded-lg px-4 py-3 text-text-main font-bold text-lg focus:border-brand-purple outline-none"
                    placeholder="Enter article title..."
                 />
              </div>
 
              {/* Description with AI */}
-             <div className="bg-[#1E293B] p-6 rounded-xl border border-white/5 group relative">
+             <div className="bg-surface shadow-[var(--shadow-card)] p-6 rounded-xl border border-border group relative">
                 <div className="flex justify-between mb-2">
-                    <label className="block text-slate-400 text-xs font-bold uppercase tracking-wider">Description</label>
+                    <label className="block text-text-muted text-xs font-bold uppercase tracking-wider">Description</label>
                     <div className="flex gap-2">
-                        <button onClick={() => handleAI('improve', 'description')} className="text-brand-purple hover:text-white text-xs flex items-center gap-1 transition-colors">
+                        <button onClick={() => handleAI('improve', 'description')} className="text-brand-purple hover:text-text-main text-xs flex items-center gap-1 transition-colors">
                             <Sparkles size={12} /> Improve
                         </button>
-                        <button onClick={() => handleAI('summarize', 'description')} className="text-brand-purple hover:text-white text-xs flex items-center gap-1 transition-colors">
+                        <button onClick={() => handleAI('summarize', 'description')} className="text-brand-purple hover:text-text-main text-xs flex items-center gap-1 transition-colors">
                             <Wand2 size={12} /> Summarize
                         </button>
                     </div>
@@ -194,31 +194,31 @@ export const AdminEditor: React.FC = () => {
                    rows={3}
                    value={formData.description || ''} 
                    onChange={(e) => handleChange('description', e.target.value)}
-                   className="w-full bg-[#0F172A] border border-white/10 rounded-lg px-4 py-3 text-slate-300 focus:border-brand-purple outline-none resize-none"
+                   className="w-full bg-[#0F172A] border border-border rounded-lg px-4 py-3 text-text-main focus:border-brand-purple outline-none resize-none"
                    placeholder="Short summary for SEO and cards..."
                 />
              </div>
 
              {/* Body Editor */}
-             <div className="bg-[#1E293B] p-6 rounded-xl border border-white/5 min-h-[500px] group relative">
+             <div className="bg-surface shadow-[var(--shadow-card)] p-6 rounded-xl border border-border min-h-[500px] group relative">
                 <div className="flex flex-wrap justify-between mb-4 gap-2">
                     <div className="flex items-center gap-1">
-                        <label className="block text-slate-400 text-xs font-bold uppercase tracking-wider mr-2">Content</label>
-                        <button onClick={() => insertTag('b')} className="p-1 hover:bg-white/10 rounded text-white" title="Bold">B</button>
-                        <button onClick={() => insertTag('i')} className="p-1 hover:bg-white/10 rounded text-white" title="Italic">I</button>
-                        <button onClick={() => insertTag('u')} className="p-1 hover:bg-white/10 rounded text-white" title="Underline">U</button>
-                        <button onClick={() => insertTag('h2')} className="p-1 hover:bg-white/10 rounded text-white" title="Header"><Type size={14}/></button>
-                        <button onClick={() => insertTag('ul')} className="p-1 hover:bg-white/10 rounded text-white" title="List"><List size={14}/></button>
-                        <button onClick={() => insertTag('link')} className="p-1 hover:bg-white/10 rounded text-white" title="Link">Link</button>
+                        <label className="block text-text-muted text-xs font-bold uppercase tracking-wider mr-2">Content</label>
+                        <button onClick={() => insertTag('b')} className="p-1 hover:bg-white/10 rounded text-text-main" title="Bold">B</button>
+                        <button onClick={() => insertTag('i')} className="p-1 hover:bg-white/10 rounded text-text-main" title="Italic">I</button>
+                        <button onClick={() => insertTag('u')} className="p-1 hover:bg-white/10 rounded text-text-main" title="Underline">U</button>
+                        <button onClick={() => insertTag('h2')} className="p-1 hover:bg-white/10 rounded text-text-main" title="Header"><Type size={14}/></button>
+                        <button onClick={() => insertTag('ul')} className="p-1 hover:bg-white/10 rounded text-text-main" title="List"><List size={14}/></button>
+                        <button onClick={() => insertTag('link')} className="p-1 hover:bg-white/10 rounded text-text-main" title="Link">Link</button>
                         <div className="h-4 w-[1px] bg-white/10 mx-1"></div>
-                        <button onClick={() => transformText('upper')} className="p-1 hover:bg-white/10 rounded text-white text-xs">UP</button>
-                        <button onClick={() => transformText('lower')} className="p-1 hover:bg-white/10 rounded text-white text-xs">low</button>
+                        <button onClick={() => transformText('upper')} className="p-1 hover:bg-white/10 rounded text-text-main text-xs">UP</button>
+                        <button onClick={() => transformText('lower')} className="p-1 hover:bg-white/10 rounded text-text-main text-xs">low</button>
                     </div>
                     <div className="flex gap-2">
-                         <button onClick={() => handleAI('expand', 'contentBody')} className="text-brand-purple hover:text-white text-xs flex items-center gap-1 transition-colors">
+                         <button onClick={() => handleAI('expand', 'contentBody')} className="text-brand-purple hover:text-text-main text-xs flex items-center gap-1 transition-colors">
                             <Wand2 size={12} /> Expand
                         </button>
-                        <button onClick={() => handleAI('improve', 'contentBody')} className="text-brand-purple hover:text-white text-xs flex items-center gap-1 transition-colors">
+                        <button onClick={() => handleAI('improve', 'contentBody')} className="text-brand-purple hover:text-text-main text-xs flex items-center gap-1 transition-colors">
                             <Sparkles size={12} /> Improve
                         </button>
                     </div>
@@ -227,7 +227,7 @@ export const AdminEditor: React.FC = () => {
                    id="bodyEditor"
                    value={formData.contentBody || ''} 
                    onChange={(e) => handleChange('contentBody', e.target.value)}
-                   className="w-full h-[600px] bg-[#0F172A] border border-white/10 rounded-lg px-4 py-4 text-slate-300 font-mono text-sm focus:border-brand-purple outline-none leading-relaxed"
+                   className="w-full h-[600px] bg-[#0F172A] border border-border rounded-lg px-4 py-4 text-text-main font-mono text-sm focus:border-brand-purple outline-none leading-relaxed"
                    placeholder="Write content here. HTML tags allowed (<b>, <i>, <p>)..."
                 />
              </div>
@@ -237,16 +237,16 @@ export const AdminEditor: React.FC = () => {
           {/* Sidebar Settings */}
           <div className="space-y-6">
              
-             <div className="bg-[#1E293B] p-6 rounded-xl border border-white/5 space-y-4">
-                <h3 className="font-bold text-white">Settings</h3>
+             <div className="bg-surface shadow-[var(--shadow-card)] p-6 rounded-xl border border-border space-y-4">
+                <h3 className="font-bold text-text-main">Settings</h3>
                 
                 {/* Category */}
                 <div>
-                  <label className="block text-slate-400 text-xs font-bold mb-2">Category</label>
+                  <label className="block text-text-muted text-xs font-bold mb-2">Category</label>
                   <select 
                      value={formData.category || ''}
                      onChange={(e) => handleChange('category', e.target.value)}
-                     className="w-full bg-[#0F172A] border border-white/10 rounded-lg px-3 py-2 text-white text-sm outline-none"
+                     className="w-full bg-[#0F172A] border border-border rounded-lg px-3 py-2 text-text-main text-sm outline-none"
                   >
                      <option value="">Select...</option>
                      {CATEGORIES.map(cat => (
@@ -257,32 +257,32 @@ export const AdminEditor: React.FC = () => {
 
                 {/* Read Time */}
                 <div>
-                   <label className="block text-slate-400 text-xs font-bold mb-2">Read Time (min)</label>
+                   <label className="block text-text-muted text-xs font-bold mb-2">Read Time (min)</label>
                    <input 
                       type="number" 
                       value={formData.readTimeValue || 5} 
                       onChange={(e) => handleChange('readTimeValue', parseInt(e.target.value))}
-                      className="w-full bg-[#0F172A] border border-white/10 rounded-lg px-3 py-2 text-white text-sm outline-none"
+                      className="w-full bg-[#0F172A] border border-border rounded-lg px-3 py-2 text-text-main text-sm outline-none"
                    />
                 </div>
 
                 {/* Tags */}
                 <div>
-                   <label className="block text-slate-400 text-xs font-bold mb-2">Tags (comma separated)</label>
+                   <label className="block text-text-muted text-xs font-bold mb-2">Tags (comma separated)</label>
                    <input 
                       type="text" 
                       value={formData.tags?.join(', ') || ''} 
                       onChange={(e) => handleChange('tags', e.target.value.split(',').map(t => t.trim()))}
-                      className="w-full bg-[#0F172A] border border-white/10 rounded-lg px-3 py-2 text-white text-sm outline-none"
+                      className="w-full bg-[#0F172A] border border-border rounded-lg px-3 py-2 text-text-main text-sm outline-none"
                    />
                 </div>
 
              </div>
 
              {/* Image Upload */}
-             <div className="bg-[#1E293B] p-6 rounded-xl border border-white/5 space-y-4">
-                <h3 className="font-bold text-white">Thumbnail</h3>
-                <div className="relative aspect-video bg-[#0F172A] rounded-lg border border-white/10 overflow-hidden flex items-center justify-center group">
+             <div className="bg-surface shadow-[var(--shadow-card)] p-6 rounded-xl border border-border space-y-4">
+                <h3 className="font-bold text-text-main">Thumbnail</h3>
+                <div className="relative aspect-video bg-[#0F172A] rounded-lg border border-border overflow-hidden flex items-center justify-center group">
                     {formData.thumbnailUrl ? (
                         <img src={formData.thumbnailUrl} alt="Thumb" className="w-full h-full object-cover" />
                     ) : (
@@ -300,7 +300,7 @@ export const AdminEditor: React.FC = () => {
                    type="text" 
                    value={formData.thumbnailUrl || ''} 
                    onChange={(e) => handleChange('thumbnailUrl', e.target.value)}
-                   className="w-full bg-[#0F172A] border border-white/10 rounded-lg px-3 py-2 text-white text-xs outline-none"
+                   className="w-full bg-[#0F172A] border border-border rounded-lg px-3 py-2 text-text-main text-xs outline-none"
                    placeholder="https://..."
                 />
              </div>
@@ -309,7 +309,7 @@ export const AdminEditor: React.FC = () => {
              {aiLoading && (
                  <div className="p-4 bg-brand-purple/20 border border-brand-purple/50 rounded-xl flex items-center gap-3 animate-pulse">
                      <RefreshCw size={20} className="animate-spin text-brand-purple" />
-                     <span className="text-white text-sm font-bold">AI Processing...</span>
+                     <span className="text-text-main text-sm font-bold">AI Processing...</span>
                  </div>
              )}
 

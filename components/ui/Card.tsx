@@ -23,13 +23,13 @@ export const Card: React.FC<CardProps> = ({
 }) => {
   
   const bgClasses = variant === 'tinted'
-    ? 'bg-slate-900/5 dark:bg-white/5 border-slate-200 dark:border-white/10' 
-    : 'bg-white dark:bg-surface border-slate-200/80 dark:border-white/10';
+    ? 'bg-surfaceHighlight border-border' 
+    : 'bg-surface border-border';
 
   const baseClasses = cn(
     bgClasses,
-    "border rounded-2xl overflow-hidden transition-colors duration-300 ease-out",
-    hoverEffect ? "hover:shadow-xl hover:border-brand-purple/20" : "shadow-sm dark:shadow-none",
+    "border rounded-[14px] overflow-hidden shadow-[var(--shadow-card)] transition-all duration-300 ease-out",
+    hoverEffect ? "hover:shadow-[var(--shadow-hover)] hover:border-brand-purple hover:-translate-y-[3px]" : "",
     className
   );
 
@@ -41,7 +41,6 @@ export const Card: React.FC<CardProps> = ({
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: "-50px" }}
-        whileHover={hoverEffect ? { y: -8, scale: 1.015, transition: { type: "spring", stiffness: 300, damping: 20 } } : undefined}
         className={baseClasses}
         {...(rest as unknown as HTMLMotionProps<"div">)}
       >

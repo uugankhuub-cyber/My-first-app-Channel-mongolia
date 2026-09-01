@@ -45,19 +45,19 @@ export const Footer: React.FC = () => {
             <p className="text-text-muted text-sm leading-relaxed max-w-sm">
               {t('footer_desc')}
             </p>
-            <div className="flex space-x-2">
+            <div className="flex space-x-3">
                 {[
-                  { icon: Facebook, color: '#1877F2', label: 'Facebook' },
-                  { icon: Instagram, color: '#E4405F', label: 'Instagram' },
-                  { icon: Twitter, color: '#1DA1F2', label: 'Twitter' },
-                  { icon: Youtube, color: '#FF0000', label: 'Youtube' }
+                  { icon: Facebook, label: 'Facebook' },
+                  { icon: Instagram, label: 'Instagram' },
+                  { icon: Twitter, label: 'Twitter' },
+                  { icon: Youtube, label: 'Youtube' }
                 ].map((social, idx) => (
                   <motion.a 
                     key={idx}
                     href="#" 
-                    whileHover={{ scale: 1.1, backgroundColor: social.color, color: '#fff' }}
+                    whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.9 }}
-                    className="w-9 h-9 rounded-lg bg-surfaceHighlight flex items-center justify-center text-text-muted transition-all duration-300"
+                    className="w-9 h-9 rounded-lg bg-surfaceHighlight flex items-center justify-center text-text-muted hover:bg-brand-purple hover:text-white transition-all duration-300"
                     aria-label={social.label}
                   >
                     <social.icon size={18} />
@@ -67,7 +67,7 @@ export const Footer: React.FC = () => {
           </motion.div>
 
           <motion.div variants={itemVariants} className="md:col-span-2 md:col-start-7">
-            <h3 className="font-bold text-text-main mb-6 uppercase text-[11px] tracking-wider">{t('links')}</h3>
+            <h3 className="text-[1.15rem] font-[800] text-text-main mb-6">{t('links')}</h3>
             <ul className="space-y-3 text-sm text-text-muted">
               <li><Link to="/bidnii-tukhai" className="hover:text-brand-purple transition-colors block">{t('nav_about')}</Link></li>
               <li><Link to="/holboo-barikh" className="hover:text-brand-purple transition-colors block">{t('contact')}</Link></li>
@@ -76,7 +76,7 @@ export const Footer: React.FC = () => {
           </motion.div>
 
           <motion.div variants={itemVariants} className="md:col-span-2">
-            <h3 className="font-bold text-text-main mb-6 uppercase text-[11px] tracking-wider">{t('nav_categories')}</h3>
+            <h3 className="text-[1.15rem] font-[800] text-text-main mb-6">{t('nav_categories')}</h3>
             <ul className="space-y-3 text-sm text-text-muted">
               <li><Link to="/shinzhleh-uhaan" className="hover:text-brand-purple transition-colors block">Science</Link></li>
               <li><Link to="/video" className="hover:text-brand-purple transition-colors block">Video</Link></li>
@@ -85,7 +85,7 @@ export const Footer: React.FC = () => {
           </motion.div>
           
            <motion.div variants={itemVariants} className="md:col-span-2">
-            <h3 className="font-bold text-text-main mb-6 uppercase text-[11px] tracking-wider">Legal</h3>
+            <h3 className="text-[1.15rem] font-[800] text-text-main mb-6">Legal</h3>
             <ul className="space-y-3 text-sm text-text-muted">
               <li><Link to="/nuuts-lalin-bodlogo" className="hover:text-text-main transition-colors block">{t('privacy')}</Link></li>
               <li><Link to="/uilchilgeenii-nukhtsul" className="hover:text-text-main transition-colors block">{t('terms')}</Link></li>
@@ -101,7 +101,7 @@ export const Footer: React.FC = () => {
           className="border-t border-border pt-8 flex flex-col md:flex-row justify-between items-center gap-4"
         >
           <p className="text-xs text-text-muted opacity-60">{t('copyright')}</p>
-          <p className="text-xs text-text-muted opacity-40 font-mono">v1.0.0</p>
+          <p className="text-[10px] text-text-muted opacity-50 font-mono">v1.0.0</p>
         </motion.div>
       </Container>
     </footer>

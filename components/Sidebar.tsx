@@ -44,7 +44,7 @@ export const Sidebar: React.FC = () => {
       initial={{ opacity: 0, x: -10 }}
       whileInView={{ opacity: 1, x: 0 }}
       viewport={{ once: true }}
-      className="flex items-center gap-2 font-bold text-text-main mb-4 text-xs uppercase tracking-wider pl-1 border-l-2 border-brand-purple"
+      className="flex items-center gap-2 font-bold text-text-main mb-4 text-[0.72rem] uppercase tracking-wider pl-2 border-l-[2px] border-brand-purple"
     >
       {icon}
       <span className="ml-2">{title}</span>
@@ -80,7 +80,7 @@ export const Sidebar: React.FC = () => {
                />
                {rank && (
                  <div className={cn(
-                   "absolute -top-1 -left-1 w-5 h-5 flex items-center justify-center text-[10px] font-bold text-white rounded-full shadow-sm",
+                   "absolute -top-1 -left-1 w-[22px] h-[22px] flex items-center justify-center text-[10px] font-bold text-white rounded-[6px] shadow-sm",
                    rank === 1 ? 'bg-brand-orange' : 'bg-brand-surface'
                  )}>
                    {rank}
@@ -216,7 +216,7 @@ export const Sidebar: React.FC = () => {
                <motion.div key={cat.id} variants={itemVariants}>
                  <Link 
                    to={`/${cat.slug}`}
-                   className="px-3 py-1.5 bg-white dark:bg-white/5 hover:bg-brand-purple border border-slate-200 dark:border-white/10 text-text-muted hover:text-white rounded-lg text-xs font-semibold transition-all focus-visible:ring-2 focus-visible:ring-brand-purple"
+                   className="px-3 py-1.5 bg-surface border border-border text-text-muted hover:text-white hover:bg-brand-purple rounded-lg text-xs font-semibold transition-all focus-visible:ring-2 focus-visible:ring-brand-purple"
                  >
                    {cat.label}
                  </Link>
@@ -231,7 +231,7 @@ export const Sidebar: React.FC = () => {
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
       >
-        <Card className="p-6 text-center bg-gradient-to-br from-white to-slate-100 dark:from-surface dark:to-surfaceHighlight">
+        <Card className="p-6 text-center bg-gradient-to-br from-surface to-surfaceHighlight">
            <QuoteIcon size={32} className="text-brand-purple/20 mx-auto mb-3" />
            <h3 className="text-[10px] font-bold text-brand-purple uppercase tracking-widest mb-3">{t('sb_quote')}</h3>
            <blockquote className="text-text-main font-serif italic text-lg leading-relaxed mb-4">

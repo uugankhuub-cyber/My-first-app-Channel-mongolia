@@ -204,17 +204,17 @@ export const AdminUsersPage: React.FC = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-white tracking-tight flex items-center gap-2">
+          <h1 className="text-2xl font-bold text-text-main tracking-tight flex items-center gap-2">
             <Users className="text-brand-purple" />
             <span>Хэрэглэгчдийн эрхийн тохиргоо</span>
           </h1>
-          <p className="text-slate-400 text-sm">Хэрэглэгчийн эрх (Role-Based Access Control) тодорхойлох, түгжих, удирдах хэсэг</p>
+          <p className="text-text-muted text-sm">Хэрэглэгчийн эрх (Role-Based Access Control) тодорхойлох, түгжих, удирдах хэсэг</p>
         </div>
         
         {currentUser?.role === 'ADMIN' && (
           <button 
             onClick={() => setShowAddForm(!showAddForm)}
-            className="inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-brand text-white rounded-xl text-sm font-bold shadow-md hover:-translate-y-0.5 transition-all self-start"
+            className="inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-brand text-text-main rounded-xl text-sm font-bold shadow-md hover:-translate-y-0.5 transition-all self-start"
           >
             {showAddForm ? <X size={16} /> : <UserPlus size={16} />}
             {showAddForm ? 'Хаах' : 'Хэрэглэгч үүсгэх'}
@@ -237,7 +237,7 @@ export const AdminUsersPage: React.FC = () => {
             {message.type === 'success' ? <CheckCircle size={18} /> : <AlertTriangle size={18} />}
             <span>{message.text}</span>
           </div>
-          <button onClick={() => setMessage(null)} className="text-slate-400 hover:text-white">
+          <button onClick={() => setMessage(null)} className="text-text-muted hover:text-text-main">
             <X size={16} />
           </button>
         </motion.div>
@@ -248,18 +248,18 @@ export const AdminUsersPage: React.FC = () => {
         <motion.div 
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-[#131B2E]/50 border border-white/10 rounded-2xl p-5 space-y-4"
+          className="bg-surfaceHighlight border border-border rounded-2xl p-5 space-y-4"
         >
-          <h3 className="text-white font-bold text-sm flex items-center gap-2">
+          <h3 className="text-text-main font-bold text-sm flex items-center gap-2">
             <UserPlus size={16} className="text-brand-purple" />
             <span>Шинэ хамтрагч урих / Хэрэглэгч үүсгэх</span>
           </h3>
 
           <form onSubmit={handleCreateUser} className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
             <div className="space-y-1.5 md:col-span-1">
-              <label className="text-slate-300 text-xs font-semibold">Имэйл хаяг</label>
+              <label className="text-text-main text-xs font-semibold">Имэйл хаяг</label>
               <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted">
                   <Mail size={14} />
                 </span>
                 <input 
@@ -268,15 +268,15 @@ export const AdminUsersPage: React.FC = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="editor@channelmongolia.com"
-                  className="w-full pl-9 pr-4 py-2.5 bg-[#0B0F19]/80 border border-white/5 rounded-xl text-white text-sm outline-none focus:border-brand-purple/50 transition-colors"
+                  className="w-full pl-9 pr-4 py-2.5 bg-background border border-border rounded-xl text-text-main text-sm outline-none focus:border-brand-purple/50 transition-colors"
                 />
               </div>
             </div>
 
             <div className="space-y-1.5 md:col-span-1">
-              <label className="text-slate-300 text-xs font-semibold">Нууц үг</label>
+              <label className="text-text-main text-xs font-semibold">Нууц үг</label>
               <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted">
                   <Lock size={14} />
                 </span>
                 <input 
@@ -285,17 +285,17 @@ export const AdminUsersPage: React.FC = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full pl-9 pr-4 py-2.5 bg-[#0B0F19]/80 border border-white/5 rounded-xl text-white text-sm outline-none focus:border-brand-purple/50 transition-colors"
+                  className="w-full pl-9 pr-4 py-2.5 bg-background border border-border rounded-xl text-text-main text-sm outline-none focus:border-brand-purple/50 transition-colors"
                 />
               </div>
             </div>
 
             <div className="space-y-1.5 md:col-span-1">
-              <label className="text-slate-300 text-xs font-semibold">Системийн эрх (Role)</label>
+              <label className="text-text-main text-xs font-semibold">Системийн эрх (Role)</label>
               <select
                 value={role}
                 onChange={(e) => setRole(e.target.value as any)}
-                className="w-full px-3 py-2.5 bg-[#0B0F19]/80 border border-white/5 rounded-xl text-slate-300 text-sm outline-none focus:border-brand-purple/50 transition-colors h-[42px]"
+                className="w-full px-3 py-2.5 bg-background border border-border rounded-xl text-text-main text-sm outline-none focus:border-brand-purple/50 transition-colors h-[42px]"
               >
                 <option value="USER">USER - Энгийн уншигч</option>
                 <option value="EDITOR">EDITOR - Нийтлэлч редактор</option>
@@ -306,7 +306,7 @@ export const AdminUsersPage: React.FC = () => {
             <button 
               type="submit"
               disabled={actionLoading}
-              className="px-5 py-2.5 bg-brand-purple hover:bg-brand-purple/95 text-white text-xs font-bold rounded-xl transition-all h-[42px] flex items-center justify-center gap-1.5"
+              className="px-5 py-2.5 bg-brand-purple hover:bg-brand-purple/95 text-text-main text-xs font-bold rounded-xl transition-all h-[42px] flex items-center justify-center gap-1.5"
             >
               {actionLoading ? <RefreshCw size={14} className="animate-spin" /> : <UserPlus size={14} />}
               Бүртгэл үүсгэх
@@ -316,17 +316,17 @@ export const AdminUsersPage: React.FC = () => {
       )}
 
       {/* Users table */}
-      <div className="bg-[#131B2E]/40 border border-white/10 rounded-2xl overflow-hidden">
+      <div className="bg-surface border border-border rounded-2xl overflow-hidden">
         {loading ? (
           <div className="p-12 text-center space-y-3">
             <div className="w-10 h-10 border-2 border-brand-purple border-t-transparent rounded-full animate-spin mx-auto"></div>
-            <p className="text-slate-400 text-sm">Хэрэглэгчдийг уншиж байна...</p>
+            <p className="text-text-muted text-sm">Хэрэглэгчдийг уншиж байна...</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="bg-[#0B0F19]/60 border-b border-white/10 text-slate-400 text-[10px] font-bold uppercase tracking-wider">
+                <tr className="bg-surfaceHighlight border-b border-border text-text-muted text-[10px] font-bold uppercase tracking-wider">
                   <th className="p-4 pl-6">Хэрэглэгч (Имэйл)</th>
                   <th className="p-4">Эрх (Role)</th>
                   <th className="p-4">Төлөв</th>
@@ -334,7 +334,7 @@ export const AdminUsersPage: React.FC = () => {
                   <th className="p-4 pr-6 text-right">Үйлдэл</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-white/5">
+              <tbody className="divide-y divide-border">
                 {users.map((item) => {
                   const isLocked = !!(item.lockedUntil && new Date(item.lockedUntil) > new Date());
                   const isMe = item.id === currentUser?.id;
@@ -344,11 +344,11 @@ export const AdminUsersPage: React.FC = () => {
                       {/* Email */}
                       <td className="p-4 pl-6">
                         <div className="flex items-center gap-3">
-                          <div className="w-9 h-9 rounded-full bg-slate-800 flex items-center justify-center text-slate-300 font-bold text-sm">
+                          <div className="w-9 h-9 rounded-full bg-surfaceHighlight flex items-center justify-center text-text-main font-bold text-sm">
                             {item.email.substring(0, 1).toUpperCase()}
                           </div>
                           <div>
-                            <span className="text-sm font-bold text-white block truncate max-w-[200px]">{item.email}</span>
+                            <span className="text-sm font-bold text-text-main block truncate max-w-[200px]">{item.email}</span>
                             {isMe && <span className="text-[9px] bg-brand-purple/20 text-brand-purple px-1.5 py-0.5 rounded-md font-bold mt-0.5 inline-block">Идэвхтэй таны бүртгэл</span>}
                           </div>
                         </div>
@@ -366,7 +366,7 @@ export const AdminUsersPage: React.FC = () => {
                             value={item.role}
                             onChange={(e) => handleRoleChange(item.id, e.target.value as any)}
                             disabled={actionLoading || currentUser?.role !== 'ADMIN'}
-                            className="bg-[#0B0F19]/80 border border-white/5 rounded-lg text-slate-300 text-xs px-2.5 py-1.5 outline-none focus:border-brand-purple/50 transition-colors font-medium cursor-pointer"
+                            className="bg-background border border-border rounded-lg text-text-main text-xs px-2.5 py-1.5 outline-none focus:border-brand-purple/50 transition-colors font-medium cursor-pointer"
                           >
                             <option value="USER">USER</option>
                             <option value="EDITOR">EDITOR</option>
@@ -391,7 +391,7 @@ export const AdminUsersPage: React.FC = () => {
                       </td>
 
                       {/* Date */}
-                      <td className="p-4 text-xs font-mono text-slate-400">
+                      <td className="p-4 text-xs font-mono text-text-muted">
                         {new Date(item.createdAt).toLocaleDateString()}
                       </td>
 
@@ -413,7 +413,7 @@ export const AdminUsersPage: React.FC = () => {
                             <button
                               onClick={() => handleDeleteUser(item.id)}
                               disabled={actionLoading}
-                              className="p-1.5 hover:bg-red-500/15 text-slate-400 hover:text-red-400 rounded-lg transition-colors"
+                              className="p-1.5 hover:bg-red-500/15 text-text-muted hover:text-red-400 rounded-lg transition-colors"
                               title="Устгах"
                             >
                               <Trash2 size={14} />

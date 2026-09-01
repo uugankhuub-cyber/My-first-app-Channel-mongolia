@@ -67,9 +67,8 @@ export const Home: React.FC = () => {
       {/* Hero / Header Section */}
       <section className="relative pt-24 pb-16 md:pt-32 md:pb-24 overflow-hidden border-b border-border">
         {/* Modern ambient glow backgrounds */}
-        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-brand-purple/10 dark:bg-brand-purple/5 blur-[120px] rounded-full pointer-events-none z-0" />
-        <div className="absolute top-1/3 left-1/3 -translate-x-1/2 -translate-y-1/2 w-[350px] h-[350px] bg-brand-orange/10 dark:bg-brand-orange/5 blur-[100px] rounded-full pointer-events-none z-0" />
-        <div className="absolute inset-0 bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] dark:bg-[radial-gradient(#1e293b_1px,transparent_1px)] [background-size:24px_24px] opacity-40 pointer-events-none z-0" />
+        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-brand-purple blur-[100px] opacity-[0.12] dark:opacity-[0.06] rounded-full pointer-events-none z-0" />
+        <div className="absolute top-1/3 left-1/3 -translate-x-1/2 -translate-y-1/2 w-[350px] h-[350px] bg-brand-orange blur-[100px] opacity-[0.12] dark:opacity-[0.06] rounded-full pointer-events-none z-0" />
 
         <Container className="relative z-10">
           <motion.div
@@ -82,7 +81,7 @@ export const Home: React.FC = () => {
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               transition={{ delay: 0.3 }}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-surface border border-border shadow-sm mb-8"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-surface border border-border shadow-[var(--shadow-card)] mb-8"
             >
               <Sparkles size={16} className="text-brand-orange" />
               <span className="text-sm font-semibold text-gradient">
@@ -90,10 +89,10 @@ export const Home: React.FC = () => {
               </span>
             </motion.div>
             
-            <h1 className="text-5xl md:text-7xl font-black text-text-main mb-6 leading-[1.1] tracking-tight">
+            <h1 className="text-[clamp(2.2rem,5.5vw,3.6rem)] font-black text-text-main mb-6 leading-[1.08] tracking-[-0.03em]">
               {t('hero_title')} <br className="hidden md:block"/>
               <span className="relative inline-block mt-2">
-                <span className="relative z-10 text-white px-6 py-2 bg-gradient-brand rounded-2xl transform -rotate-2 inline-block shadow-lg">
+                <span className="relative z-10 text-white px-6 py-2 bg-gradient-brand rounded-2xl transform -rotate-[1.5deg] inline-block shadow-[var(--shadow-card)]">
                   {t('hero_title_highlight')}
                 </span>
               </span>
@@ -104,11 +103,9 @@ export const Home: React.FC = () => {
             </p>
             
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-               <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                 <Link to="/categories" className="w-full sm:w-auto px-8 py-4 bg-text-main text-background font-bold rounded-2xl shadow-xl transition-all flex items-center justify-center gap-2">
+                 <Link to="/categories" className="w-full sm:w-auto px-8 py-4 bg-text-main text-background font-bold rounded-2xl shadow-[var(--shadow-card)] hover:shadow-[var(--shadow-hover)] transition-all flex items-center justify-center gap-2 hover:-translate-y-[2px]">
                     Мэдлэгтэй танилцах <ArrowRight size={20} />
                  </Link>
-               </motion.div>
             </div>
           </motion.div>
         </Container>

@@ -20,7 +20,7 @@ export const KnowledgeCardSkeleton: React.FC<{ featured?: boolean }> = ({ featur
   return (
     <Card animate={false} className={`h-full flex flex-col overflow-hidden pointer-events-none ${featured ? 'md:flex-row md:min-h-[380px]' : ''}`}>
       <div className={`bg-slate-200 dark:bg-white/5 animate-pulse ${featured ? 'md:w-3/5 h-64 md:h-auto' : 'w-full aspect-video'}`} />
-      <div className={`p-5 flex flex-col flex-1 space-y-4 ${featured ? 'md:w-2/5 md:p-8' : ''}`}>
+      <div className={`p-[18px_20px_20px] flex flex-col flex-1 space-y-4 ${featured ? 'md:w-2/5 md:p-8' : ''}`}>
         <div className="space-y-2">
            <div className="h-6 bg-slate-200 dark:bg-white/5 rounded w-3/4 animate-pulse" />
            {featured && <div className="h-6 bg-slate-200 dark:bg-white/5 rounded w-1/2 animate-pulse" />}
@@ -60,7 +60,7 @@ export const KnowledgeCard: React.FC<KnowledgeCardProps> = ({ item, featured = f
         </div>
       )}
       <div className="absolute top-3 left-3 pointer-events-auto">
-         <span className="px-2.5 py-1 bg-black/60 backdrop-blur-md rounded-lg text-[10px] font-bold text-white tracking-wide border border-white/10 uppercase shadow-sm">
+         <span className="px-2.5 py-1 bg-black/55 backdrop-blur-[8px] rounded-[6px] text-[11px] font-bold text-white shadow-sm">
             {category}
          </span>
       </div>
@@ -87,17 +87,17 @@ export const KnowledgeCard: React.FC<KnowledgeCardProps> = ({ item, featured = f
         </div>
 
         {/* Content Section */}
-        <div className={`p-5 flex flex-col flex-1 ${featured ? 'md:w-2/5 md:justify-center md:p-8' : ''}`}>
+        <div className={`p-[18px_20px_20px] flex flex-col flex-1 ${featured ? 'md:w-2/5 md:justify-center md:p-8' : ''}`}>
           
-          <h3 className={`font-bold text-text-main leading-snug mb-2 group-hover:text-brand-purple transition-colors duration-300 ${featured ? 'text-2xl md:text-3xl tracking-tight' : 'text-lg line-clamp-2'}`}>
+          <h3 className={`font-bold text-text-main leading-snug mb-2 group-hover:text-brand-purple transition-colors duration-200 ${featured ? 'text-2xl md:text-3xl tracking-tight' : 'text-[1.05rem] line-clamp-2'}`}>
             {title}
           </h3>
           
-          <p className={`text-text-muted mb-4 line-clamp-2 leading-relaxed ${featured ? 'text-base md:text-lg mb-6' : 'text-sm'}`}>
+          <p className={`text-text-muted mb-4 line-clamp-2 leading-relaxed ${featured ? 'text-base md:text-lg mb-6' : 'text-[0.85rem]'}`}>
             {description}
           </p>
 
-          <div className="mt-auto flex items-center justify-between text-xs text-text-muted font-medium uppercase tracking-wider">
+          <div className="mt-auto flex items-center justify-between text-[0.72rem] text-text-muted font-medium">
             <div className="flex items-center gap-3">
                <div className="flex items-center gap-1.5">
                   <Eye size={14} />

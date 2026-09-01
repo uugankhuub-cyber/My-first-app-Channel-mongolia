@@ -27,6 +27,7 @@ export interface ContentItem {
   readTime: string; // "5 мин" or "5 min" handled in display logic or separated
   readTimeValue: number; // minutes
   isVideo: boolean;
+  videoUrl?: string;
   contentBody?: string;
   contentBody_en?: string;
   tags: string[];
