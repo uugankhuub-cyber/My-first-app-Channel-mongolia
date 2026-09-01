@@ -80,7 +80,7 @@ export const getArticles = async (req: any, res: any) => {
         excerpt: art.excerpt,
         content: art.content,
         thumbnail: art.thumbnail,
-        status: art.status,
+        status: art.status, views: art.views || 0, thumbnailUrl: art.thumbnail,
         authorId: 'admin-1',
         author: { email: 'admin@channelmongolia.com' },
         categoryId: art.categoryId,

@@ -290,7 +290,7 @@ export const AdminArticlesPage: React.FC = () => {
 
                     {/* Views */}
                     <td className="p-4 text-text-main text-sm font-mono">
-                      {item.views.toLocaleString()}
+                      {(item.views || 0).toLocaleString()}
                     </td>
 
                     {/* Date */}

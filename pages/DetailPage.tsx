@@ -131,7 +131,7 @@ export const DetailPage: React.FC = () => {
                             <span className="opacity-30">•</span>
                             <div className="flex items-center gap-1">
                               <Eye size={12} />
-                              <span>{content.views.toLocaleString()}</span>
+                              <span>{(content.views || 0).toLocaleString()}</span>
                             </div>
                         </div>
                     </div>
