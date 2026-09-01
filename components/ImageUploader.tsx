@@ -20,7 +20,7 @@ export const ImageUploader: React.FC = () => {
       setError('Зургийн хэмжээ 5MB-аас ихгүй байх ёстой');
       return;
     }
-
+    
     // Create local preview
     const reader = new FileReader();
     reader.onload = (e) => setPreview(e.target?.result as string);
@@ -32,36 +32,35 @@ export const ImageUploader: React.FC = () => {
   const uploadFile = async (file: File) => {
     setIsUploading(true);
     
-    // Simulate API call to /api/upload
     try {
-      // In a real app, you would send FormData here
-      const formData = new FormData();
-      formData.append('file', file);
-      
-      const res = await fetch('/api/upload', {
+      const reader = new FileReader();
+      const base64Promise = new Promise<string>((resolve) => {
+        reader.onload = (e) => resolve((e.target?.result as string).split(',')[1]);
+        reader.readAsDataURL(file);
+      });
+      const base64 = await base64Promise;
+
+      const res = await fetch('/api/admin-upload', {
         method: 'POST',
-        // body: formData  // Commented out for mock mode to avoid body parsing issues in some dev envs
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          fileName: file.name,
+          fileType: file.type,
+          fileBase64: base64
+        })
       });
 
       if (!res.ok) throw new Error('Upload failed');
+      const data = await res.json();
 
-      // Since we are mocking the storage, we use the local data URL as the "hosted" URL
-      // In production, you would use the URL returned from the server
-      const reader = new FileReader();
-      reader.onload = () => {
-        const url = reader.result as string;
-        addImage({
-          id: Date.now().toString(),
-          url: url,
-          name: file.name,
-          size: file.size,
-          uploadedAt: new Date().toISOString()
-        });
-        setIsUploading(false);
-        setPreview(null);
-      };
-      reader.readAsDataURL(file);
-
+      addImage({
+        id: Math.random().toString(36).substr(2, 9),
+        url: data.url,
+        fileName: file.name,
+        size: file.size,
+        uploadedAt: new Date().toISOString()
+      });
+      setIsUploading(false);
     } catch (e) {
       console.error(e);
       setError('Алдаа гарлаа. Дахин оролдоно уу.');
@@ -107,7 +106,6 @@ export const ImageUploader: React.FC = () => {
           accept="image/*"
           onChange={(e) => e.target.files?.[0] && handleFile(e.target.files[0])}
         />
-
         {isUploading ? (
           <div className="flex flex-col items-center py-4">
              <div className="w-10 h-10 border-4 border-brand-purple border-t-transparent rounded-full animate-spin mb-3"></div>

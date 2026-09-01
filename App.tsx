@@ -13,6 +13,7 @@ import { PrivacyPage } from './pages/PrivacyPage';
 import { TermsPage } from './pages/TermsPage';
 import { LoginPage } from './pages/LoginPage';
 import { RegisterPage } from './pages/RegisterPage';
+import { ForgotPasswordPage } from './pages/ForgotPasswordPage';
 import { ProfilePage } from './pages/ProfilePage';
 import { ChatAssistant } from './components/ChatAssistant';
 import { GlobalInfoBar } from './components/GlobalInfoBar';
@@ -91,7 +92,7 @@ const AnimatedRoutes = () => {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/admin/login" element={<AdminLoginPage />} />
-        <Route path="/forgot-password" element={<div className="p-20 text-center text-white">Password Reset Coming Soon...</div>} />
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
 
         {/* Admin Routes (Protected) */}
         <Route element={<ProtectedRoute roles={['ADMIN', 'EDITOR']} />}>

@@ -1,0 +1,55 @@
+--- components/ImageUploader.tsx
++++ components/ImageUploader.tsx
+@@ -34,19 +34,26 @@
+   const uploadFile = async (file: File) => {
+     setIsUploading(true);
+     
+-    // Simulate API call to /api/upload
+     try {
+-      // In a real app, you would send FormData here
+-      const formData = new FormData();
+-      formData.append('file', file);
+-      
+-      const res = await fetch('/api/upload', {
+-        method: 'POST',
+-        // body: formData  // Commented out for mock mode to avoid body parsing issues in some dev envs
++      const reader = new FileReader();
++      const base64Promise = new Promise<string>((resolve) => {
++        reader.onload = (e) => resolve((e.target?.result as string).split(',')[1]);
++        reader.readAsDataURL(file);
+       });
++      const base64 = await base64Promise;
+ 
++      const res = await fetch('/api/admin-upload', {
++        method: 'POST',
++        headers: { 'Content-Type': 'application/json' },
++        body: JSON.stringify({ 
++          fileName: file.name,
++          fileType: file.type,
++          fileBase64: base64
++        })
++      });
++
+       if (!res.ok) throw new Error('Upload failed');
++      const data = await res.json();
+ 
+-      // Since we are mocking the storage, we use the local data URL as the "hosted" URL
+-      // In production, you would use the URL returned from the server
+-      const reader = new FileReader();
+       reader.onload = (e) => {
+         const url = e.target?.result as string;
+         addImage({
+@@ -54,10 +61,10 @@
+-          url: url,
++          url: data.url,
+           fileName: file.name,
+           size: file.size,
+           uploadedAt: new Date().toISOString()
+         });
+         setIsUploading(false);
+       };
+-      reader.readAsDataURL(file);
++      reader.onload({ target: { result: data.url } } as any);
+       
+     } catch (e) {
+       console.error(e);

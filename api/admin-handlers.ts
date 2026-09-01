@@ -1,5 +1,6 @@
-
 import { GoogleGenAI } from '@google/genai';
+import fs from 'fs';
+import path from 'path';
 
 export const askAI = async (req: any, res: any) => {
   const { action, text } = req.body;
@@ -28,6 +29,7 @@ export const askAI = async (req: any, res: any) => {
       model: "gemini-3.5-flash",
       contents: prompt,
     });
+
     res.json({ result: response.text });
   } catch (error: any) {
     console.error('Admin AI Error:', error);
@@ -36,6 +38,31 @@ export const askAI = async (req: any, res: any) => {
 };
 
 export const adminUpload = async (req: any, res: any) => {
-  // Mock upload for now
-  res.json({ url: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&q=80&w=800' });
+  try {
+    const { fileName, fileBase64 } = req.body;
+    if (!fileBase64 || !fileName) {
+      return res.status(400).json({ error: 'No file data provided' });
+    }
+    
+    // Create public/uploads directory if it doesn't exist
+    const uploadDir = path.join(process.cwd(), 'dist', 'uploads');
+    if (!fs.existsSync(uploadDir)) {
+      fs.mkdirSync(uploadDir, { recursive: true });
+    }
+    const devUploadDir = path.join(process.cwd(), 'public', 'uploads');
+    if (!fs.existsSync(devUploadDir)) {
+      fs.mkdirSync(devUploadDir, { recursive: true });
+    }
+    
+    const uniqueName = Date.now() + '-' + fileName.replace(/[^a-zA-Z0-9.-]/g, '_');
+    
+    // Save to both public (for dev) and dist (for production)
+    fs.writeFileSync(path.join(devUploadDir, uniqueName), Buffer.from(fileBase64, 'base64'));
+    fs.writeFileSync(path.join(uploadDir, uniqueName), Buffer.from(fileBase64, 'base64'));
+    
+    res.json({ url: `/uploads/${uniqueName}` });
+  } catch (error) {
+    console.error('Upload error:', error);
+    res.status(500).json({ error: 'Upload failed' });
+  }
 };
