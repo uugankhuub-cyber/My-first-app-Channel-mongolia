@@ -1,3 +1,4 @@
+cat << 'INNER_EOF' > api/admin-handlers.ts
 import { GoogleGenAI } from '@google/genai';
 import fs from 'fs';
 import path from 'path';
@@ -98,3 +99,4 @@ export const adminUpload = async (req: any, res: any) => {
     res.status(500).json({ error: 'Upload failed' });
   }
 };
+INNER_EOF
