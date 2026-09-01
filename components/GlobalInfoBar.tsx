@@ -67,7 +67,7 @@ export const GlobalInfoBar: React.FC = () => {
   };
 
   return (
-    <div className="bg-white/80 dark:bg-[#1E293B]/80 backdrop-blur-sm border-b border-slate-200 dark:border-white/5 relative z-[60] transition-colors duration-300">
+    <div className="bg-surface/80 backdrop-blur-sm border-b border-border relative z-[60] transition-colors duration-300">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-8 text-[11px] md:text-xs text-slate-500 dark:text-slate-400 font-medium">
           
@@ -78,7 +78,7 @@ export const GlobalInfoBar: React.FC = () => {
                 <span>{weather ? weather.location : 'UB'}</span>
                 {weather && <span className="font-bold text-slate-700 dark:text-slate-200">{weather.temp}°</span>}
              </div>
-             <div className="hidden md:block w-px h-3 bg-slate-300 dark:bg-white/10"></div>
+             <div className="hidden md:block w-px h-3 bg-border"></div>
              <div className="hidden md:flex items-center gap-1.5">
                 <Calendar size={12} className="text-brand-purple" />
                 <span>{dateString}</span>

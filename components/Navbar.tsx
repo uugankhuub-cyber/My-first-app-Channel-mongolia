@@ -80,8 +80,8 @@ export const Navbar: React.FC = () => {
     <nav
       className={`sticky top-0 z-50 w-full transition-all duration-300 ${
         scrolled
-          ? "bg-white/90 dark:bg-background/90 backdrop-blur-md shadow-[0_1px_12px_rgba(0,0,0,0.06)] border-b border-slate-200/80 dark:border-white/5"
-          : "bg-white/95 dark:bg-background/95 backdrop-blur-sm border-b border-transparent dark:border-white/5"
+          ? "bg-background/90 backdrop-blur-md shadow-[0_1px_12px_rgba(0,0,0,0.06)] border-b border-border"
+          : "bg-background/95 backdrop-blur-sm border-b border-transparent dark:border-white/5"
       }`}
     >
       <div className="relative z-10">
@@ -116,11 +116,11 @@ export const Navbar: React.FC = () => {
                     onChange={(e) => setSearchValue(e.target.value)}
                     placeholder={t("search_placeholder")}
                     className="w-full h-10 pl-9 pr-9 text-sm rounded-lg
-                      bg-slate-100/60 dark:bg-white/5 
-                      border border-slate-200 dark:border-white/10
-                      text-slate-700 dark:text-slate-200 
-                      placeholder-slate-400 dark:placeholder-slate-500
-                      focus:outline-none focus:bg-white dark:focus:bg-slate-900 
+                      bg-surfaceHighlight 
+                      border border-border
+                      text-text-main 
+                      placeholder-text-muted
+                      focus:outline-none focus:bg-background 
                       focus:border-brand-purple/50 focus:ring-2 focus:ring-brand-purple/20 
                       transition-all duration-200 ease-out"
                     aria-label="Search"
@@ -133,7 +133,7 @@ export const Navbar: React.FC = () => {
                         exit={{ opacity: 0, scale: 0.8 }}
                         type="button"
                         onClick={handleClearSearch}
-                        className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded-full text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-200 dark:hover:bg-white/10 transition-colors"
+                        className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded-full text-text-muted hover:text-text-main hover:bg-surfaceHighlight transition-colors"
                         aria-label="Clear search"
                       >
                         <X size={14} />
@@ -174,14 +174,14 @@ export const Navbar: React.FC = () => {
               {/* User Authentication Actions (Desktop) */}
               {user ? (
                 <div className="hidden md:flex items-center gap-3">
-                  <span className="text-sm font-medium text-slate-600 dark:text-slate-300 flex items-center gap-1.5 bg-slate-100 dark:bg-white/5 px-3 py-1.5 rounded-full border border-slate-200 dark:border-white/5">
+                  <span className="text-sm font-medium text-text-muted flex items-center gap-1.5 bg-surfaceHighlight px-3 py-1.5 rounded-full border border-border">
                     <User size={16} className="text-brand-purple" />
                     <span className="max-w-[120px] truncate">{user.email}</span>
                   </span>
                   
                   <Link
                     to="/profile"
-                    className="text-sm font-semibold text-slate-700 dark:text-slate-200 hover:text-brand-purple dark:hover:text-brand-purple transition-colors"
+                    className="text-sm font-semibold text-text-main hover:text-brand-purple dark:hover:text-brand-purple transition-colors"
                   >
                     Profile
                   </Link>
@@ -198,7 +198,7 @@ export const Navbar: React.FC = () => {
 
                   <button
                     onClick={authLogout}
-                    className="px-4 py-2 rounded-full text-sm font-semibold bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 text-slate-700 dark:text-slate-200 transition-colors border border-slate-200/50 dark:border-white/5"
+                    className="px-4 py-2 rounded-full text-sm font-semibold bg-surfaceHighlight hover:bg-surfaceHighlight text-text-main transition-colors border border-slate-200/50 dark:border-white/5"
                   >
                     Гарах
                   </button>
@@ -207,7 +207,7 @@ export const Navbar: React.FC = () => {
                 <div className="hidden md:flex items-center gap-2">
                   <Link
                     to="/login"
-                    className="px-4 py-2 rounded-full text-sm font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors border border-slate-200 dark:border-white/10"
+                    className="px-4 py-2 rounded-full text-sm font-semibold text-text-main hover:bg-surfaceHighlight transition-colors border border-border"
                   >
                     {t("login")}
                   </Link>
@@ -245,7 +245,7 @@ export const Navbar: React.FC = () => {
                     ${
                       isActive
                         ? "bg-brand-purple text-white font-semibold shadow-md shadow-brand-purple/20 ring-1 ring-inset ring-white/10"
-                        : "text-slate-600 dark:text-slate-400 font-medium hover:text-brand-purple dark:hover:text-white hover:bg-brand-purple/10 dark:hover:bg-brand-purple/10"
+                        : "text-text-muted font-medium hover:text-brand-purple dark:hover:text-white hover:bg-brand-purple/10 dark:hover:bg-brand-purple/10"
                     }
                   `}
                 >
@@ -275,14 +275,14 @@ export const Navbar: React.FC = () => {
               animate={{ x: 0 }}
               exit={{ x: "100%" }}
               transition={{ ease: [0.4, 0, 0.2, 1], duration: 0.3 }}
-              className="fixed inset-y-0 right-0 z-[150] w-[85vw] max-w-sm bg-white dark:bg-background shadow-2xl"
+              className="fixed inset-y-0 right-0 z-[150] w-[85vw] max-w-sm bg-surface shadow-2xl"
             >
               <div className="flex flex-col h-full">
-                <div className="flex items-center justify-between p-4 border-b border-slate-100 dark:border-white/10">
+                <div className="flex items-center justify-between p-4 border-b border-border">
                   <span className="font-bold text-xl text-gradient">Menu</span>
                   <button
                     onClick={() => setIsOpen(false)}
-                    className="p-2 text-slate-500 hover:text-slate-900 dark:hover:text-white rounded-full hover:bg-slate-100 dark:hover:bg-white/5"
+                    className="p-2 text-text-muted hover:text-text-main rounded-full hover:bg-surfaceHighlight"
                   >
                     <X size={24} />
                   </button>
@@ -301,7 +301,7 @@ export const Navbar: React.FC = () => {
                         value={searchValue}
                         onChange={(e) => setSearchValue(e.target.value)}
                         placeholder={t("search_placeholder")}
-                        className="w-full h-12 pl-10 pr-10 text-base rounded-xl bg-slate-100/50 dark:bg-white/5 border border-slate-200/50 dark:border-white/10 text-text-main placeholder-slate-400 dark:placeholder-slate-600 focus:bg-white dark:focus:bg-slate-900 focus:border-brand-purple/50 focus:ring-2 focus:ring-brand-purple/20 outline-none transition-all duration-200"
+                        className="w-full h-12 pl-10 pr-10 text-base rounded-xl bg-surfaceHighlight border border-border text-text-main placeholder-text-muted focus:bg-background focus:border-brand-purple/50 focus:ring-2 focus:ring-brand-purple/20 outline-none transition-all duration-200"
                         aria-label="Search"
                       />
                       <AnimatePresence>
@@ -312,7 +312,7 @@ export const Navbar: React.FC = () => {
                             exit={{ opacity: 0, scale: 0.8 }}
                             type="button"
                             onClick={handleClearSearch}
-                            className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-full text-slate-400 hover:text-text-main hover:bg-slate-200 dark:hover:bg-white/10 transition-colors"
+                            className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-full text-slate-400 hover:text-text-main hover:bg-surfaceHighlight transition-colors"
                           >
                             <X size={18} />
                           </motion.button>
@@ -337,7 +337,7 @@ export const Navbar: React.FC = () => {
                             ${
                               isActive
                                 ? "bg-brand-purple text-white font-semibold shadow-md"
-                                : "text-slate-700 dark:text-slate-300 font-medium hover:bg-slate-50 dark:hover:bg-white/5"
+                                : "text-text-muted font-medium hover:bg-surfaceHighlight"
                             }
                           `}
                         >
@@ -347,32 +347,32 @@ export const Navbar: React.FC = () => {
                     ))}
                   </nav>
 
-                  <div className="border-t border-slate-100 dark:border-white/10 pt-4 space-y-2">
+                  <div className="border-t border-border pt-4 space-y-2">
                     <Link
                       to="/bidnii-tukhai"
                       onClick={() => setIsOpen(false)}
-                      className="block px-4 py-3 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white rounded-xl hover:bg-slate-50 dark:hover:bg-white/5"
+                      className="block px-4 py-3 text-text-muted hover:text-slate-900 dark:hover:text-white rounded-xl hover:bg-surfaceHighlight"
                     >
                       {t("nav_about")}
                     </Link>
                     <Link
                       to="/holboo-barikh"
                       onClick={() => setIsOpen(false)}
-                      className="block px-4 py-3 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white rounded-xl hover:bg-slate-50 dark:hover:bg-white/5"
+                      className="block px-4 py-3 text-text-muted hover:text-slate-900 dark:hover:text-white rounded-xl hover:bg-surfaceHighlight"
                     >
                       {t("contact")}
                     </Link>
                   </div>
                 </div>
 
-                <div className="p-4 border-t border-slate-100 dark:border-white/10 bg-slate-50/50 dark:bg-white/5 space-y-3">
+                <div className="p-4 border-t border-border bg-surfaceHighlight space-y-3">
                   {/* Mobile Theme & Lang Toggles */}
                   <div className="flex items-center justify-between gap-2 mb-2">
                     <button
                       onClick={() =>
                         setLanguage(language === "mn" ? "en" : "mn")
                       }
-                      className="flex-1 py-2 rounded-lg border border-slate-200 dark:border-white/10 bg-white dark:bg-transparent text-slate-500 dark:text-slate-400 text-xs font-bold hover:text-slate-900 dark:hover:text-white transition-colors"
+                      className="flex-1 py-2 rounded-lg border border-border bg-surface text-text-muted text-xs font-bold hover:text-slate-900 dark:hover:text-white transition-colors"
                     >
                       {language === "mn"
                         ? "EN хэл рүү шилжих"
@@ -380,7 +380,7 @@ export const Navbar: React.FC = () => {
                     </button>
                     <button
                       onClick={toggleTheme}
-                      className="p-2 rounded-lg border border-slate-200 dark:border-white/10 bg-white dark:bg-transparent text-slate-500 dark:text-slate-400 hover:text-brand-orange transition-colors"
+                      className="p-2 rounded-lg border border-border bg-surface text-text-muted hover:text-brand-orange transition-colors"
                       aria-label={t("theme_dark")}
                     >
                       {theme === "dark" ? (
@@ -394,7 +394,7 @@ export const Navbar: React.FC = () => {
                   {/* User Authentication Actions (Mobile Drawer) */}
                   {user ? (
                     <div className="space-y-3">
-                      <div className="px-4 py-3 text-sm text-center font-medium text-slate-600 dark:text-slate-300 bg-slate-100/50 dark:bg-white/5 rounded-xl flex items-center justify-center gap-2">
+                      <div className="px-4 py-3 text-sm text-center font-medium text-text-muted bg-surfaceHighlight rounded-xl flex items-center justify-center gap-2">
                         <User size={16} className="text-brand-purple" />
                         <span className="truncate">{user.email}</span>
                       </div>
@@ -402,7 +402,7 @@ export const Navbar: React.FC = () => {
                       <Link
                         to="/profile"
                         onClick={() => setIsOpen(false)}
-                        className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-bold bg-white dark:bg-slate-800 text-slate-900 dark:text-white border border-slate-200 dark:border-white/10 transition-transform active:scale-95"
+                        className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-bold bg-surfaceHighlight text-text-main border border-border transition-transform active:scale-95"
                       >
                         Profile
                       </Link>
@@ -413,7 +413,7 @@ export const Navbar: React.FC = () => {
                             setIsOpen(false);
                             handleAdminClick();
                           }}
-                          className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-bold bg-white dark:bg-slate-800 text-slate-900 dark:text-white border border-slate-200 dark:border-white/10 transition-transform active:scale-95"
+                          className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-bold bg-surfaceHighlight text-text-main border border-border transition-transform active:scale-95"
                         >
                           <ShieldCheck size={18} />
                           <span>Admin Panel</span>
@@ -435,7 +435,7 @@ export const Navbar: React.FC = () => {
                       <Link
                         to="/login"
                         onClick={() => setIsOpen(false)}
-                        className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-bold bg-white dark:bg-slate-800 text-slate-900 dark:text-white border border-slate-200 dark:border-white/10 transition-transform active:scale-95"
+                        className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-bold bg-surfaceHighlight text-text-main border border-border transition-transform active:scale-95"
                       >
                         <User size={18} />
                         <span>{t("login")}</span>

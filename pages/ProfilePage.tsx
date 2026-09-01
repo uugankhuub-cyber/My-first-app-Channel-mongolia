@@ -19,7 +19,7 @@ export const ProfilePage: React.FC = () => {
       <motion.div
         initial={{ opacity: 0, y: 15 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-white dark:bg-slate-900 rounded-3xl shadow-xl overflow-hidden border border-slate-100 dark:border-white/5"
+        className="bg-surface rounded-3xl shadow-xl overflow-hidden border border-border"
       >
         {/* Banner */}
         <div className="h-32 bg-gradient-brand"></div>
@@ -55,16 +55,16 @@ export const ProfilePage: React.FC = () => {
                   </span>
                 )}
               </h1>
-              <p className="text-slate-500 dark:text-slate-400 mt-1">Channel Mongolia системд амжилттай нэвтэрсэн</p>
+              <p className="text-text-muted mt-1">Channel Mongolia системд амжилттай нэвтэрсэн</p>
             </div>
           </div>
 
           {/* User Details Grid */}
           <div className="mt-10 grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="p-6 bg-slate-50 dark:bg-white/5 rounded-2xl border border-slate-100 dark:border-white/5 space-y-4">
-              <h2 className="text-lg font-bold text-slate-800 dark:text-slate-200">Үндсэн мэдээлэл</h2>
+            <div className="p-6 bg-surfaceHighlight rounded-2xl border border-border space-y-4">
+              <h2 className="text-lg font-bold text-text-main">Үндсэн мэдээлэл</h2>
               
-              <div className="flex items-center gap-3 text-slate-600 dark:text-slate-300">
+              <div className="flex items-center gap-3 text-text-muted">
                 <Mail size={18} className="text-brand-purple" />
                 <div>
                   <div className="text-xs text-slate-400">Имэйл хаяг</div>
@@ -72,7 +72,7 @@ export const ProfilePage: React.FC = () => {
                 </div>
               </div>
 
-              <div className="flex items-center gap-3 text-slate-600 dark:text-slate-300">
+              <div className="flex items-center gap-3 text-text-muted">
                 <Shield size={18} className="text-brand-purple" />
                 <div>
                   <div className="text-xs text-slate-400 font-medium">Хэрэглэгчийн эрх</div>
@@ -80,7 +80,7 @@ export const ProfilePage: React.FC = () => {
                 </div>
               </div>
 
-              <div className="flex items-center gap-3 text-slate-600 dark:text-slate-300">
+              <div className="flex items-center gap-3 text-text-muted">
                 <Calendar size={18} className="text-brand-purple" />
                 <div>
                   <div className="text-xs text-slate-400 font-medium">Бүртгүүлсэн огноо</div>
@@ -89,20 +89,20 @@ export const ProfilePage: React.FC = () => {
               </div>
             </div>
 
-            <div className="p-6 bg-slate-50 dark:bg-white/5 rounded-2xl border border-slate-100 dark:border-white/5 flex flex-col justify-between">
+            <div className="p-6 bg-surfaceHighlight rounded-2xl border border-border flex flex-col justify-between">
               <div>
-                <h2 className="text-lg font-bold text-slate-800 dark:text-slate-200 mb-4">Хэрэглэгчийн статистик</h2>
+                <h2 className="text-lg font-bold text-text-main mb-4">Хэрэглэгчийн статистик</h2>
                 <div className="space-y-3">
                   <div className="flex justify-between items-center py-2 border-b border-slate-200/50 dark:border-white/5">
-                    <span className="text-slate-500 dark:text-slate-400 text-sm">Уншсан нийтлэл</span>
+                    <span className="text-text-muted text-sm">Уншсан нийтлэл</span>
                     <span className="font-bold text-brand-purple">12</span>
                   </div>
                   <div className="flex justify-between items-center py-2 border-b border-slate-200/50 dark:border-white/5">
-                    <span className="text-slate-500 dark:text-slate-400 text-sm">Хадгалсан материал</span>
+                    <span className="text-text-muted text-sm">Хадгалсан материал</span>
                     <span className="font-bold text-brand-purple">4</span>
                   </div>
                   <div className="flex justify-between items-center py-2">
-                    <span className="text-slate-500 dark:text-slate-400 text-sm">Сэтгэгдэл бичсэн</span>
+                    <span className="text-text-muted text-sm">Сэтгэгдэл бичсэн</span>
                     <span className="font-bold text-brand-purple">2</span>
                   </div>
                 </div>

@@ -144,7 +144,7 @@ export const CategoriesPage: React.FC<CategoriesPageProps> = ({ categorySlug, fi
                     className={cn(
                       "px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all",
                       isSelected
-                        ? "bg-white text-black shadow-lg"
+                        ? "bg-text-main text-background shadow-lg"
                         : "bg-white/10 text-slate-300 hover:bg-white/15"
                     )}
                   >

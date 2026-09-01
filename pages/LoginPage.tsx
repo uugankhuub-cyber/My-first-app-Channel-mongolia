@@ -50,14 +50,14 @@ export const LoginPage: React.FC = () => {
       <motion.div 
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="w-full max-w-md bg-slate-900/50 backdrop-blur-xl border border-white/10 rounded-3xl p-8 shadow-2xl"
+        className="w-full max-w-md bg-surface border border-border rounded-3xl p-8 shadow-2xl"
       >
         <div className="flex flex-col items-center mb-8">
           <div className="w-16 h-16 bg-gradient-brand rounded-2xl flex items-center justify-center mb-4 shadow-glow">
             <LogIn className="text-white" size={32} />
           </div>
-          <h1 className="text-2xl font-bold text-white">Тавтай морил</h1>
-          <p className="text-slate-400 text-sm">Channel Mongolia системд нэвтрэх</p>
+          <h1 className="text-2xl font-bold text-text-main">Тавтай морил</h1>
+          <p className="text-text-muted text-sm">Channel Mongolia системд нэвтрэх</p>
         </div>
 
         {error && (
@@ -69,30 +69,30 @@ export const LoginPage: React.FC = () => {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 ml-1">Имэйл хаяг</label>
+            <label className="block text-xs font-bold text-text-muted uppercase tracking-widest mb-2 ml-1">Имэйл хаяг</label>
             <div className="relative">
-              <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
+              <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-text-muted" size={18} />
               <input 
                 type="email"
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full bg-slate-800/50 border border-white/5 rounded-xl py-3 pl-12 pr-4 text-white focus:outline-none focus:border-brand-purple transition-colors"
+                className="w-full bg-surfaceHighlight border border-border rounded-xl py-3 pl-12 pr-4 text-text-main focus:outline-none focus:border-brand-purple transition-colors"
                 placeholder="admin@channelmongolia.com"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 ml-1">Нууц үг</label>
+            <label className="block text-xs font-bold text-text-muted uppercase tracking-widest mb-2 ml-1">Нууц үг</label>
             <div className="relative">
-              <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
+              <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-text-muted" size={18} />
               <input 
                 type="password"
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full bg-slate-800/50 border border-white/5 rounded-xl py-3 pl-12 pr-4 text-white focus:outline-none focus:border-brand-purple transition-colors"
+                className="w-full bg-surfaceHighlight border border-border rounded-xl py-3 pl-12 pr-4 text-text-main focus:outline-none focus:border-brand-purple transition-colors"
                 placeholder="••••••••"
               />
             </div>
@@ -108,11 +108,11 @@ export const LoginPage: React.FC = () => {
         </form>
 
         <div className="mt-8 pt-6 border-t border-white/5 text-center space-y-2">
-          <p className="text-slate-500 text-sm">
+          <p className="text-text-muted text-sm">
             Шинэ хэрэглэгч үү? <Link to="/register" className="text-brand-purple hover:underline">Бүртгүүлэх</Link>
           </p>
-          <p className="text-slate-500 text-sm">
-            <Link to="/forgot-password" className="text-slate-400 hover:text-white transition-colors">Нууц үг мартсан уу?</Link>
+          <p className="text-text-muted text-sm">
+            <Link to="/forgot-password" className="text-text-muted hover:text-brand-purple transition-colors">Нууц үг мартсан уу?</Link>
           </p>
         </div>
       </motion.div>

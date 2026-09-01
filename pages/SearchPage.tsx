@@ -65,7 +65,7 @@ export const SearchPage: React.FC = () => {
                 <input
                     type="text"
                     placeholder={t('search_placeholder')}
-                    className="w-full h-14 pl-12 pr-12 rounded-full border border-border bg-white/50 dark:bg-white/5 backdrop-blur-sm focus:bg-white dark:focus:bg-slate-900 focus:border-brand-purple/50 focus:ring-4 focus:ring-brand-purple/10 outline-none text-lg text-text-main placeholder-slate-400 shadow-sm hover:shadow-md transition-all duration-300"
+                    className="w-full h-14 pl-12 pr-12 rounded-full border border-border bg-surface backdrop-blur-sm focus:bg-surfaceHighlight focus:border-brand-purple/50 focus:ring-4 focus:ring-brand-purple/10 outline-none text-lg text-text-main placeholder-slate-400 shadow-sm hover:shadow-md transition-all duration-300"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     autoFocus

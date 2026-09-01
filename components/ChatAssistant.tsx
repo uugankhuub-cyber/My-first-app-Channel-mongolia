@@ -143,7 +143,7 @@ export const ChatAssistant: React.FC = () => {
             initial={{ opacity: 0, scale: 0.9, y: 20, transformOrigin: 'bottom right' }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
-            className="fixed bottom-24 right-6 w-[90vw] md:w-96 h-[600px] max-h-[75vh] bg-white dark:bg-[#0F172A] rounded-2xl shadow-2xl border border-gray-200 dark:border-white/10 flex flex-col overflow-hidden z-50"
+            className="fixed bottom-24 right-6 w-[90vw] md:w-96 h-[600px] max-h-[75vh] bg-surface rounded-2xl shadow-2xl border border-border flex flex-col overflow-hidden z-50"
           >
             {/* Header */}
             <div className="bg-gradient-brand p-4 flex items-center justify-between shadow-md relative z-10">
@@ -194,7 +194,7 @@ export const ChatAssistant: React.FC = () => {
                         "max-w-[80%] p-3.5 rounded-2xl text-sm leading-relaxed shadow-sm",
                         msg.role === 'user'
                           ? 'bg-gradient-brand text-white rounded-tr-sm'
-                          : 'bg-white dark:bg-[#1E293B] text-gray-800 dark:text-slate-200 rounded-tl-sm border border-gray-100 dark:border-white/5'
+                          : 'bg-surfaceHighlight text-text-main rounded-tl-sm border border-border'
                       )}
                     >
                        {msg.text.split('\n').map((line, i) => (
@@ -214,7 +214,7 @@ export const ChatAssistant: React.FC = () => {
                    <div className="w-8 h-8 rounded-full bg-brand-purple text-white flex items-center justify-center flex-shrink-0 shadow-sm">
                       <Bot size={14} />
                    </div>
-                   <div className="bg-white dark:bg-[#1E293B] p-3 rounded-2xl rounded-tl-sm border border-gray-100 dark:border-white/5 flex gap-1 items-center h-10">
+                   <div className="bg-surfaceHighlight p-3 rounded-2xl rounded-tl-sm border border-border flex gap-1 items-center h-10">
                       <span className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce"></span>
                       <span className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></span>
                       <span className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '0.4s' }}></span>
@@ -239,7 +239,7 @@ export const ChatAssistant: React.FC = () => {
                           whileHover={{ scale: 1.05 }}
                           whileTap={{ scale: 0.95 }}
                           onClick={() => handleSend(q)}
-                          className="flex-shrink-0 px-3 py-1.5 bg-white dark:bg-[#1E293B] border border-brand-purple/20 rounded-full text-xs text-brand-purple dark:text-primary-300 whitespace-nowrap hover:bg-brand-purple hover:text-white transition-colors shadow-sm"
+                          className="flex-shrink-0 px-3 py-1.5 bg-surfaceHighlight border border-brand-purple/20 rounded-full text-xs text-brand-purple dark:text-primary-300 whitespace-nowrap hover:bg-brand-purple hover:text-white transition-colors shadow-sm"
                        >
                           {q}
                        </motion.button>
@@ -249,8 +249,8 @@ export const ChatAssistant: React.FC = () => {
             </AnimatePresence>
 
             {/* Input */}
-            <div className="p-3 bg-white dark:bg-[#0F172A] border-t border-gray-100 dark:border-white/5">
-              <div className="flex items-center gap-2 bg-gray-100 dark:bg-[#1E293B] rounded-full px-4 py-2 border border-transparent focus-within:border-brand-purple/50 focus-within:bg-white dark:focus-within:bg-[#0F172A] transition-all shadow-inner">
+            <div className="p-3 bg-surface border-t border-border">
+              <div className="flex items-center gap-2 bg-surfaceHighlight rounded-full px-4 py-2 border border-transparent focus-within:border-brand-purple/50 focus-within:bg-surface transition-all shadow-inner">
                 <input
                   type="text"
                   value={input}

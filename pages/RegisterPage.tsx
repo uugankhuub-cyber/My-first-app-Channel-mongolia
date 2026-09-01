@@ -53,13 +53,13 @@ export const RegisterPage: React.FC = () => {
         <motion.div 
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="w-full max-w-md bg-slate-900/50 backdrop-blur-xl border border-white/10 rounded-3xl p-8 text-center shadow-2xl"
+          className="w-full max-w-md bg-surface border border-border rounded-3xl p-8 text-center shadow-2xl"
         >
           <div className="w-20 h-20 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
             <CheckCircle2 className="text-green-500" size={40} />
           </div>
-          <h1 className="text-2xl font-bold text-white mb-2">Бүртгэл амжилттай</h1>
-          <p className="text-slate-400">Таны имэйл хаяг руу баталгаажуулах линк илгээлээ. Имэйлээ шалгана уу.</p>
+          <h1 className="text-2xl font-bold text-text-main mb-2">Бүртгэл амжилттай</h1>
+          <p className="text-text-muted">Таны имэйл хаяг руу баталгаажуулах линк илгээлээ. Имэйлээ шалгана уу.</p>
           <div className="mt-8">
             <Link to="/login" className="text-brand-purple font-medium hover:underline">Нэвтрэх хэсэг рүү очих</Link>
           </div>
@@ -73,14 +73,14 @@ export const RegisterPage: React.FC = () => {
       <motion.div 
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="w-full max-w-md bg-slate-900/50 backdrop-blur-xl border border-white/10 rounded-3xl p-8 shadow-2xl"
+        className="w-full max-w-md bg-surface border border-border rounded-3xl p-8 shadow-2xl"
       >
         <div className="flex flex-col items-center mb-8">
           <div className="w-16 h-16 bg-gradient-brand rounded-2xl flex items-center justify-center mb-4 shadow-glow">
             <UserPlus className="text-white" size={32} />
           </div>
-          <h1 className="text-2xl font-bold text-white">Бүртгүүлэх</h1>
-          <p className="text-slate-400 text-sm">Channel Mongolia гэр бүлд нэгдэх</p>
+          <h1 className="text-2xl font-bold text-text-main">Бүртгүүлэх</h1>
+          <p className="text-text-muted text-sm">Channel Mongolia гэр бүлд нэгдэх</p>
         </div>
 
         {error && (
@@ -92,46 +92,46 @@ export const RegisterPage: React.FC = () => {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 ml-1">Имэйл хаяг</label>
+            <label className="block text-xs font-bold text-text-muted uppercase tracking-widest mb-2 ml-1">Имэйл хаяг</label>
             <div className="relative">
-              <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
+              <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-text-muted" size={18} />
               <input 
                 type="email"
                 required
                 value={formData.email}
                 onChange={(e) => setFormData({...formData, email: e.target.value})}
-                className="w-full bg-slate-800/50 border border-white/5 rounded-xl py-3 pl-12 pr-4 text-white focus:outline-none focus:border-brand-purple transition-colors"
+                className="w-full bg-surfaceHighlight border border-border rounded-xl py-3 pl-12 pr-4 text-text-main focus:outline-none focus:border-brand-purple transition-colors"
                 placeholder="email@example.com"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 ml-1">Нууц үг</label>
+            <label className="block text-xs font-bold text-text-muted uppercase tracking-widest mb-2 ml-1">Нууц үг</label>
             <div className="relative">
-              <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
+              <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-text-muted" size={18} />
               <input 
                 type="password"
                 required
                 value={formData.password}
                 onChange={(e) => setFormData({...formData, password: e.target.value})}
-                className="w-full bg-slate-800/50 border border-white/5 rounded-xl py-3 pl-12 pr-4 text-white focus:outline-none focus:border-brand-purple transition-colors"
+                className="w-full bg-surfaceHighlight border border-border rounded-xl py-3 pl-12 pr-4 text-text-main focus:outline-none focus:border-brand-purple transition-colors"
                 placeholder="••••••••"
               />
             </div>
-            <p className="text-[10px] text-slate-500 mt-1 ml-1">Багадаа 8 тэмдэгт, том жижиг үсэг, тоо, тэмдэгт орох ёстой.</p>
+            <p className="text-[10px] text-text-muted mt-1 ml-1">Багадаа 8 тэмдэгт, том жижиг үсэг, тоо, тэмдэгт орох ёстой.</p>
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 ml-1">Нууц үг давтах</label>
+            <label className="block text-xs font-bold text-text-muted uppercase tracking-widest mb-2 ml-1">Нууц үг давтах</label>
             <div className="relative">
-              <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
+              <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-text-muted" size={18} />
               <input 
                 type="password"
                 required
                 value={formData.confirmPassword}
                 onChange={(e) => setFormData({...formData, confirmPassword: e.target.value})}
-                className="w-full bg-slate-800/50 border border-white/5 rounded-xl py-3 pl-12 pr-4 text-white focus:outline-none focus:border-brand-purple transition-colors"
+                className="w-full bg-surfaceHighlight border border-border rounded-xl py-3 pl-12 pr-4 text-text-main focus:outline-none focus:border-brand-purple transition-colors"
                 placeholder="••••••••"
               />
             </div>
@@ -147,7 +147,7 @@ export const RegisterPage: React.FC = () => {
         </form>
 
         <div className="mt-8 pt-6 border-t border-white/5 text-center">
-          <p className="text-slate-500 text-sm">
+          <p className="text-text-muted text-sm">
             Аль хэдийн бүртгэлтэй юу? <Link to="/login" className="text-brand-purple hover:underline">Нэвтрэх</Link>
           </p>
         </div>
