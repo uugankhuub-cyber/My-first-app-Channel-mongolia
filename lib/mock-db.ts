@@ -191,13 +191,13 @@ export async function ensureAdmin() {
   const state = getDb();
   
   const fallbackEmail = 'uugankhuub@gmail.com';
-  const fallbackPassword = 'Admin123!';
+  const fallbackPassword = 'admin';
   
-  let adminEmail = process.env.INITIAL_ADMIN_EMAIL || 'admin@channelmongolia.com';
+  let adminEmail = process.env.INITIAL_ADMIN_EMAIL || 'admin@channelmongolia.mn';
   if (adminEmail.startsWith('INITIAL_ADMIN_EMAIL=')) {
     adminEmail = adminEmail.replace('INITIAL_ADMIN_EMAIL=', '');
   }
-  let adminPassword = process.env.INITIAL_ADMIN_PASSWORD || 'Admin123!';
+  let adminPassword = process.env.INITIAL_ADMIN_PASSWORD || 'admin';
   if (adminPassword.startsWith('INITIAL_ADMIN_PASSWORD=')) {
     adminPassword = adminPassword.replace('INITIAL_ADMIN_PASSWORD=', '');
   }
