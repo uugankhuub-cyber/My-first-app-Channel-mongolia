@@ -104,14 +104,59 @@ export const createArticle = async (req: any, res: any) => {
 
     if (isDbAvailable()) {
       try {
-        const article = await prisma.article.create({
-          data: {
-            ...body,
-            authorId: req.user?.userId || 'admin-1',
-            publishedAt: body.status === 'PUBLISHED' ? new Date() : null,
-          },
-        });
-        return res.json(article);
+        // 1. Resolve a valid authorId in Prisma
+        let authorId = req.user?.userId;
+        let author = authorId ? await prisma.user.findUnique({ where: { id: authorId } }) : null;
+        if (!author) {
+          author = await prisma.user.findFirst({ where: { role: 'ADMIN' } });
+          if (!author) {
+            author = await prisma.user.findFirst();
+          }
+        }
+
+        // 2. Resolve categoryId in Prisma
+        let finalCatId: string | null = null;
+        if (body.categoryId && body.categoryId.trim()) {
+          let cat = await prisma.category.findFirst({
+            where: {
+              OR: [
+                { id: body.categoryId },
+                { name: { equals: body.categoryId, mode: 'insensitive' } },
+                { slug: { equals: body.categoryId.toLowerCase(), mode: 'insensitive' } }
+              ]
+            }
+          });
+
+          if (!cat) {
+            cat = await prisma.category.create({
+              data: {
+                name: body.categoryId,
+                slug: body.categoryId.toLowerCase().replace(/[^a-z0-9]+/g, '-')
+              }
+            });
+          }
+          finalCatId = cat.id;
+        }
+
+        if (author) {
+          const article = await prisma.article.create({
+            data: {
+              title: body.title,
+              slug: body.slug,
+              excerpt: body.excerpt,
+              content: body.content,
+              thumbnail: body.thumbnail,
+              status: body.status,
+              metaTitle: body.metaTitle,
+              metaDesc: body.metaDesc,
+              categoryId: finalCatId,
+              authorId: author.id,
+              publishedAt: body.status === 'PUBLISHED' ? new Date() : null,
+            },
+            include: { category: true, author: { select: { email: true } } }
+          });
+          return res.json(article);
+        }
       } catch (dbError: any) {
         console.error('Database create failed in createArticle, using mock fallback:', dbError.message);
       }
@@ -173,12 +218,47 @@ export const updateArticle = async (req: any, res: any) => {
 
     if (isDbAvailable()) {
       try {
+        let finalCatId: string | null | undefined = undefined;
+        if (body.categoryId !== undefined) {
+          if (body.categoryId && body.categoryId.trim()) {
+            let cat = await prisma.category.findFirst({
+              where: {
+                OR: [
+                  { id: body.categoryId },
+                  { name: { equals: body.categoryId, mode: 'insensitive' } },
+                  { slug: { equals: body.categoryId.toLowerCase(), mode: 'insensitive' } }
+                ]
+              }
+            });
+            if (!cat) {
+              cat = await prisma.category.create({
+                data: {
+                  name: body.categoryId,
+                  slug: body.categoryId.toLowerCase().replace(/[^a-z0-9]+/g, '-')
+                }
+              });
+            }
+            finalCatId = cat.id;
+          } else {
+            finalCatId = null;
+          }
+        }
+
         const article = await prisma.article.update({
           where: { id },
           data: {
-            ...body,
+            ...(body.title !== undefined && { title: body.title }),
+            ...(body.slug !== undefined && { slug: body.slug }),
+            ...(body.excerpt !== undefined && { excerpt: body.excerpt }),
+            ...(body.content !== undefined && { content: body.content }),
+            ...(body.thumbnail !== undefined && { thumbnail: body.thumbnail }),
+            ...(body.status !== undefined && { status: body.status }),
+            ...(body.metaTitle !== undefined && { metaTitle: body.metaTitle }),
+            ...(body.metaDesc !== undefined && { metaDesc: body.metaDesc }),
+            ...(finalCatId !== undefined && { categoryId: finalCatId }),
             publishedAt: body.status === 'PUBLISHED' ? new Date() : undefined,
           },
+          include: { category: true }
         });
         return res.json(article);
       } catch (dbError: any) {

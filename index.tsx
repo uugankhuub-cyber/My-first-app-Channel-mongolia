@@ -1,3 +1,27 @@
+// Ensure window.fetch is safely assignable in iframe/sandbox environments
+if (typeof window !== 'undefined' && window.fetch) {
+  try {
+    let currentFetch = window.fetch.bind(window);
+    let isWritable = false;
+    try {
+      (window as any).fetch = currentFetch;
+      isWritable = true;
+    } catch {
+      isWritable = false;
+    }
+    if (!isWritable) {
+      Object.defineProperty(window, 'fetch', {
+        get: () => currentFetch,
+        set: (fn) => {
+          if (typeof fn === 'function') currentFetch = fn;
+        },
+        configurable: true,
+        enumerable: true
+      });
+    }
+  } catch {}
+}
+
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';

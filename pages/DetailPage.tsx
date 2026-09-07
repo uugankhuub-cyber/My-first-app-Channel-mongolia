@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import * as ReactRouterDOM from 'react-router-dom';
 import { useContent } from '../context/ContentContext';
-import { ThumbsUp, Share2, Bookmark, Eye, Calendar, User, PlayCircle, Layers, ArrowLeft, MessageSquare } from 'lucide-react';
+import { ThumbsUp, Share2, Bookmark, Eye, Calendar, User, PlayCircle, Layers, ArrowLeft, MessageSquare, CheckCircle } from 'lucide-react';
 import { Sidebar } from '../components/Sidebar';
 import { useLanguage } from '../context/LanguageContext';
 import { QuizCard } from '../components/QuizCard';
@@ -20,35 +20,182 @@ export const DetailPage: React.FC = () => {
   const navigate = useNavigate();
   const { t, language } = useLanguage();
   const { trackView } = useUserPreferences();
-  const { content: allContent } = useContent();
+  const { content: allContent, loading: contentLoading } = useContent();
   const isEn = language === 'en';
   
+  const [directArticle, setDirectArticle] = useState<any>(null);
+  const [fetchingDirect, setFetchingDirect] = useState(false);
   const [isLiked, setIsLiked] = useState(false);
   const [isBookmarked, setIsBookmarked] = useState(false);
-  
-  const content = allContent.find(c => c.id === id);
-  
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  const showToast = (msg: string) => {
+    setToastMessage(msg);
+    setTimeout(() => setToastMessage(null), 3000);
+  };
+
+  // Find in loaded list or fallback to direct fetched article
+  const content = allContent.find(c => c.id === id || (c as any).slug === id) || directArticle;
+
+  // If not found in loaded content, try fetching directly from API by id/slug
+  useEffect(() => {
+    let isMounted = true;
+    if (!content && id) {
+      setFetchingDirect(true);
+      fetch(`/api/articles/${encodeURIComponent(id)}`)
+        .then(res => res.ok ? res.json() : null)
+        .then(data => {
+          if (isMounted && data) {
+            setDirectArticle({
+              id: data.id,
+              title: data.title,
+              title_en: data.title_en || data.title,
+              description: data.excerpt || (data.content ? data.content.substring(0, 150) : ''),
+              description_en: data.excerpt_en || data.excerpt,
+              contentBody: data.content,
+              contentBody_en: data.content_en || data.content,
+              category: data.category?.name || 'General',
+              category_en: data.category?.name || 'General',
+              thumbnailUrl: data.thumbnail || 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&q=80&w=800',
+              views: data.views || 0,
+              publishedDate: data.publishedAt ? new Date(data.publishedAt).toLocaleDateString() : new Date().toLocaleDateString(),
+              readTime: '5 мин',
+              readTimeValue: 5,
+              isVideo: false,
+              videoUrl: '',
+              tags: [],
+              tags_en: [],
+              isTrending: false,
+              isEditorPick: false,
+              likes: 0,
+              status: data.status ? data.status.toLowerCase() : 'published'
+            });
+          }
+        })
+        .catch(err => console.warn('Direct article fetch error:', err))
+        .finally(() => {
+          if (isMounted) setFetchingDirect(false);
+        });
+    }
+    return () => { isMounted = false; };
+  }, [id, content]);
+
+  // Load liked & bookmarked states from localStorage
+  useEffect(() => {
+    if (content?.id) {
+      const savedLike = localStorage.getItem(`channel_mongolia_liked_${content.id}`) === 'true';
+      const savedBookmark = localStorage.getItem(`channel_mongolia_bookmark_${content.id}`) === 'true';
+      setIsLiked(savedLike);
+      setIsBookmarked(savedBookmark);
+    }
+  }, [content?.id]);
+
+  // Track view & dynamic document title
+  useEffect(() => {
+    if (content?.category) {
+      trackView(content.category);
+    }
+    if (content) {
+      const displayTitle = isEn ? (content.title_en || content.title) : content.title;
+      const prevTitle = document.title;
+      document.title = `${displayTitle} | Channel Mongolia`;
+      return () => { document.title = prevTitle; };
+    }
+    window.scrollTo(0, 0);
+  }, [id, content?.category, isEn, content]);
+
   // Logic for Related Articles: same category, excluding current
   const relatedContent = content 
       ? allContent.filter(c => c.category === content.category && c.id !== content.id).slice(0, 3)
       : [];
-  
-  useEffect(() => {
-     if(content?.category) {
-         trackView(content.category);
-     }
-     window.scrollTo(0, 0);
-  }, [id, content?.category]);
 
+  const toggleLike = () => {
+    if (!content?.id) return;
+    const nextState = !isLiked;
+    setIsLiked(nextState);
+    localStorage.setItem(`channel_mongolia_liked_${content.id}`, String(nextState));
+    showToast(nextState ? (isEn ? 'Added to favorites!' : 'Нийтлэл таалагдлаа!') : (isEn ? 'Removed from favorites' : 'Таалагдсанаас хасагдлаа'));
+  };
+
+  const toggleBookmark = () => {
+    if (!content?.id) return;
+    const nextState = !isBookmarked;
+    setIsBookmarked(nextState);
+    localStorage.setItem(`channel_mongolia_bookmark_${content.id}`, String(nextState));
+    showToast(nextState ? (isEn ? 'Saved to bookmarks!' : 'Хадгалсан нийтлэлд нэмэгдлээ!') : (isEn ? 'Removed from bookmarks' : 'Хадгалсан нийтлэлээс хасагдлаа'));
+  };
+
+  const handleShare = async () => {
+    const displayTitle = isEn ? content.title_en : content.title;
+    const displayDesc = isEn ? content.description_en : content.description;
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: displayTitle,
+          text: displayDesc,
+          url: window.location.href,
+        });
+      } catch (err) {
+        // Share dismissed
+      }
+    } else {
+      // Clean clipboard copy without blocking window.alert
+      try {
+        await navigator.clipboard.writeText(window.location.href);
+        showToast(isEn ? 'Link copied to clipboard!' : 'Холбоос хуулагдлаа!');
+      } catch (e) {
+        showToast(isEn ? 'Could not copy link' : 'Холбоос хуулахад алдаа гарлаа');
+      }
+    }
+  };
+
+  // Loading State
   if (!content) {
+    if (contentLoading || fetchingDirect) {
       return (
-        <div className="min-h-screen flex items-center justify-center">
+        <div className="min-h-[70vh] flex items-center justify-center">
           <div className="text-center space-y-4">
-            <div className="w-16 h-16 border-4 border-brand-purple border-t-transparent rounded-full animate-spin mx-auto"></div>
-            <p className="text-text-muted font-medium animate-pulse">{t('loading') || 'Loading content...'}</p>
+            <div className="w-14 h-14 border-4 border-brand-purple border-t-transparent rounded-full animate-spin mx-auto"></div>
+            <p className="text-text-muted font-medium animate-pulse">{t('loading') || 'Уншиж байна...'}</p>
           </div>
         </div>
       );
+    }
+
+    // 404 Not Found State
+    return (
+      <div className="min-h-[75vh] flex items-center justify-center px-4">
+        <div className="text-center max-w-md mx-auto space-y-6">
+          <div className="w-20 h-20 bg-brand-purple/10 text-brand-purple rounded-3xl flex items-center justify-center mx-auto text-3xl font-black">
+            404
+          </div>
+          <div className="space-y-2">
+            <h2 className="text-2xl md:text-3xl font-black text-text-main">
+              {isEn ? 'Article not found' : 'Нийтлэл олдсонгүй'}
+            </h2>
+            <p className="text-text-muted text-sm leading-relaxed">
+              {isEn 
+                ? 'The article you are looking for might have been moved or removed.' 
+                : 'Таны хайсан нийтлэл устгагдсан эсвэл хаяг нь буруу байна.'}
+            </p>
+          </div>
+          <div className="flex items-center justify-center gap-3 pt-2">
+            <button
+              onClick={() => navigate('/')}
+              className="px-5 py-2.5 bg-gradient-brand text-white font-medium rounded-xl shadow-md hover:opacity-90 transition-all text-sm"
+            >
+              {isEn ? 'Return to Home' : 'Нүүр хуудас руу буцах'}
+            </button>
+            <button
+              onClick={() => navigate('/categories')}
+              className="px-5 py-2.5 bg-surface border border-border text-text-main font-medium rounded-xl hover:bg-black/5 dark:hover:bg-white/5 transition-all text-sm"
+            >
+              {isEn ? 'Browse Categories' : 'Бүх категориуд'}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
   }
   
   const title = isEn ? content.title_en : content.title;
@@ -60,24 +207,6 @@ export const DetailPage: React.FC = () => {
     : (content.contentBody || (content as any).content || content.description);
   const category = isEn ? content.category_en : content.category;
   const tags = isEn ? content.tags_en : content.tags;
-
-  const handleShare = async () => {
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title,
-          text: description,
-          url: window.location.href,
-        });
-      } catch (err) {
-        console.error('Error sharing:', err);
-      }
-    } else {
-      // Fallback: Copy to clipboard
-      navigator.clipboard.writeText(window.location.href);
-      alert('Link copied to clipboard!');
-    }
-  };
 
   return (
     <motion.div 
@@ -146,7 +275,8 @@ export const DetailPage: React.FC = () => {
                   <motion.button 
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
-                    onClick={() => setIsLiked(!isLiked)}
+                    onClick={toggleLike}
+                    title={isLiked ? "Таалагдсан" : "Таалагдлаа"}
                     className={cn(
                       "w-12 h-12 rounded-2xl border flex items-center justify-center transition-all shadow-sm",
                       isLiked ? "bg-red-500 border-red-500 text-white shadow-red-200" : "bg-surface border-border text-text-muted hover:border-red-500 hover:text-red-500"
@@ -158,7 +288,8 @@ export const DetailPage: React.FC = () => {
                   <motion.button 
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
-                    onClick={() => setIsBookmarked(!isBookmarked)}
+                    onClick={toggleBookmark}
+                    title={isBookmarked ? "Хадгалсан" : "Хадгалах"}
                     className={cn(
                       "w-12 h-12 rounded-2xl border flex items-center justify-center transition-all shadow-sm",
                       isBookmarked ? "bg-brand-purple border-brand-purple text-white shadow-purple-200" : "bg-surface border-border text-text-muted hover:border-brand-purple hover:text-brand-purple"
@@ -171,6 +302,7 @@ export const DetailPage: React.FC = () => {
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     onClick={handleShare}
+                    title="Холбоос хуулах"
                     className="w-12 h-12 rounded-2xl border border-border bg-surface flex items-center justify-center text-text-muted hover:border-brand-orange hover:text-brand-orange transition-all shadow-sm"
                   >
                     <Share2 size={20} />
@@ -281,7 +413,7 @@ export const DetailPage: React.FC = () => {
             </article>
 
             <div className="flex flex-wrap gap-3 mt-16 pt-10 border-t border-border">
-               {(tags || []).map((tag, i) => (
+               {(tags || []).map((tag: any, i: number) => (
                    <motion.span 
                     key={i} 
                     whileHover={{ y: -2, scale: 1.05 }}
@@ -337,6 +469,21 @@ export const DetailPage: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Floating Toast Notification */}
+      <AnimatePresence>
+        {toastMessage && (
+          <motion.div
+            initial={{ opacity: 0, y: 30, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 20, scale: 0.95 }}
+            className="fixed bottom-6 right-6 z-50 flex items-center gap-2.5 px-5 py-3 bg-neutral-900/95 dark:bg-neutral-800/95 backdrop-blur-md text-white rounded-2xl shadow-2xl border border-white/10 text-sm font-semibold"
+          >
+            <CheckCircle size={18} className="text-emerald-400 shrink-0" />
+            <span>{toastMessage}</span>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 };

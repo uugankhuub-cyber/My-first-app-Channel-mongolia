@@ -32,18 +32,55 @@ async function startServer() {
   app.use(cookieParser());
   app.use(express.json({ limit: '10mb' }));
 
-  // Rate Limiting
-  const limiter = rateLimit({
+  // Rate Limiting (Tiered for security and UX reliability)
+  const authLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
-    max: 100, // Limit each IP to 100 requests per window
+    max: 30, // 30 requests per 15 min for auth to prevent brute-force attacks
+    standardHeaders: true,
+    legacyHeaders: false,
     handler: (req, res) => {
       res.status(429).json({
-        error: 'Too many requests',
-        message: 'Please try again later'
+        error: 'Хэт олон удаа нэвтрэх оролдлого хийсэн байна',
+        message: '15 минутын дараа дахин оролдоно уу'
       });
     }
   });
-  app.use('/api/', limiter);
+
+  const aiLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 60, // 60 requests per 15 min for AI endpoints
+    standardHeaders: true,
+    legacyHeaders: false,
+    handler: (req, res) => {
+      res.status(429).json({
+        error: 'AI хүсэлтийн хязгаар хэтэрлээ',
+        message: 'Түр хүлээгээд дахин оролдоно уу'
+      });
+    }
+  });
+
+  const generalLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 2000, // 2000 requests per 15 min for general public browsing and live polling
+    standardHeaders: true,
+    legacyHeaders: false,
+    handler: (req, res) => {
+      res.status(429).json({
+        error: 'Хүсэлтийн хязгаар хэтэрлээ',
+        message: 'Түр хүлээгээд дахин оролдоно уу (Too many requests)'
+      });
+    }
+  });
+
+  // Apply general limiter to all API endpoints
+  app.use('/api/', generalLimiter);
+  // Apply strict rate limiting to auth endpoints
+  app.use('/api/auth/login', authLimiter);
+  app.use('/api/auth/register', authLimiter);
+  app.use('/api/auth/forgot-password', authLimiter);
+  // Apply AI limiter to AI assistants
+  app.use('/api/chat', aiLimiter);
+  app.use('/api/admin-ai-content', aiLimiter);
 
   // 2. Initial Admin Creation & Database Connection Verification
   await checkConnection();
@@ -187,27 +224,33 @@ async function startServer() {
   // Articles (Public)
   app.get('/api/articles', articleHandlers.getArticles);
   app.get('/api/articles/:slug', async (req, res) => {
+    const param = req.params.slug;
     if (getDbStatus()) {
       try {
-        const article = await prisma.article.findUnique({
-          where: { slug: req.params.slug },
+        const article = await prisma.article.findFirst({
+          where: {
+            OR: [
+              { slug: param },
+              { id: param }
+            ]
+          },
           include: { author: { select: { email: true } }, category: true }
         });
         if (article) return res.json(article);
       } catch (dbError: any) {
-        console.error('Database slug fetch failed, trying mock fallback:', dbError.message);
+        console.error('Database slug/id fetch failed, trying mock fallback:', dbError.message);
       }
     }
 
     // FALLBACK TO MOCK DB
     const db = mockDb.getDb();
-    const index = db.articles.findIndex(art => art.slug === req.params.slug);
+    const index = db.articles.findIndex(art => art.slug === param || art.id === param);
     if (index === -1) {
       return res.status(404).json({ error: 'Not found' });
     }
 
     // Persist a view increment in mock mode for dynamic analytics!
-    db.articles[index].views += 1;
+    db.articles[index].views = (db.articles[index].views || 0) + 1;
     mockDb.saveDb(db);
 
     const art = db.articles[index];

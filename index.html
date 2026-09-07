@@ -7,6 +7,48 @@
     <title>Channel Mongolia</title>
     <meta name="description" content="A modern digital knowledge & media platform sharing interesting knowledge, science, and facts in Mongolian and English." />
     
+    <!-- Fix for read-only window.fetch in iframe/sandbox environments -->
+    <script>
+      (function() {
+        try {
+          var realFetch = (typeof window !== 'undefined' && window.fetch) 
+            ? window.fetch.bind(window) 
+            : null;
+
+          if (typeof window !== 'undefined' && realFetch) {
+            var currentFetch = realFetch;
+            try {
+              Object.defineProperty(window, 'fetch', {
+                get: function() {
+                  return currentFetch;
+                },
+                set: function(newFetch) {
+                  currentFetch = (typeof newFetch === 'function') ? newFetch : currentFetch;
+                },
+                configurable: true,
+                enumerable: true
+              });
+            } catch (e1) {
+              if (typeof Window !== 'undefined' && Window.prototype) {
+                try {
+                  Object.defineProperty(Window.prototype, 'fetch', {
+                    get: function() {
+                      return currentFetch;
+                    },
+                    set: function(newFetch) {
+                      currentFetch = (typeof newFetch === 'function') ? newFetch : currentFetch;
+                    },
+                    configurable: true,
+                    enumerable: true
+                  });
+                } catch (e2) {}
+              }
+            }
+          }
+        } catch (err) {}
+      })();
+    </script>
+
     <!-- Theme Initialization (Anti-FOUC) -->
     <script>
       (function() {

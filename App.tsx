@@ -85,10 +85,16 @@ const PublicLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => 
 
 const AnimatedRoutes = () => {
   const location = useLocation();
-  return (
-    <AnimatePresence mode="wait">
-      <Routes location={location} key={location.pathname}>
-        {/* Public Routes */}
+  const isAdminOrAuth = 
+    location.pathname.startsWith('/admin') || 
+    location.pathname === '/login' || 
+    location.pathname === '/register' || 
+    location.pathname === '/forgot-password';
+
+  if (isAdminOrAuth) {
+    return (
+      <Routes location={location}>
+        {/* Public Auth Routes */}
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/admin/login" element={<AdminLoginPage />} />
@@ -112,43 +118,38 @@ const AnimatedRoutes = () => {
              <Route path="logs" element={<AdminLogs />} />
           </Route>
         </Route>
-
-        {/* User Protected Routes (Read-only User Profile etc) */}
-        <Route element={<ProtectedRoute roles={['ADMIN', 'EDITOR', 'USER']} />}>
-           {/* Add user-specific routes here if any */}
-        </Route>
-
-        <Route path="*" element={
-          <PublicLayout>
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={location.pathname}
-                initial={{ opacity: 0, y: 15 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -15 }}
-                transition={{ duration: 0.4, ease: 'easeInOut' }}
-              >
-                <Routes location={location}>
-                  <Route path="/" element={<Home />} />
-                  {CATEGORIES.map(cat => (
-                     <Route key={cat.id} path={`/${cat.slug}`} element={<CategoriesPage categorySlug={cat.slug} />} />
-                  ))}
-                  <Route path="/video" element={<CategoriesPage filter="video" />} />
-                  <Route path="/categories" element={<CategoriesPage />} />
-                  <Route path="/niitlel/:id" element={<DetailPage />} />
-                  <Route path="/search" element={<SearchPage />} />
-                  <Route path="/profile" element={<ProfilePage />} />
-                  <Route path="/bidnii-tukhai" element={<AboutPage />} />
-                  <Route path="/holboo-barikh" element={<ContactPage />} />
-                  <Route path="/nuuts-lalin-bodlogo" element={<PrivacyPage />} />
-                  <Route path="/uilchilgeenii-nukhtsul" element={<TermsPage />} />
-                </Routes>
-              </motion.div>
-            </AnimatePresence>
-          </PublicLayout>
-        } />
       </Routes>
-    </AnimatePresence>
+    );
+  }
+
+  return (
+    <PublicLayout>
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={location.pathname}
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -8 }}
+          transition={{ duration: 0.2, ease: 'easeOut' }}
+        >
+          <Routes location={location}>
+            <Route path="/" element={<Home />} />
+            {CATEGORIES.map(cat => (
+               <Route key={cat.id} path={`/${cat.slug}`} element={<CategoriesPage categorySlug={cat.slug} />} />
+            ))}
+            <Route path="/video" element={<CategoriesPage filter="video" />} />
+            <Route path="/categories" element={<CategoriesPage />} />
+            <Route path="/niitlel/:id" element={<DetailPage />} />
+            <Route path="/search" element={<SearchPage />} />
+            <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/bidnii-tukhai" element={<AboutPage />} />
+            <Route path="/holboo-barikh" element={<ContactPage />} />
+            <Route path="/nuuts-lalin-bodlogo" element={<PrivacyPage />} />
+            <Route path="/uilchilgeenii-nukhtsul" element={<TermsPage />} />
+          </Routes>
+        </motion.div>
+      </AnimatePresence>
+    </PublicLayout>
   );
 };
 
