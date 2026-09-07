@@ -49,6 +49,9 @@ export async function checkConnection(): Promise<boolean> {
   } catch (err: any) {
     globalForPrisma.isDbHealthy = false;
     console.warn('Database is set but unreachable. Error:', err.message);
+    if (process.env.DATABASE_URL?.includes('supabase.co:5432') && process.env.DATABASE_URL?.includes('db.')) {
+      console.warn('[SUPABASE HINT] Supabase direct connection (db.*.supabase.co:5432) uses IPv6 which is unsupported on Railway. Please use Supabase Connection Pooler (pooler.supabase.com:5432 or 6543) instead.');
+    }
   }
 
   return globalForPrisma.isDbHealthy;
