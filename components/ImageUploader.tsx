@@ -56,7 +56,7 @@ export const ImageUploader: React.FC = () => {
       addImage({
         id: Math.random().toString(36).substr(2, 9),
         url: data.url,
-        fileName: file.name,
+        name: file.name,
         size: file.size,
         uploadedAt: new Date().toISOString()
       });

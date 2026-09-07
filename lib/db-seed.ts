@@ -1,5 +1,5 @@
 import { prisma, getDbStatus } from './prisma';
-import { hashPassword } from '../api/auth-handlers';
+import { hashPassword } from './auth';
 
 export async function ensurePrismaAdmin() {
   if (!getDbStatus()) return;

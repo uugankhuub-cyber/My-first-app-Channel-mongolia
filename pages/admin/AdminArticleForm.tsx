@@ -1,11 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import * as ReactRouterDOM from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext.tsx';
 import { 
   Save, ArrowLeft, Image as ImageIcon, Globe, FileText, CheckCircle, 
-  AlertTriangle, Sparkles, Sliders, Hash, Compass, Info, ChevronRight 
+  AlertTriangle, Sparkles, Sliders, Hash, Compass, Info, ChevronRight,
+  Bold, Italic, Heading2, Heading3, List, ListOrdered, Quote, Link2, 
+  Eye, Edit3, AlignLeft, Wand2, Plus, CornerDownLeft
 } from 'lucide-react';
 import { motion } from 'motion/react';
+import { ArticleBodyRenderer } from '../../components/ArticleBodyRenderer';
 
 const { useParams, useNavigate, Link } = ReactRouterDOM;
 
@@ -32,6 +35,65 @@ export const AdminArticleForm: React.FC = () => {
   const [fetching, setFetching] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [editorTab, setEditorTab] = useState<'edit' | 'preview'>('edit');
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // Insert markdown or formatting tags into content textarea
+  const insertFormatting = (prefix: string, suffix: string = '', defaultText: string = '') => {
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const selectedText = content.substring(start, end) || defaultText;
+
+    const newContent = content.substring(0, start) + prefix + selectedText + suffix + content.substring(end);
+    setContent(newContent);
+
+    setTimeout(() => {
+      textarea.focus();
+      textarea.setSelectionRange(start + prefix.length, start + prefix.length + selectedText.length);
+    }, 50);
+  };
+
+  // Smart paragraph separator and cleaner
+  const handleFormatParagraphs = () => {
+    if (!content.trim()) return;
+
+    let text = content.replace(/\r\n/g, '\n').trim();
+
+    // Do not alter structured HTML
+    const hasHtml = /<\s*(?:p|div|h[1-6]|ul|ol|blockquote)\b/i.test(text);
+    if (hasHtml) {
+      setSuccess('Агуулга нь аль хэдийн HTML бүтэцтэй байна.');
+      return;
+    }
+
+    const lines = text.split('\n');
+    const result: string[] = [];
+
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i].trim();
+      if (!line) continue;
+
+      // Question detection e.g. "Яагаад 40,000 жилийн дараа ч ийм сайн хадгалагдсан бэ?"
+      const isQuestionHeading = 
+        /^(?:Яагаад|Тэгвэл|Энэ|Цус|Хэрхэн|Юу|Ямар|Хэзээ|Хэн|Хаана)[\s\S]{5,100}(?:\?|бэ\?|вэ\?|үү\?|үү|уу\?|уу)$/i.test(line) &&
+        !line.startsWith('#') &&
+        !line.startsWith('-') &&
+        !line.startsWith('>');
+
+      if (isQuestionHeading) {
+        result.push(`### ${line}`);
+      } else {
+        result.push(line);
+      }
+    }
+
+    const formatted = result.join('\n\n');
+    setContent(formatted);
+    setSuccess('Догол мөрүүдийг автоматаар засаж, асуулт дэд гарчгуудыг ялгалаа!');
+  };
 
   // Auto slug generation helper
   const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -287,19 +349,183 @@ export const AdminArticleForm: React.FC = () => {
               </div>
 
               {/* Rich Content Area */}
-              <div className="space-y-1.5">
-                <div className="flex items-center justify-between">
-                  <label className="text-text-main text-xs font-semibold">Нийтлэлийн үндсэн агуулга (Markdown/HTML дэмжинэ)</label>
-                  <span className="text-[10px] text-text-muted font-medium">Тэмдэгтийн тоо: {content.length}</span>
+              <div className="space-y-2">
+                <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border pb-2">
+                  <div className="flex items-center gap-3">
+                    <label className="text-text-main text-xs font-semibold">Нийтлэлийн үндсэн агуулга</label>
+                    <div className="flex items-center bg-background border border-border rounded-lg p-0.5 text-xs font-medium">
+                      <button
+                        type="button"
+                        onClick={() => setEditorTab('edit')}
+                        className={`flex items-center gap-1.5 px-3 py-1 rounded-md transition-colors ${
+                          editorTab === 'edit' 
+                            ? 'bg-brand-purple text-white shadow-sm font-semibold' 
+                            : 'text-text-muted hover:text-text-main'
+                        }`}
+                      >
+                        <Edit3 size={12} />
+                        <span>Засварлах</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setEditorTab('preview')}
+                        className={`flex items-center gap-1.5 px-3 py-1 rounded-md transition-colors ${
+                          editorTab === 'preview' 
+                            ? 'bg-brand-purple text-white shadow-sm font-semibold' 
+                            : 'text-text-muted hover:text-text-main'
+                        }`}
+                      >
+                        <Eye size={12} />
+                        <span>Урьдчилан харах</span>
+                      </button>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <button
+                      type="button"
+                      onClick={handleFormatParagraphs}
+                      title="Бүх текстийг шинжилж, догол мөр болон дэд асуултуудыг автоматаар цэгцлэх"
+                      className="px-2.5 py-1 text-xs font-medium rounded-lg bg-surfaceHighlight hover:bg-brand-purple/15 text-text-muted hover:text-brand-purple border border-border flex items-center gap-1.5 transition-colors"
+                    >
+                      <Wand2 size={13} className="text-brand-orange" />
+                      <span>Догол мөр цэгцлэх</span>
+                    </button>
+                    <span className="text-[10px] text-text-muted font-medium font-mono">
+                      {content.length} тэмдэгт
+                    </span>
+                  </div>
                 </div>
-                <textarea 
-                  value={content}
-                  onChange={(e) => setContent(e.target.value)}
-                  required
-                  placeholder="Нийтлэлийг дэлгэрэнгүйгээр энд бичнэ үү..."
-                  rows={14}
-                  className="w-full px-4 py-3 bg-background border border-border rounded-xl text-text-main text-sm outline-none focus:border-brand-purple/50 transition-colors font-mono"
-                />
+
+                {editorTab === 'edit' ? (
+                  <div className="space-y-2">
+                    {/* Formatting Toolbar */}
+                    <div className="flex flex-wrap items-center gap-1 p-1.5 bg-background border border-border rounded-xl text-text-muted">
+                      <button
+                        type="button"
+                        onClick={() => insertFormatting('\n## ', '\n', 'Үндсэн гарчиг')}
+                        title="Гарчиг 2 (H2)"
+                        className="px-2 py-1 hover:bg-surfaceHighlight hover:text-text-main rounded text-xs font-bold transition-colors"
+                      >
+                        H2
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => insertFormatting('\n### ', '\n', 'Дэд гарчиг')}
+                        title="Дэд гарчиг (H3)"
+                        className="px-2 py-1 hover:bg-surfaceHighlight hover:text-text-main rounded text-xs font-bold transition-colors"
+                      >
+                        H3
+                      </button>
+                      <div className="w-px h-4 bg-border mx-1" />
+                      <button
+                        type="button"
+                        onClick={() => insertFormatting('**', '**', 'тод үг')}
+                        title="Тод бичиг (Bold)"
+                        className="p-1.5 hover:bg-surfaceHighlight hover:text-text-main rounded transition-colors"
+                      >
+                        <Bold size={14} />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => insertFormatting('*', '*', 'налуу үг')}
+                        title="Налуу бичиг (Italic)"
+                        className="p-1.5 hover:bg-surfaceHighlight hover:text-text-main rounded transition-colors"
+                      >
+                        <Italic size={14} />
+                      </button>
+                      <div className="w-px h-4 bg-border mx-1" />
+                      <button
+                        type="button"
+                        onClick={() => insertFormatting('\n> ', '\n', 'Онцлох ишлэл энд бичнэ...')}
+                        title="Ишлэл блок"
+                        className="p-1.5 hover:bg-surfaceHighlight hover:text-text-main rounded transition-colors"
+                      >
+                        <Quote size={14} />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => insertFormatting('\n- ', '\n', 'Жагсаалтын зүйл')}
+                        title="Жагсаалт"
+                        className="p-1.5 hover:bg-surfaceHighlight hover:text-text-main rounded transition-colors"
+                      >
+                        <List size={14} />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => insertFormatting('\n1. ', '\n', 'Эхний зүйл')}
+                        title="Дугаарласан жагсаалт"
+                        className="p-1.5 hover:bg-surfaceHighlight hover:text-text-main rounded transition-colors"
+                      >
+                        <ListOrdered size={14} />
+                      </button>
+                      <div className="w-px h-4 bg-border mx-1" />
+                      <button
+                        type="button"
+                        onClick={() => insertFormatting('\n\n', '', '')}
+                        title="Шинэ догол мөр үүсгэх (Enter)"
+                        className="px-2 py-1 hover:bg-surfaceHighlight hover:text-text-main rounded text-xs flex items-center gap-1 transition-colors"
+                      >
+                        <CornerDownLeft size={12} />
+                        <span>Догол мөр</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const url = prompt('Зургийн URL хаягийг оруулна уу:');
+                          if (url) insertFormatting(`\n![Зургийн тайлбар](${url})\n`, '', '');
+                        }}
+                        title="Зураг нэмэх"
+                        className="p-1.5 hover:bg-surfaceHighlight hover:text-text-main rounded transition-colors"
+                      >
+                        <ImageIcon size={14} />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const url = prompt('Холбох URL хаягийг оруулна уу:');
+                          if (url) insertFormatting('[', `](${url})`, 'Холбоосын нэр');
+                        }}
+                        title="Холбоос нэмэх"
+                        className="p-1.5 hover:bg-surfaceHighlight hover:text-text-main rounded transition-colors"
+                      >
+                        <Link2 size={14} />
+                      </button>
+                    </div>
+
+                    {/* Textarea */}
+                    <textarea 
+                      ref={textareaRef}
+                      value={content}
+                      onChange={(e) => setContent(e.target.value)}
+                      required
+                      placeholder="Нийтлэлийг дэлгэрэнгүйгээр энд бичнэ үү... (Догол мөрүүдийг Enter дарж зайтай бичнэ)"
+                      rows={16}
+                      className="w-full px-4 py-3 bg-background border border-border rounded-xl text-text-main text-base outline-none focus:border-brand-purple/50 transition-colors font-mono leading-relaxed"
+                    />
+                    
+                    <div className="flex items-center justify-between text-[11px] text-text-muted px-1">
+                      <span>💡 <strong>Зөвлөмж:</strong> Догол мөр бүрийн хооронд Enter дарж 1 зайтай бичвэл уншихад цэгцтэй харагдана.</span>
+                      <button 
+                        type="button" 
+                        onClick={handleFormatParagraphs}
+                        className="text-brand-purple hover:underline"
+                      >
+                        Автоматаар цэгцлэх
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  /* Live Preview Box */
+                  <div className="bg-background border border-border rounded-xl p-6 min-h-[350px] overflow-y-auto">
+                    {content.trim() ? (
+                      <ArticleBodyRenderer content={content} />
+                    ) : (
+                      <div className="text-center py-16 text-text-muted text-sm">
+                        Урьдчилан харах агуулга хоосон байна. "Засварлах" хэсэгт нийтлэлээ бичнэ үү.
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
 

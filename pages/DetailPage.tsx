@@ -9,6 +9,7 @@ import { QuizCard } from '../components/QuizCard';
 import { useUserPreferences } from '../context/UserPreferencesContext';
 import { KnowledgeCard } from '../components/KnowledgeCard';
 import { ReadingProgress } from '../components/ReadingProgress';
+import { ArticleBodyRenderer } from '../components/ArticleBodyRenderer';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../lib/utils';
 
@@ -51,8 +52,12 @@ export const DetailPage: React.FC = () => {
   }
   
   const title = isEn ? content.title_en : content.title;
-  const description = isEn ? content.description_en : content.description;
-  const body = isEn ? content.contentBody_en : (content.contentBody || content.description);
+  const description = isEn 
+    ? (content.description_en || (content as any).excerpt_en) 
+    : (content.description || (content as any).excerpt);
+  const body = isEn 
+    ? (content.contentBody_en || (content as any).content_en || (content as any).content) 
+    : (content.contentBody || (content as any).content || content.description);
   const category = isEn ? content.category_en : content.category;
   const tags = isEn ? content.tags_en : content.tags;
 
@@ -242,23 +247,26 @@ export const DetailPage: React.FC = () => {
 
             <article className="max-w-none">
                {/* Description Intro */}
-               <motion.p 
-                initial={{ opacity: 0, x: -20 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true }}
-                className="font-serif text-2xl md:text-3xl text-text-main mb-12 leading-relaxed border-l-8 border-brand-purple pl-8 italic opacity-90 font-medium"
-               >
-                  {description}
-               </motion.p>
+               {description && description.trim() !== body?.trim() && !body?.trim().startsWith(description.trim().slice(0, 50)) && (
+                 <motion.p 
+                  initial={{ opacity: 0, x: -20 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  viewport={{ once: true }}
+                  className="font-serif text-2xl md:text-3xl text-text-main mb-12 leading-relaxed border-l-8 border-brand-purple pl-8 italic opacity-90 font-medium"
+                 >
+                    {description}
+                 </motion.p>
+               )}
                
-               {/* Render HTML Content Safely */}
+               {/* Render Article Body */}
                <motion.div 
                   initial={{ opacity: 0 }}
                   whileInView={{ opacity: 1 }}
                   viewport={{ once: true }}
-                  className="mb-12 leading-[1.8] text-lg md:text-xl text-text-main/80 space-y-8 font-light"
-                  dangerouslySetInnerHTML={{ __html: body || '' }}
-               />
+                  className="mb-12"
+               >
+                  <ArticleBodyRenderer content={body || ''} />
+               </motion.div>
                
                {content.quiz && (
                  <motion.div
