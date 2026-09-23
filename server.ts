@@ -22,6 +22,17 @@ import { handleCreateNews, handleNewsHealth } from './api/news.ts';
 import * as mockDb from './lib/mock-db.ts';
 
 async function startServer() {
+  const isRunningFromDist = Boolean(
+    process.argv[1] && (
+      process.argv[1].endsWith('.cjs') || 
+      process.argv[1].endsWith('.js') || 
+      process.argv[1].includes('dist')
+    )
+  );
+  if (isRunningFromDist && !process.env.NODE_ENV) {
+    process.env.NODE_ENV = 'production';
+  }
+
   const app = express();
   app.set('trust proxy', 1); // Trust the first proxy (NGINX)
   const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
@@ -596,15 +607,10 @@ async function startServer() {
 
   // 4. Vite / Static
   const distPath = path.join(process.cwd(), 'dist');
-  const isProduction = process.env.NODE_ENV === 'production';
+  const isProduction = process.env.NODE_ENV === 'production' || isRunningFromDist;
 
-  if (!isProduction) {
-    const vite = await createViteServer({
-      server: { middlewareMode: true },
-      appType: 'spa',
-    });
-    app.use(vite.middlewares);
-  } else {
+  if (isProduction) {
+    console.log('[SERVER] Production mode active: serving pre-built static assets from dist.');
     app.use(express.static(distPath, {
       setHeaders: (res) => {
         res.setHeader('Cross-Origin-Opener-Policy', 'same-origin-allow-popups');
@@ -614,6 +620,13 @@ async function startServer() {
       res.setHeader('Cross-Origin-Opener-Policy', 'same-origin-allow-popups');
       res.sendFile(path.join(distPath, 'index.html'));
     });
+  } else {
+    console.log('[SERVER] Development mode active: mounting Vite dev middleware.');
+    const vite = await createViteServer({
+      server: { middlewareMode: true },
+      appType: 'spa',
+    });
+    app.use(vite.middlewares);
   }
 
   app.listen(PORT, '0.0.0.0', () => {
