@@ -18,7 +18,7 @@ import chatHandler from './api/chat.ts';
 import weatherHandler from './api/weather.ts';
 import ratesHandler from './api/rates.ts';
 import uploadHandler from './api/upload.ts';
-import { handleCreateNews, handleNewsHealth } from './api/news.ts';
+import { handleCreateNews, handleNewsHealth, handleNewsInfo } from './api/news.ts';
 import * as agentHandlers from './api/agent-handlers.ts';
 import * as mockDb from './lib/mock-db.ts';
 
@@ -617,12 +617,14 @@ async function startServer() {
   });
 
   // --- NEWS API (Server endpoints for ingestion and health check) ---
+  app.get('/api/news', handleNewsInfo);
   app.get('/api/news/health', handleNewsHealth);
   app.post('/api/news', handleCreateNews);
 
   // --- NEWS AI AGENT (Admin Control Panel Endpoints) ---
   app.get('/api/admin/agent/status', authenticate, authorize(['ADMIN', 'EDITOR']), agentHandlers.getAgentStatus);
   app.post('/api/admin/agent/generate', authenticate, authorize(['ADMIN', 'EDITOR']), agentHandlers.generateAgentNews);
+  app.post('/api/admin/agent/test-connection', authenticate, authorize(['ADMIN', 'EDITOR']), agentHandlers.testAgentConnection);
 
   // 4. Vite / Static
   const distPath = path.join(process.cwd(), 'dist');

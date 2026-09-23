@@ -3,7 +3,7 @@
     {
       "id": "admin-fallback",
       "email": "uugankhuub@gmail.com",
-      "passwordHash": "$2b$12$oNOqUWtiiQSXgrK928KyteX9R7BQ2JXdj2VAmVydU7zFrnZM1TMYi",
+      "passwordHash": "$2b$12$nXLQcME8cQhe5JRIYnLNxOw9cD64LYF49kpQoGnxpQAKTokaWM65e",
       "role": "ADMIN",
       "emailVerified": true,
       "createdAt": "2026-09-07T14:40:10.755Z",
@@ -33,6 +33,52 @@
     }
   ],
   "articles": [
+    {
+      "id": "art-dnoxk229v",
+      "title": "Холболтын шалгалт: x-api-key толгойгоор илгээсэн мэдээ",
+      "title_en": "Холболтын шалгалт: x-api-key толгойгоор илгээсэн мэдээ",
+      "slug": "-x-api-key-",
+      "excerpt": "Шалгалт 2 амжилттай боллоо.",
+      "excerpt_en": "Шалгалт 2 амжилттай боллоо.",
+      "content": "x-api-key толгой амжилттай ажиллаж байна.",
+      "content_en": "x-api-key толгой амжилттай ажиллаж байна.",
+      "images": [],
+      "status": "DRAFT",
+      "categoryId": "cat-1",
+      "views": 0,
+      "likes": 0,
+      "tags": [
+        "Мэдээ"
+      ],
+      "metaTitle": "Холболтын шалгалт: x-api-key толгойгоор илгээсэн мэдээ",
+      "metaDesc": "Шалгалт 2 амжилттай боллоо.",
+      "agentNotes": "{\"short_idea\":null,\"fact_check\":null,\"ai_prompt\":null,\"image_note\":null,\"source_agent\":\"Connected News API\",\"ingested_at\":\"2026-09-23T12:26:23.064Z\"}",
+      "createdAt": "2026-09-23T12:26:23.064Z",
+      "updatedAt": "2026-09-23T12:26:23.064Z"
+    },
+    {
+      "id": "art-wku5emd5f",
+      "title": "Холболтын шалгалт: News API амжилттай ажиллаж байна",
+      "title_en": "Холболтын шалгалт: News API амжилттай ажиллаж байна",
+      "slug": "-news-api-",
+      "excerpt": "Таны холбосон News API хүчинтэй түлхүүрээр дамжуулан мэдээ амжилттай хүлээн авлаа.",
+      "excerpt_en": "Таны холбосон News API хүчинтэй түлхүүрээр дамжуулан мэдээ амжилттай хүлээн авлаа.",
+      "content": "### News API баталгаажлаа\n\nЭнэхүү тест нь таны тохируулсан secret key болон /api/news endpoint-ийн бодит холболтыг бүрэн шалгав.\n\n## Эх сурвалж\n- [Channel Mongolia News API](Channel Mongolia News API)",
+      "content_en": "### News API баталгаажлаа\n\nЭнэхүү тест нь таны тохируулсан secret key болон /api/news endpoint-ийн бодит холболтыг бүрэн шалгав.\n\n## Эх сурвалж\n- [Channel Mongolia News API](Channel Mongolia News API)",
+      "images": [],
+      "status": "DRAFT",
+      "categoryId": "cat-2",
+      "views": 0,
+      "likes": 0,
+      "tags": [
+        "Мэдээ"
+      ],
+      "metaTitle": "Холболтын шалгалт: News API амжилттай ажиллаж байна",
+      "metaDesc": "Таны холбосон News API хүчинтэй түлхүүрээр дамжуулан мэдээ амжилттай хүлээн авлаа.",
+      "agentNotes": "{\"short_idea\":null,\"fact_check\":null,\"ai_prompt\":null,\"image_note\":null,\"source_agent\":\"Connected News API\",\"ingested_at\":\"2026-09-23T12:26:20.802Z\"}",
+      "createdAt": "2026-09-23T12:26:20.802Z",
+      "updatedAt": "2026-09-23T12:26:20.802Z"
+    },
     {
       "id": "art-bpsvice7t",
       "title": "ШУУРХАЙ: Одон орончид Нарны аймгийн гаднаас ер бусын шинэ радио дохио бүртгэлээ",

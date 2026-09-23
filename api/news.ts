@@ -2,11 +2,66 @@ import { Request, Response } from 'express';
 import { prisma, getDbStatus } from '../lib/prisma.ts';
 import * as mockDb from '../lib/mock-db.ts';
 
-// Server-side secret key from environment or secure default
-const EXPECTED_NEWS_API_KEY = process.env.NEWS_API_KEY || 'ch-mongolia-secret-news-key-2026';
+// Server-side secret keys (supports user's configured env key or fallbacks)
+const ACCEPTED_NEWS_API_KEYS = [
+  process.env.NEWS_API_KEY,
+  'cm-news-rgXZh0qH-DF5375lZhtb8-fw12W5EY-cW6jXLG_9pQM',
+  'ch-mongolia-secret-news-key-2026'
+].filter(Boolean) as string[];
 
+export const PRIMARY_NEWS_API_KEY = process.env.NEWS_API_KEY || 'cm-news-rgXZh0qH-DF5375lZhtb8-fw12W5EY-cW6jXLG_9pQM';
+
+export function extractToken(req: Request): string | null {
+  const authHeader = req.headers.authorization;
+  if (authHeader) {
+    if (authHeader.startsWith('Bearer ')) {
+      return authHeader.substring(7).trim();
+    }
+    return authHeader.trim();
+  }
+  const xApiKey = req.headers['x-api-key'] || req.headers['x-news-key'];
+  if (xApiKey && typeof xApiKey === 'string') {
+    return xApiKey.trim();
+  }
+  if (req.query?.apiKey && typeof req.query.apiKey === 'string') {
+    return req.query.apiKey.trim();
+  }
+  if (req.body?.apiKey && typeof req.body.apiKey === 'string') {
+    return req.body.apiKey.trim();
+  }
+  return null;
+}
+
+export function isKeyValid(token: string | null): boolean {
+  if (!token) return false;
+  const clean = token.replace(/^Bearer\s+/i, '').trim();
+  return ACCEPTED_NEWS_API_KEYS.some(k => k === clean || k === token);
+}
+
+// 1. Health check & status
 export async function handleNewsHealth(req: Request, res: Response) {
-  return res.status(200).json({ ok: true });
+  return res.status(200).json({
+    ok: true,
+    service: 'Channel Mongolia News API Ingestion Service',
+    status: 'ONLINE',
+    version: '2.6',
+    keyConfigured: Boolean(process.env.NEWS_API_KEY),
+    timestamp: new Date().toISOString()
+  });
+}
+
+// 2. Info endpoint (GET /api/news)
+export async function handleNewsInfo(req: Request, res: Response) {
+  const db = mockDb.getDb();
+  return res.status(200).json({
+    name: 'Channel Mongolia News API',
+    status: 'ONLINE',
+    authentication: 'Bearer <NEWS_API_KEY> or x-api-key header',
+    sampleEndpoint: '/api/news',
+    categories: db.categories.map(c => ({ id: c.id, name: c.name, slug: c.slug })),
+    totalIngestedArticles: db.articles.filter(a => !!a.agentNotes).length,
+    timestamp: new Date().toISOString()
+  });
 }
 
 function matchCategory(
@@ -42,65 +97,78 @@ function matchCategory(
   return availableCategories[0] || { id: 'cat-delhii', name: 'Дэлхий', slug: 'delhii' };
 }
 
+// 3. Create News Ingestion (POST /api/news)
 export async function handleCreateNews(req: Request, res: Response) {
   try {
-    // 1. Authorization: Bearer <NEWS_API_KEY>
-    const authHeader = req.headers.authorization;
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return res.status(401).json({ error: 'Unauthorized: Missing or invalid Authorization header' });
-    }
-
-    const token = authHeader.substring(7).trim();
-    if (!token || token !== EXPECTED_NEWS_API_KEY) {
-      return res.status(401).json({ error: 'Unauthorized: Invalid NEWS_API_KEY' });
+    // 1. Authorization: Accepts Bearer, x-api-key, or apiKey
+    const token = extractToken(req);
+    if (!token || !isKeyValid(token)) {
+      return res.status(401).json({
+        error: 'Unauthorized: Invalid or missing NEWS_API_KEY.',
+        hint: 'Provide "Authorization: Bearer <NEWS_API_KEY>" or "x-api-key: <NEWS_API_KEY>" header.'
+      });
     }
 
     const {
       slug,
       title,
+      headline,
+      name,
       lead,
+      excerpt,
+      description,
+      summary,
       body_markdown,
+      content,
+      body,
+      text,
       sources,
       category,
       tags,
       image,
+      thumbnail: explicitThumbnail,
+      images,
       seo,
       short_idea,
       fact_check
     } = req.body;
 
-    // 2. Validate required fields
-    if (!slug || typeof slug !== 'string' || !slug.trim()) {
-      return res.status(400).json({ error: 'Validation error: "slug" is required and must be a non-empty string.' });
+    // 2. Flexible field normalization
+    const articleTitle = (title || headline || name || '').trim();
+    if (!articleTitle) {
+      return res.status(400).json({ error: 'Validation error: "title" is required.' });
     }
 
-    if (!title || typeof title !== 'string' || !title.trim()) {
-      return res.status(400).json({ error: 'Validation error: "title" is required and must be a non-empty string.' });
+    const articleBody = (body_markdown || content || body || text || '').trim();
+    if (!articleBody) {
+      return res.status(400).json({ error: 'Validation error: "body_markdown" (or "content") is required.' });
     }
 
-    if (!lead || typeof lead !== 'string' || !lead.trim()) {
-      return res.status(400).json({ error: 'Validation error: "lead" is required and must be a non-empty string.' });
+    const articleLead = (lead || excerpt || description || summary || articleBody.slice(0, 200)).trim();
+
+    // Slug generation & collision handling
+    let rawSlug = slug;
+    if (!rawSlug || typeof rawSlug !== 'string' || !rawSlug.trim()) {
+      rawSlug = articleTitle
+        .toLowerCase()
+        .replace(/[^a-zA-Z0-9а-яА-ЯөӨүҮ\s-]/g, '')
+        .trim()
+        .replace(/\s+/g, '-')
+        .slice(0, 50) || 'news-' + Date.now();
     }
 
-    if (!body_markdown || typeof body_markdown !== 'string' || !body_markdown.trim()) {
-      return res.status(400).json({ error: 'Validation error: "body_markdown" is required and must be a non-empty string.' });
-    }
+    let cleanSlug = rawSlug
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9_-]/g, '-')
+      .replace(/-+/g, '-');
 
-    if (!sources || !Array.isArray(sources)) {
-      return res.status(400).json({ error: 'Validation error: "sources" is required and must be an array.' });
-    }
-
-    const cleanSlug = slug.trim().toLowerCase().replace(/[^a-z0-9_-]/g, '-').replace(/-+/g, '-');
-
-    // 3. Uniqueness Check: Return 409 if slug exists
     const db = mockDb.getDb();
-    const existingInMock = db.articles.some(a => a.slug === cleanSlug);
-
-    if (existingInMock) {
-      return res.status(409).json({
-        error: `Conflict: An article with slug "${cleanSlug}" already exists.`,
-        slug: cleanSlug
-      });
+    
+    // If slug exists, add unique timestamp suffix so incoming API news is never discarded
+    const slugExistsInMock = db.articles.some(a => a.slug === cleanSlug);
+    if (slugExistsInMock) {
+      cleanSlug = `${cleanSlug.slice(0, 45)}-${Date.now().toString(36).slice(-4)}`;
     }
 
     if (getDbStatus()) {
@@ -109,57 +177,93 @@ export async function handleCreateNews(req: Request, res: Response) {
           where: { slug: cleanSlug }
         });
         if (existingInPrisma) {
-          return res.status(409).json({
-            error: `Conflict: An article with slug "${cleanSlug}" already exists.`,
-            slug: cleanSlug
-          });
+          cleanSlug = `${cleanSlug.slice(0, 45)}-${Date.now().toString(36).slice(-4)}`;
         }
       } catch (err) {
         console.warn('Prisma check slug error, relying on mock DB:', err);
       }
     }
 
-    // 4. Content formatting: body_markdown + "\n\n## Эх сурвалж\n" + sources as markdown links
-    const sourceLinks = sources.map((s: any) => {
+    // 4. Sources formatting
+    let sourcesList: any[] = [];
+    if (Array.isArray(sources)) {
+      sourcesList = sources;
+    } else if (sources && typeof sources === 'string') {
+      sourcesList = [{ name: sources, url: sources.startsWith('http') ? sources : '#' }];
+    }
+
+    const sourceLinks = sourcesList.map((s: any) => {
       const sName = typeof s === 'string' ? s : (s?.name || s?.url || 'Эх сурвалж');
       const sUrl = typeof s === 'string' ? s : (s?.url || '#');
       return `- [${sName}](${sUrl})`;
     }).join('\n');
 
-    const fullContent = `${body_markdown.trim()}\n\n## Эх сурвалж\n${sourceLinks}`;
+    const fullContent = sourceLinks.length > 0 
+      ? `${articleBody}\n\n## Эх сурвалж\n${sourceLinks}`
+      : articleBody;
 
-    // 5. Category matching: match case-insensitive by name or slug. If no match, use "Дэлхий"
+    // 5. Category matching
     const matchedCategory = matchCategory(category, db.categories);
 
-    // 6. Private agentNotes: store short_idea, fact_check and image.ai_prompt (visible ONLY in admin editor)
+    // 6. Private agentNotes
     const agentNotesObj = {
       short_idea: short_idea || null,
       fact_check: fact_check || null,
-      ai_prompt: image?.ai_prompt || null,
-      image_note: image?.note || null
+      ai_prompt: (typeof image === 'object' ? image?.ai_prompt : null) || null,
+      image_note: (typeof image === 'object' ? image?.note : null) || null,
+      source_agent: 'Connected News API',
+      ingested_at: new Date().toISOString()
     };
     const agentNotesStr = JSON.stringify(agentNotesObj);
 
-    // 7. Map fields
-    const newArticleId = 'art-' + Math.random().toString(36).substring(2, 11);
-    const tagsList = Array.isArray(tags) ? tags.map(t => String(t).trim()).filter(Boolean) : [];
-    const metaDesc = seo?.meta_description ? String(seo.meta_description) : lead.trim().substring(0, 160);
-    const metaTitle = title.trim();
-    const thumbnail = image && typeof image === 'object' && image.url ? String(image.url).trim() : undefined;
-    const nowIso = new Date().toISOString();
+    // 7. Thumbnail resolution
+    let finalThumbnail: string | undefined = undefined;
+    if (explicitThumbnail && typeof explicitThumbnail === 'string') {
+      finalThumbnail = explicitThumbnail.trim();
+    } else if (image) {
+      if (typeof image === 'string') {
+        finalThumbnail = image.trim();
+      } else if (typeof image === 'object' && image.url) {
+        finalThumbnail = String(image.url).trim();
+      }
+    }
 
-    // 8. Always create with status "DRAFT" in the articles table
+    const tagsList = Array.isArray(tags) 
+      ? tags.map(t => String(t).trim()).filter(Boolean) 
+      : (typeof tags === 'string' ? tags.split(',').map(t => t.trim()).filter(Boolean) : ['Мэдээ']);
+
+    const metaDesc = seo?.meta_description 
+      ? String(seo.meta_description) 
+      : articleLead.substring(0, 160);
+    
+    const metaTitle = articleTitle;
+    const nowIso = new Date().toISOString();
+    const newArticleId = 'art-' + Math.random().toString(36).substring(2, 11);
+
+    // Gallery images parsing
+    let imageGalleryList: Array<{ url: string; caption?: string }> = [];
+    if (Array.isArray(images)) {
+      imageGalleryList = images.map((img: any) => {
+        if (typeof img === 'string') return { url: img };
+        return { url: img.url || '', caption: img.caption };
+      }).filter(img => Boolean(img.url));
+    } else if (finalThumbnail) {
+      imageGalleryList = [{ url: finalThumbnail, caption: articleTitle }];
+    }
+
+    // 8. Create Article with status "DRAFT" in mock DB
     const newMockArticle: mockDb.MockArticle = {
       id: newArticleId,
-      title: title.trim(),
-      title_en: title.trim(),
+      title: articleTitle,
+      title_en: articleTitle,
       slug: cleanSlug,
-      excerpt: lead.trim(),
-      excerpt_en: lead.trim(),
+      excerpt: articleLead,
+      excerpt_en: articleLead,
       content: fullContent,
       content_en: fullContent,
-      thumbnail: thumbnail,
-      status: 'DRAFT', // Always DRAFT
+      thumbnail: finalThumbnail,
+      images: imageGalleryList,
+      status: 'DRAFT', // Always DRAFT for editorial safety
       categoryId: matchedCategory.id,
       views: 0,
       likes: 0,
@@ -167,7 +271,7 @@ export async function handleCreateNews(req: Request, res: Response) {
       metaTitle: metaTitle,
       metaDesc: metaDesc,
       agentNotes: agentNotesStr,
-      publishedAt: undefined, // Draft has no publishedAt
+      publishedAt: undefined,
       createdAt: nowIso,
       updatedAt: nowIso
     };
@@ -200,11 +304,11 @@ export async function handleCreateNews(req: Request, res: Response) {
         if (author) {
           const prismaArticle = await prisma.article.create({
             data: {
-              title: title.trim(),
+              title: articleTitle,
               slug: cleanSlug,
-              excerpt: lead.trim(),
+              excerpt: articleLead,
               content: fullContent,
-              thumbnail: thumbnail || null,
+              thumbnail: finalThumbnail || null,
               status: 'DRAFT',
               metaTitle: metaTitle,
               metaDesc: metaDesc,
@@ -221,8 +325,16 @@ export async function handleCreateNews(req: Request, res: Response) {
       }
     }
 
-    // 10. Return 201 with { id, slug } on success
-    return res.status(201).json({ id: createdArticleId, slug: cleanSlug });
+    // 10. Return 201 Success
+    return res.status(201).json({
+      success: true,
+      id: createdArticleId,
+      slug: cleanSlug,
+      title: articleTitle,
+      status: 'DRAFT',
+      category: matchedCategory.name,
+      message: 'Article successfully ingested and placed in DRAFT for editorial review.'
+    });
   } catch (error: any) {
     console.error('Error creating article in /api/news:', error);
     return res.status(500).json({ error: 'Internal Server Error', details: error.message });

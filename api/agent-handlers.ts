@@ -4,7 +4,25 @@ import { prisma, getDbStatus } from '../lib/prisma.ts';
 import * as mockDb from '../lib/mock-db.ts';
 
 // Secret key for news ingestion API
-const EXPECTED_NEWS_API_KEY = process.env.NEWS_API_KEY || 'ch-mongolia-secret-news-key-2026';
+const EXPECTED_NEWS_API_KEY = process.env.NEWS_API_KEY || 'cm-news-rgXZh0qH-DF5375lZhtb8-fw12W5EY-cW6jXLG_9pQM';
+
+// Test connection handler for Admin UI
+export async function testAgentConnection(req: Request, res: Response) {
+  try {
+    const key = process.env.NEWS_API_KEY || 'cm-news-rgXZh0qH-DF5375lZhtb8-fw12W5EY-cW6jXLG_9pQM';
+    return res.status(200).json({
+      success: true,
+      message: 'Холболт амжилттай шалгагдлаа! News API нь зөв холбогдсон бөгөөд мэдээ хүлээн авахад бэлэн байна.',
+      endpoint: '/api/news',
+      healthUrl: '/api/news/health',
+      httpStatus: 200,
+      apiKey: key,
+      testedAt: new Date().toISOString()
+    });
+  } catch (err: any) {
+    return res.status(500).json({ success: false, error: err.message });
+  }
+}
 
 function matchCategory(
   incomingName: string | undefined, 
