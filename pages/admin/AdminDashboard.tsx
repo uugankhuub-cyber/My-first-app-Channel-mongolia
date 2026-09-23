@@ -1,6 +1,9 @@
 import React from 'react';
+import * as ReactRouterDOM from 'react-router-dom';
 import { useAdmin } from '../../context/AdminContext';
-import { BarChart3, FileText, CheckCircle, Clock, Sparkles } from 'lucide-react';
+import { BarChart3, FileText, CheckCircle, Clock, Sparkles, Bot, ArrowRight, Zap } from 'lucide-react';
+
+const { Link } = ReactRouterDOM;
 
 export const AdminDashboard: React.FC = () => {
   const { adminContent, feedbackSummary, aiSuggestions } = useAdmin();
@@ -55,6 +58,34 @@ export const AdminDashboard: React.FC = () => {
            icon={<BarChart3 className="text-brand-orange" />} 
            color="bg-brand-orange" 
         />
+      </div>
+
+      {/* AI News Agent Integration Banner */}
+      <div className="bg-gradient-to-r from-brand-purple/20 via-surface to-brand-orange/10 border border-brand-purple/30 rounded-2xl p-6 flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-md">
+        <div className="flex items-center gap-4">
+          <div className="w-12 h-12 rounded-xl bg-gradient-brand text-white flex items-center justify-center flex-shrink-0 shadow-md shadow-brand-purple/30">
+            <Bot size={24} />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <h3 className="font-bold text-base text-text-main">Мэдээ Бэлтгэгч AI Агент</h3>
+              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                ИДЭВХТЭЙ
+              </span>
+            </div>
+            <p className="text-xs text-text-muted mt-0.5">
+              Сэдэв өгч факт-чек хийсэн нийтлэл бэлтгүүлэх, мөн Webhook API-аар дамжуулан мэдээ хүлээн авах төв
+            </p>
+          </div>
+        </div>
+
+        <Link
+          to="/admin/agent"
+          className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-brand-purple hover:bg-brand-purple/90 text-white font-bold text-xs rounded-xl transition-all shadow-md flex-shrink-0"
+        >
+          <span>Агентийн самбар руу орох</span>
+          <ArrowRight size={14} />
+        </Link>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">

@@ -4,7 +4,7 @@ import * as ReactRouterDOM from 'react-router-dom';
 import { 
   LayoutDashboard, FileText, Sparkles, MessageSquare, 
   Settings, LogOut, Menu, X, ShieldCheck, Image as ImageIcon, 
-  ScrollText, Palette, MonitorPlay, Loader2, Folder, Hash, Users, TrendingUp
+  ScrollText, Palette, MonitorPlay, Loader2, Folder, Hash, Users, TrendingUp, Bot
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext.tsx';
 import { ErrorBoundary } from '../../components/ErrorBoundary';
@@ -25,6 +25,7 @@ export const AdminLayout: React.FC = () => {
   // --- AUTHENTICATED LAYOUT ---
   const navItems = [
     { label: 'Хянах самбар', path: '/admin/dashboard', icon: <LayoutDashboard size={20} /> },
+    { label: 'Мэдээний Агент', path: '/admin/agent', icon: <Bot size={20} /> },
     { label: 'Нийтлэлүүд', path: '/admin/articles', icon: <FileText size={20} /> },
     { label: 'Ангилал', path: '/admin/categories', icon: <Folder size={20} /> },
     { label: 'Шошгонууд', path: '/admin/tags', icon: <Hash size={20} /> },

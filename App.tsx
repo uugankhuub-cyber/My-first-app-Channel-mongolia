@@ -41,6 +41,7 @@ import { AdminCommentsPage } from './pages/admin/AdminCommentsPage';
 import { AdminAnalyticsPage } from './pages/admin/AdminAnalyticsPage';
 import { AdminSettingsPage } from './pages/admin/AdminSettingsPage';
 import { AdminLogs } from './pages/admin/AdminLogs';
+import { AdminNewsAgentPage } from './pages/admin/AdminNewsAgentPage';
 
 import { CATEGORIES } from './constants';
 import { testFirestoreConnection } from './lib/firebase';
@@ -105,6 +106,7 @@ const AnimatedRoutes = () => {
           <Route path="/admin" element={<AdminLayout />}>
              <Route index element={<AdminDashboard />} />
              <Route path="dashboard" element={<AdminDashboard />} />
+             <Route path="agent" element={<AdminNewsAgentPage />} />
              <Route path="articles" element={<AdminArticlesPage />} />
              <Route path="articles/create" element={<AdminArticleForm />} />
              <Route path="articles/edit/:id" element={<AdminArticleForm />} />
