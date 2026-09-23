@@ -30,6 +30,7 @@ export interface MockArticle {
   views: number;
   likes: number;
   tags?: string[];
+  images?: Array<{ url: string; caption?: string } | string>;
   metaTitle?: string;
   metaDesc?: string;
   agentNotes?: string;

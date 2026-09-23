@@ -241,6 +241,14 @@ async function startServer() {
   app.post('/api/admin-ai-content', adminHandlers.askAI);
   app.post('/api/admin-upload', adminHandlers.adminUpload);
 
+  // Serve static uploads
+  const devUploads = path.join(process.cwd(), 'public', 'uploads');
+  const distUploads = path.join(process.cwd(), 'dist', 'uploads');
+  if (!fs.existsSync(devUploads)) fs.mkdirSync(devUploads, { recursive: true });
+  if (!fs.existsSync(distUploads)) fs.mkdirSync(distUploads, { recursive: true });
+  app.use('/uploads', express.static(devUploads));
+  app.use('/uploads', express.static(distUploads));
+
   // Articles (Public)
   app.get('/api/articles', articleHandlers.getArticles);
   app.get('/api/articles/:slug', async (req, res) => {
@@ -285,6 +293,7 @@ async function startServer() {
       excerpt: art.excerpt,
       content: art.content,
       thumbnail: art.thumbnail,
+      images: art.images || [],
       status: art.status,
       authorId: 'admin-1',
       author: { email: 'admin@channelmongolia.com' },

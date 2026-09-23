@@ -9,6 +9,8 @@ import {
 } from 'lucide-react';
 import { motion } from 'motion/react';
 import { ArticleBodyRenderer } from '../../components/ArticleBodyRenderer';
+import { ArticleImageGallery, ArticleImageItem } from '../../components/admin/ArticleImageGallery';
+import { ImageInsertModal } from '../../components/admin/ImageInsertModal';
 
 const { useParams, useNavigate, Link } = ReactRouterDOM;
 
@@ -24,6 +26,8 @@ export const AdminArticleForm: React.FC = () => {
   const [excerpt, setExcerpt] = useState('');
   const [content, setContent] = useState('');
   const [thumbnail, setThumbnail] = useState('');
+  const [images, setImages] = useState<ArticleImageItem[]>([]);
+  const [showImageModal, setShowImageModal] = useState(false);
   const [status, setStatus] = useState<'DRAFT' | 'PUBLISHED' | 'ARCHIVED'>('DRAFT');
   const [categoryId, setCategoryId] = useState('');
   const [metaTitle, setMetaTitle] = useState('');
@@ -112,6 +116,88 @@ export const AdminArticleForm: React.FC = () => {
     }
   };
 
+  // Insert image markdown into content
+  const handleInsertImageToContent = (imgUrl: string, captionText: string = '') => {
+    const textarea = textareaRef.current;
+    const caption = captionText.trim() || 'Зураг';
+    const md = `\n\n![${caption}](${imgUrl})\n*${caption}*\n\n`;
+
+    if (!textarea) {
+      setContent(prev => prev + md);
+      setSuccess(`"${caption}" нийтлэлийн төгсгөлд нэмэгдлээ.`);
+      return;
+    }
+
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const newContent = content.substring(0, start) + md + content.substring(end);
+    setContent(newContent);
+
+    setTimeout(() => {
+      textarea.focus();
+      const newPos = start + md.length;
+      textarea.setSelectionRange(newPos, newPos);
+    }, 50);
+
+    setSuccess(`"${caption}" нийтлэл рүү оруулагдлаа.`);
+  };
+
+  // Upload new image files and return uploaded items
+  const handleUploadNewImage = async (files: FileList | File[]): Promise<ArticleImageItem[] | void> => {
+    if (!files || files.length === 0) return [];
+    const uploadedList: ArticleImageItem[] = [];
+    try {
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        if (!file.type.startsWith('image/')) continue;
+        const base64 = await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => {
+            const res = reader.result as string;
+            const commaIndex = res.indexOf(',');
+            resolve(commaIndex >= 0 ? res.substring(commaIndex + 1) : res);
+          };
+          reader.onerror = reject;
+          reader.readAsDataURL(file);
+        });
+
+        const response = await fetch('/api/admin-upload', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({
+            fileName: file.name,
+            fileType: file.type,
+            fileBase64: base64
+          })
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          if (data.url) {
+            const cleanName = file.name.replace(/\.[^/.]+$/, '').replace(/[-_]+/g, ' ').trim();
+            uploadedList.push({
+              id: 'img-' + Date.now() + '-' + Math.random().toString(36).substring(2, 8),
+              url: data.url,
+              caption: cleanName
+            });
+          }
+        }
+      }
+
+      if (uploadedList.length > 0) {
+        setImages(prev => [...prev, ...uploadedList]);
+        if (!thumbnail) {
+          setThumbnail(uploadedList[0].url);
+        }
+        setSuccess(`${uploadedList.length} зураг амжилттай байршлаа.`);
+      }
+    } catch (err: any) {
+      setError('Зураг хуулахад алдаа гарлаа: ' + err.message);
+    }
+    return uploadedList;
+  };
+
   // Fetch initial content and categories
   useEffect(() => {
     const loadData = async () => {
@@ -162,6 +248,22 @@ export const AdminArticleForm: React.FC = () => {
               setTags(rawTags);
             } else {
               setTags('');
+            }
+
+            const rawImages = article.images;
+            if (Array.isArray(rawImages)) {
+              setImages(rawImages.map((img: any, idx: number) => {
+                if (typeof img === 'string') {
+                  return { id: 'img-' + idx + '-' + Date.now(), url: img, caption: '' };
+                }
+                return {
+                  id: img.id || ('img-' + idx + '-' + Date.now()),
+                  url: img.url || '',
+                  caption: img.caption || ''
+                };
+              }));
+            } else {
+              setImages([]);
             }
           } else {
             setError('Нийтлэл олдсонгүй.');
@@ -235,6 +337,8 @@ export const AdminArticleForm: React.FC = () => {
       categoryId: categoryId || undefined,
       metaTitle,
       metaDesc,
+      tags: tags.split(',').map(t => t.trim()).filter(Boolean),
+      images: images.map(img => ({ url: img.url, caption: img.caption })),
       agentNotes: agentNotes || undefined
     };
 
@@ -490,14 +594,12 @@ export const AdminArticleForm: React.FC = () => {
                       </button>
                       <button
                         type="button"
-                        onClick={() => {
-                          const url = prompt('Зургийн URL хаягийг оруулна уу:');
-                          if (url) insertFormatting(`\n![Зургийн тайлбар](${url})\n`, '', '');
-                        }}
-                        title="Зураг нэмэх"
-                        className="p-1.5 hover:bg-surfaceHighlight hover:text-text-main rounded transition-colors"
+                        onClick={() => setShowImageModal(true)}
+                        title="Зураг оруулах (Файл хуулах, цомгоос сонгох, холбоос оруулах)"
+                        className="px-2.5 py-1 bg-brand-purple/10 hover:bg-brand-purple hover:text-white text-brand-purple rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 shadow-xs"
                       >
-                        <ImageIcon size={14} />
+                        <ImageIcon size={13} />
+                        <span>Зураг оруулах</span>
                       </button>
                       <button
                         type="button"
@@ -548,6 +650,18 @@ export const AdminArticleForm: React.FC = () => {
                 )}
               </div>
             </div>
+
+            {/* Article Multi-Image Gallery */}
+            <ArticleImageGallery
+              images={images}
+              onImagesChange={setImages}
+              onInsertToContent={handleInsertImageToContent}
+              onSetThumbnail={(url) => {
+                setThumbnail(url);
+                setSuccess('Нүүр зураг солигдлоо!');
+              }}
+              currentThumbnail={thumbnail}
+            />
 
             {/* SEO Metadata panel */}
             <div className="bg-surface border border-border rounded-2xl p-6 space-y-5">
@@ -768,6 +882,37 @@ export const AdminArticleForm: React.FC = () => {
                     <img src={thumbnail} alt="Preview" className="w-full h-full object-cover" />
                   </div>
                 )}
+                {images.length > 0 && (
+                  <div className="pt-2">
+                    <span className="text-[11px] font-bold text-text-muted block mb-1.5">
+                      Цомгийн зургуудаас сонгох:
+                    </span>
+                    <div className="flex flex-wrap gap-1.5 max-h-24 overflow-y-auto pr-1">
+                      {images.map((img) => (
+                        <button
+                          key={img.id}
+                          type="button"
+                          onClick={() => {
+                            setThumbnail(img.url);
+                            setSuccess('Нүүр зураг солигдлоо!');
+                          }}
+                          className={`relative w-11 h-11 rounded-lg overflow-hidden border transition-all ${
+                            thumbnail === img.url
+                              ? 'border-brand-purple ring-2 ring-brand-purple'
+                              : 'border-border hover:border-brand-purple/50 opacity-70 hover:opacity-100'
+                          }`}
+                        >
+                          <img src={img.url} alt="" className="w-full h-full object-cover" />
+                          {thumbnail === img.url && (
+                            <div className="absolute inset-0 bg-brand-purple/40 flex items-center justify-center text-white">
+                              <CheckCircle2 size={14} className="stroke-[3]" />
+                            </div>
+                          )}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Submit trigger button */}
@@ -801,6 +946,15 @@ export const AdminArticleForm: React.FC = () => {
           </div>
         </form>
       )}
+
+      {/* Quick Image Insertion Modal */}
+      <ImageInsertModal
+        isOpen={showImageModal}
+        onClose={() => setShowImageModal(false)}
+        onInsertImage={handleInsertImageToContent}
+        galleryImages={images}
+        onUploadNewImage={handleUploadNewImage}
+      />
     </div>
   );
 };

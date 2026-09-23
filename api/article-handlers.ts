@@ -13,6 +13,7 @@ const articleSchema = z.object({
   metaTitle: z.string().optional(),
   metaDesc: z.string().optional(),
   agentNotes: z.string().optional(),
+  images: z.array(z.union([z.string(), z.object({ url: z.string(), caption: z.string().optional() })])).optional(),
 });
 
 const isDbAvailable = () => {
@@ -121,6 +122,7 @@ export const getArticles = async (req: any, res: any) => {
         excerpt: art.excerpt,
         content: art.content,
         thumbnail: art.thumbnail,
+        images: art.images || [],
         status: art.status,
         views: art.views || 0,
         thumbnailUrl: art.thumbnail,
@@ -236,6 +238,7 @@ export const createArticle = async (req: any, res: any) => {
       content: body.content,
       content_en: body.content,
       thumbnail: body.thumbnail,
+      images: body.images || [],
       status: body.status,
       categoryId: finalCategoryId,
       metaTitle: body.metaTitle,
@@ -328,6 +331,7 @@ export const updateArticle = async (req: any, res: any) => {
       title_en: body.title !== undefined ? body.title : existing.title_en,
       excerpt_en: body.excerpt !== undefined ? body.excerpt : existing.excerpt_en,
       content_en: body.content !== undefined ? body.content : existing.content_en,
+      images: body.images !== undefined ? body.images : existing.images,
       agentNotes: body.agentNotes !== undefined ? body.agentNotes : existing.agentNotes,
       publishedAt: body.status === 'PUBLISHED' ? new Date().toISOString() : (body.status === 'DRAFT' ? undefined : existing.publishedAt),
       updatedAt: new Date().toISOString()

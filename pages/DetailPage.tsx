@@ -10,6 +10,7 @@ import { useUserPreferences } from '../context/UserPreferencesContext';
 import { KnowledgeCard } from '../components/KnowledgeCard';
 import { ReadingProgress } from '../components/ReadingProgress';
 import { ArticleBodyRenderer } from '../components/ArticleBodyRenderer';
+import { ArticlePhotoGallery } from '../components/ArticlePhotoGallery';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../lib/utils';
 
@@ -65,6 +66,7 @@ export const DetailPage: React.FC = () => {
               videoUrl: '',
               tags: [],
               tags_en: [],
+              images: data.images || [],
               isTrending: false,
               isEditorPick: false,
               likes: 0,
@@ -399,6 +401,11 @@ export const DetailPage: React.FC = () => {
                >
                   <ArticleBodyRenderer content={body || ''} />
                </motion.div>
+
+               {/* Article Photo Gallery for multiple images */}
+               {content.images && content.images.length > 0 && (
+                 <ArticlePhotoGallery images={content.images} title={title} />
+               )}
                
                {content.quiz && (
                  <motion.div

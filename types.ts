@@ -32,6 +32,7 @@ export interface ContentItem {
   contentBody_en?: string;
   tags: string[];
   tags_en: string[];
+  images?: Array<{ url: string; caption?: string } | string>;
   isTrending?: boolean;
   isEditorPick?: boolean;
   likes?: number;
