@@ -68,6 +68,7 @@ export const Navbar: React.FC = () => {
 
   const mainNavItems = [
     { label: t("nav_home"), path: "/", type: "link" },
+    { label: language === 'mn' ? 'Мэдээ' : 'News', path: "/news", type: "link" },
     ...CATEGORIES.map((cat) => ({
       label: cat.label,
       path: `/${cat.slug}`,

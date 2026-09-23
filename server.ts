@@ -18,6 +18,7 @@ import chatHandler from './api/chat.ts';
 import weatherHandler from './api/weather.ts';
 import ratesHandler from './api/rates.ts';
 import uploadHandler from './api/upload.ts';
+import { handleCreateNews, handleNewsHealth } from './api/news.ts';
 import * as mockDb from './lib/mock-db.ts';
 
 async function startServer() {
@@ -582,6 +583,10 @@ async function startServer() {
     const db = mockDb.getDb();
     res.json(db.auditLogs);
   });
+
+  // --- NEWS API (Server endpoints for ingestion and health check) ---
+  app.get('/api/news/health', handleNewsHealth);
+  app.post('/api/news', handleCreateNews);
 
   // 4. Vite / Static
   const distPath = path.join(process.cwd(), 'dist');

@@ -1,0 +1,99 @@
+{
+  "entities": {
+    "News": {
+      "title": "News",
+      "description": "News article entity with markdown body, sources, SEO, and status",
+      "type": "object",
+      "properties": {
+        "slug": {
+          "type": "string",
+          "description": "Unique URL slug for the article",
+          "maxLength": 200
+        },
+        "status": {
+          "type": "string",
+          "description": "Article publication status: draft or published",
+          "enum": ["draft", "published"]
+        },
+        "date": {
+          "type": "string",
+          "description": "Publication or creation date string",
+          "maxLength": 100
+        },
+        "category": {
+          "type": "string",
+          "description": "News category name",
+          "maxLength": 100
+        },
+        "tags": {
+          "type": "array",
+          "description": "Array of keyword tags"
+        },
+        "title": {
+          "type": "string",
+          "description": "Article title",
+          "maxLength": 500
+        },
+        "lead": {
+          "type": "string",
+          "description": "Introductory summary / lead paragraph",
+          "maxLength": 2000
+        },
+        "body_markdown": {
+          "type": "string",
+          "description": "Article markdown body content",
+          "maxLength": 100000
+        },
+        "sources": {
+          "type": "array",
+          "description": "Array of source objects containing name and url"
+        },
+        "image": {
+          "type": "object",
+          "description": "Image metadata with note, ai_prompt, and optional url"
+        },
+        "seo": {
+          "type": "object",
+          "description": "SEO metadata including meta_description and keywords"
+        },
+        "short_idea": {
+          "type": "object",
+          "description": "Short idea with hook and outline"
+        },
+        "fact_check": {
+          "type": "array",
+          "description": "Array of fact check items"
+        },
+        "created_at": {
+          "type": "string",
+          "description": "Creation timestamp in ISO format"
+        },
+        "published_at": {
+          "type": "string",
+          "description": "Publication timestamp in ISO format or null"
+        }
+      },
+      "required": ["slug", "status", "title", "lead", "body_markdown", "sources"]
+    },
+    "NewsSlug": {
+      "title": "News Slug",
+      "description": "Slug reference record",
+      "type": "object",
+      "properties": {
+        "slug": { "type": "string", "maxLength": 200 },
+        "created_at": { "type": "string" }
+      },
+      "required": ["slug"]
+    }
+  },
+  "firestore": {
+    "/news/{newsId}": {
+      "schema": "News",
+      "description": "Collection of all news articles, both drafts and published"
+    },
+    "/slugs/{slug}": {
+      "schema": "NewsSlug",
+      "description": "Unique index of news slugs"
+    }
+  }
+}

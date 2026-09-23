@@ -44,6 +44,10 @@ import { AdminSettingsPage } from './pages/admin/AdminSettingsPage';
 import { AdminLogs } from './pages/admin/AdminLogs';
 
 import { CATEGORIES } from './constants';
+import { NewsListPage } from './pages/NewsListPage';
+import { NewsDetailPage } from './pages/NewsDetailPage';
+import { AdminNewsPage } from './pages/admin/AdminNewsPage';
+import { testFirestoreConnection } from './lib/firebase';
 
 const { HashRouter: Router, Routes, Route, useLocation } = ReactRouterDOM;
 
@@ -100,9 +104,12 @@ const AnimatedRoutes = () => {
         <Route path="/admin/login" element={<AdminLoginPage />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
 
-        {/* Admin Routes (Protected) */}
+        {/* Admin Routes */}
+        <Route path="/admin" element={<AdminNewsPage />} />
+
+        {/* Existing Admin Routes (Protected) */}
         <Route element={<ProtectedRoute roles={['ADMIN', 'EDITOR']} />}>
-          <Route path="/admin" element={<AdminLayout />}>
+          <Route path="/admin/system" element={<AdminLayout />}>
              <Route index element={<AdminDashboard />} />
              <Route path="dashboard" element={<AdminDashboard />} />
              <Route path="articles" element={<AdminArticlesPage />} />
@@ -134,6 +141,8 @@ const AnimatedRoutes = () => {
         >
           <Routes location={location}>
             <Route path="/" element={<Home />} />
+            <Route path="/news" element={<NewsListPage />} />
+            <Route path="/news/:slug" element={<NewsDetailPage />} />
             {CATEGORIES.map(cat => (
                <Route key={cat.id} path={`/${cat.slug}`} element={<CategoriesPage categorySlug={cat.slug} />} />
             ))}
@@ -154,6 +163,10 @@ const AnimatedRoutes = () => {
 };
 
 const App: React.FC = () => {
+  useEffect(() => {
+    testFirestoreConnection();
+  }, []);
+
   return (
     <ThemeProvider>
       <AuthProvider>
