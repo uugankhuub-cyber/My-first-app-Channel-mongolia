@@ -30,7 +30,13 @@ async function startServer() {
   app.set('trust proxy', 1); // Required for express-rate-limit behind proxy
   app.use(helmet({
     contentSecurityPolicy: false, // Vite handles CSP in dev
+    crossOriginOpenerPolicy: { policy: 'same-origin-allow-popups' },
+    crossOriginEmbedderPolicy: false,
   }));
+  app.use((_req, res, next) => {
+    res.setHeader('Cross-Origin-Opener-Policy', 'same-origin-allow-popups');
+    next();
+  });
   app.use(cookieParser());
   app.use(express.json({ limit: '10mb' }));
 

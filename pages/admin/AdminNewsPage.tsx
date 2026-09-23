@@ -52,6 +52,7 @@ export const AdminNewsPage: React.FC = () => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
   const [authError, setAuthError] = useState<string | null>(null);
+  const [popupBlocked, setPopupBlocked] = useState(false);
 
   // News items
   const [drafts, setDrafts] = useState<NewsItem[]>([]);
@@ -155,13 +156,22 @@ export const AdminNewsPage: React.FC = () => {
 
   const handleGoogleLogin = async () => {
     setAuthError(null);
+    setPopupBlocked(false);
     try {
       const user = await loginWithGoogle();
       if (user.email !== ADMIN_EMAIL) {
         setAuthError(`Хандах эрхгүй: Таны ${user.email} хаяг админ биш байна. Зөвхөн ${ADMIN_EMAIL} зөвшөөрөгдөнө.`);
       }
     } catch (err: any) {
-      setAuthError(err.message || 'Google нэвтрэлт амжилтгүй боллоо');
+      console.error('Google Sign-in failed:', err);
+      if (err?.code === 'auth/popup-blocked') {
+        setPopupBlocked(true);
+        setAuthError('Хөтөч pop-up цонхыг хаасан байна. Хөтчийн хаягийн мөрний баруун талд байрлах Pop-up тохиргоог зөвшөөрөөд (Allow popups) дахин оролдоно уу.');
+      } else if (err?.code === 'auth/popup-closed-by-user') {
+        setAuthError('Нэвтрэх цонх хаагдсан байна. Дахин товшиж нэвтэрнэ үү.');
+      } else {
+        setAuthError(err?.message || 'Google нэвтрэлт амжилтгүй боллоо');
+      }
     }
   };
 
@@ -378,7 +388,24 @@ export const AdminNewsPage: React.FC = () => {
             </div>
           )}
 
-          {authError && (
+          {popupBlocked && (
+            <div className="p-4 bg-amber-500/10 border border-amber-500/40 text-amber-200 rounded-2xl text-xs text-left space-y-2">
+              <div className="flex items-center gap-2 font-bold text-amber-300">
+                <ShieldAlert size={16} />
+                <span>Pop-up цонхыг зөвшөөрнө үү (Allow popups)</span>
+              </div>
+              <p className="text-slate-300">
+                Google нэвтрэх цонхыг таны хөтөч блоколсон байна.
+              </p>
+              <ul className="list-disc pl-4 space-y-1 text-slate-300">
+                <li>Хөтчийн хаягийн мөр (URL bar)-ны баруун захад байрлах <b>Поп-ап хориглосон дүрсийг</b> дарна уу.</li>
+                <li><b>"Always allow pop-ups and redirects from this site"</b> сонгоод <b>Done</b> дарна уу.</li>
+                <li>Дараа нь доорх Google товчийг дахин дарж нэвтэрнэ үү.</li>
+              </ul>
+            </div>
+          )}
+
+          {authError && !popupBlocked && (
             <div className="p-3 bg-red-900/30 border border-red-500/40 text-red-300 rounded-xl text-xs text-left">
               {authError}
             </div>

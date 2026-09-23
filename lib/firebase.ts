@@ -3,8 +3,18 @@ import { getAuth, GoogleAuthProvider, signInWithPopup, signOut } from 'firebase/
 import { getFirestore, doc, getDocFromServer } from 'firebase/firestore';
 import firebaseConfig from '../firebase-applet-config.json';
 
+// Ensure authDomain is explicitly <project-id>.firebaseapp.com as required
+const resolvedAuthDomain = firebaseConfig.authDomain?.includes('.firebaseapp.com')
+  ? firebaseConfig.authDomain
+  : `${firebaseConfig.projectId}.firebaseapp.com`;
+
+const resolvedConfig = {
+  ...firebaseConfig,
+  authDomain: resolvedAuthDomain
+};
+
 // Initialize Firebase App
-const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
+const app = !getApps().length ? initializeApp(resolvedConfig) : getApp();
 
 // CRITICAL: Must pass firebaseConfig.firestoreDatabaseId if specified
 export const db = firebaseConfig.firestoreDatabaseId 
@@ -12,6 +22,9 @@ export const db = firebaseConfig.firestoreDatabaseId
   : getFirestore(app);
 export const auth = getAuth(app);
 export const googleProvider = new GoogleAuthProvider();
+googleProvider.setCustomParameters({
+  prompt: 'select_account'
+});
 
 export const ADMIN_EMAIL = 'uugankhuub@gmail.com';
 
