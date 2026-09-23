@@ -7,6 +7,7 @@ import {
   ScrollText, Palette, MonitorPlay, Loader2, Folder, Hash, Users, TrendingUp
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext.tsx';
+import { ErrorBoundary } from '../../components/ErrorBoundary';
 
 const { Outlet, NavLink, useNavigate, useLocation } = ReactRouterDOM;
 
@@ -105,7 +106,9 @@ export const AdminLayout: React.FC = () => {
         </header>
 
         <main className="flex-1 overflow-y-auto p-4 lg:p-8">
-           <Outlet />
+           <ErrorBoundary fallbackTitle="Энэ хэсгийг ачаалахад алдаа гарлаа">
+              <Outlet />
+           </ErrorBoundary>
         </main>
       </div>
     </div>

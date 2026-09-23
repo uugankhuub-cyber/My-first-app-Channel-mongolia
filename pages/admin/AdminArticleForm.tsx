@@ -151,8 +151,18 @@ export const AdminArticleForm: React.FC = () => {
             setCategoryId(article.categoryId || '');
             setMetaTitle(article.metaTitle || '');
             setMetaDesc(article.metaDesc || '');
-            setAgentNotes(article.agentNotes || '');
-            setTags(article.tags ? (Array.isArray(article.tags) ? article.tags.join(', ') : article.tags) : '');
+            
+            const rawNotes = article.agentNotes;
+            setAgentNotes(typeof rawNotes === 'string' ? rawNotes : (rawNotes ? JSON.stringify(rawNotes, null, 2) : ''));
+
+            const rawTags = article.tags;
+            if (Array.isArray(rawTags)) {
+              setTags(rawTags.map((t: any) => typeof t === 'string' ? t : (t?.name || '')).filter(Boolean).join(', '));
+            } else if (typeof rawTags === 'string') {
+              setTags(rawTags);
+            } else {
+              setTags('');
+            }
           } else {
             setError('Нийтлэл олдсонгүй.');
           }
@@ -597,7 +607,7 @@ export const AdminArticleForm: React.FC = () => {
                 let parsed: any = null;
                 if (agentNotes) {
                   try {
-                    parsed = JSON.parse(agentNotes);
+                    parsed = typeof agentNotes === 'string' ? JSON.parse(agentNotes) : agentNotes;
                   } catch (e) {
                     parsed = null;
                   }
@@ -608,11 +618,33 @@ export const AdminArticleForm: React.FC = () => {
                     {parsed && (
                       <div className="space-y-3">
                         {parsed.short_idea && (
-                          <div className="p-3.5 bg-background border border-border rounded-xl">
-                            <span className="text-xs font-bold text-brand-purple uppercase tracking-wider block mb-1">
+                          <div className="p-3.5 bg-background border border-border rounded-xl space-y-1.5">
+                            <span className="text-xs font-bold text-brand-purple uppercase tracking-wider block">
                               Богино санаа / Hook & Outline:
                             </span>
-                            <p className="text-sm text-text-main leading-relaxed whitespace-pre-wrap">{parsed.short_idea}</p>
+                            {typeof parsed.short_idea === 'object' ? (
+                              <div className="space-y-2 text-sm text-text-main pt-1">
+                                {parsed.short_idea.hook && (
+                                  <div className="p-2 bg-surfaceHighlight rounded-lg">
+                                    <span className="text-xs font-semibold text-text-muted block mb-0.5">Hook (Эхлэлийн дэгээ):</span>
+                                    <p className="text-text-main font-medium">{String(parsed.short_idea.hook)}</p>
+                                  </div>
+                                )}
+                                {parsed.short_idea.outline && (
+                                  <div className="p-2 bg-surfaceHighlight rounded-lg">
+                                    <span className="text-xs font-semibold text-text-muted block mb-0.5">Outline (Бүтэц):</span>
+                                    <p className="text-text-main whitespace-pre-wrap">{String(parsed.short_idea.outline)}</p>
+                                  </div>
+                                )}
+                                {!parsed.short_idea.hook && !parsed.short_idea.outline && (
+                                  <pre className="text-xs font-mono bg-surfaceHighlight p-2 rounded whitespace-pre-wrap">
+                                    {JSON.stringify(parsed.short_idea, null, 2)}
+                                  </pre>
+                                )}
+                              </div>
+                            ) : (
+                              <p className="text-sm text-text-main leading-relaxed whitespace-pre-wrap">{String(parsed.short_idea)}</p>
+                            )}
                           </div>
                         )}
 
@@ -625,11 +657,15 @@ export const AdminArticleForm: React.FC = () => {
                             {Array.isArray(parsed.fact_check) ? (
                               <ul className="list-disc list-inside text-sm text-text-main space-y-1">
                                 {parsed.fact_check.map((item: any, idx: number) => (
-                                  <li key={idx} className="leading-relaxed">{typeof item === 'string' ? item : JSON.stringify(item)}</li>
+                                  <li key={idx} className="leading-relaxed">
+                                    {typeof item === 'string' ? item : JSON.stringify(item)}
+                                  </li>
                                 ))}
                               </ul>
                             ) : (
-                              <p className="text-sm text-text-main leading-relaxed whitespace-pre-wrap">{typeof parsed.fact_check === 'string' ? parsed.fact_check : JSON.stringify(parsed.fact_check, null, 2)}</p>
+                              <p className="text-sm text-text-main leading-relaxed whitespace-pre-wrap">
+                                {typeof parsed.fact_check === 'string' ? parsed.fact_check : JSON.stringify(parsed.fact_check, null, 2)}
+                              </p>
                             )}
                           </div>
                         )}
@@ -639,7 +675,20 @@ export const AdminArticleForm: React.FC = () => {
                             <span className="text-xs font-bold text-blue-400 uppercase tracking-wider block mb-1">
                               Зургийн AI Prompt:
                             </span>
-                            <p className="text-xs font-mono text-text-muted bg-surfaceHighlight p-2 rounded-lg">{parsed.ai_prompt}</p>
+                            <p className="text-xs font-mono text-text-muted bg-surfaceHighlight p-2 rounded-lg whitespace-pre-wrap">
+                              {typeof parsed.ai_prompt === 'string' ? parsed.ai_prompt : JSON.stringify(parsed.ai_prompt, null, 2)}
+                            </p>
+                          </div>
+                        )}
+
+                        {parsed.image_note && (
+                          <div className="p-3.5 bg-background border border-border rounded-xl">
+                            <span className="text-xs font-bold text-amber-400 uppercase tracking-wider block mb-1">
+                              Зургийн тэмдэглэл:
+                            </span>
+                            <p className="text-xs text-text-muted whitespace-pre-wrap">
+                              {typeof parsed.image_note === 'string' ? parsed.image_note : JSON.stringify(parsed.image_note, null, 2)}
+                            </p>
                           </div>
                         )}
                       </div>
