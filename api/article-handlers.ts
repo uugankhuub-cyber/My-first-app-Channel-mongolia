@@ -12,10 +12,44 @@ const articleSchema = z.object({
   categoryId: z.string().optional(),
   metaTitle: z.string().optional(),
   metaDesc: z.string().optional(),
+  agentNotes: z.string().optional(),
 });
 
 const isDbAvailable = () => {
   return getDbStatus();
+};
+
+export const getAdminArticleById = async (req: any, res: any) => {
+  const { id } = req.params;
+  try {
+    if (isDbAvailable()) {
+      try {
+        const art = await prisma.article.findFirst({
+          where: { OR: [{ id }, { slug: id }] },
+          include: {
+            author: { select: { email: true } },
+            category: true,
+          }
+        });
+        if (art) return res.json(art);
+      } catch (err: any) {
+        console.warn('Prisma getAdminArticleById error:', err.message);
+      }
+    }
+
+    const db = mockDb.getDb();
+    const art = db.articles.find(a => a.id === id || a.slug === id);
+    if (!art) {
+      return res.status(404).json({ error: 'Article not found' });
+    }
+    const cat = db.categories.find(c => c.id === art.categoryId);
+    return res.json({
+      ...art,
+      category: cat ? { id: cat.id, name: cat.name, slug: cat.slug } : null
+    });
+  } catch (error: any) {
+    res.status(500).json({ error: 'Failed to fetch article' });
+  }
 };
 
 export const getArticles = async (req: any, res: any) => {
@@ -41,7 +75,14 @@ export const getArticles = async (req: any, res: any) => {
           },
           orderBy: { createdAt: 'desc' },
         });
-        return res.json(articles);
+
+        // Strip private agentNotes from public response
+        const publicArticles = articles.map((art: any) => {
+          const { agentNotes, ...rest } = art;
+          return rest;
+        });
+
+        return res.json(publicArticles);
       } catch (dbError: any) {
         console.error('Database findMany failed in getArticles, using mock fallback:', dbError.message);
       }
@@ -70,7 +111,7 @@ export const getArticles = async (req: any, res: any) => {
       );
     }
 
-    // Map to expected frontend structure
+    // Map to expected frontend structure (omits private agentNotes)
     const mapped = filtered.map(art => {
       const cat = db.categories.find(c => c.id === art.categoryId);
       return {
@@ -80,7 +121,9 @@ export const getArticles = async (req: any, res: any) => {
         excerpt: art.excerpt,
         content: art.content,
         thumbnail: art.thumbnail,
-        status: art.status, views: art.views || 0, thumbnailUrl: art.thumbnail,
+        status: art.status,
+        views: art.views || 0,
+        thumbnailUrl: art.thumbnail,
         authorId: 'admin-1',
         author: { email: 'admin@channelmongolia.com' },
         categoryId: art.categoryId,
@@ -149,6 +192,7 @@ export const createArticle = async (req: any, res: any) => {
               status: body.status,
               metaTitle: body.metaTitle,
               metaDesc: body.metaDesc,
+              agentNotes: body.agentNotes || null,
               categoryId: finalCatId,
               authorId: author.id,
               publishedAt: body.status === 'PUBLISHED' ? new Date() : null,
@@ -194,6 +238,9 @@ export const createArticle = async (req: any, res: any) => {
       thumbnail: body.thumbnail,
       status: body.status,
       categoryId: finalCategoryId,
+      metaTitle: body.metaTitle,
+      metaDesc: body.metaDesc,
+      agentNotes: body.agentNotes,
       views: 0,
       likes: 0,
       publishedAt: body.status === 'PUBLISHED' ? new Date().toISOString() : undefined,
@@ -255,6 +302,7 @@ export const updateArticle = async (req: any, res: any) => {
             ...(body.status !== undefined && { status: body.status }),
             ...(body.metaTitle !== undefined && { metaTitle: body.metaTitle }),
             ...(body.metaDesc !== undefined && { metaDesc: body.metaDesc }),
+            ...(body.agentNotes !== undefined && { agentNotes: body.agentNotes }),
             ...(finalCatId !== undefined && { categoryId: finalCatId }),
             publishedAt: body.status === 'PUBLISHED' ? new Date() : undefined,
           },
@@ -280,6 +328,7 @@ export const updateArticle = async (req: any, res: any) => {
       title_en: body.title !== undefined ? body.title : existing.title_en,
       excerpt_en: body.excerpt !== undefined ? body.excerpt : existing.excerpt_en,
       content_en: body.content !== undefined ? body.content : existing.content_en,
+      agentNotes: body.agentNotes !== undefined ? body.agentNotes : existing.agentNotes,
       publishedAt: body.status === 'PUBLISHED' ? new Date().toISOString() : (body.status === 'DRAFT' ? undefined : existing.publishedAt),
       updatedAt: new Date().toISOString()
     };

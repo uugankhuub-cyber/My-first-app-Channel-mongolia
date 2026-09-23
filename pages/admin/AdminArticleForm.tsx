@@ -5,7 +5,7 @@ import {
   Save, ArrowLeft, Image as ImageIcon, Globe, FileText, CheckCircle, 
   AlertTriangle, Sparkles, Sliders, Hash, Compass, Info, ChevronRight,
   Bold, Italic, Heading2, Heading3, List, ListOrdered, Quote, Link2, 
-  Eye, Edit3, AlignLeft, Wand2, Plus, CornerDownLeft
+  Eye, Edit3, AlignLeft, Wand2, Plus, CornerDownLeft, Bot, CheckCircle2
 } from 'lucide-react';
 import { motion } from 'motion/react';
 import { ArticleBodyRenderer } from '../../components/ArticleBodyRenderer';
@@ -29,6 +29,7 @@ export const AdminArticleForm: React.FC = () => {
   const [metaTitle, setMetaTitle] = useState('');
   const [metaDesc, setMetaDesc] = useState('');
   const [tags, setTags] = useState('');
+  const [agentNotes, setAgentNotes] = useState('');
 
   const [categories, setCategories] = useState<{ id: string; name: string }[]>([]);
   const [loading, setLoading] = useState(false);
@@ -127,25 +128,33 @@ export const AdminArticleForm: React.FC = () => {
 
         // Load article if edit mode
         if (isEdit) {
-          // Fetch from list or fetch specific slug
-          const artRes = await fetch('/api/articles');
-          if (artRes.ok) {
-            const articles = await artRes.json();
-            const article = articles.find((a: any) => a.id === id);
-            if (article) {
-              setTitle(article.title);
-              setSlug(article.slug);
-              setExcerpt(article.excerpt || '');
-              setContent(article.content);
-              setThumbnail(article.thumbnail || '');
-              setStatus(article.status);
-              setCategoryId(article.categoryId || '');
-              setMetaTitle(article.metaTitle || '');
-              setMetaDesc(article.metaDesc || '');
-              setTags(article.tags ? (Array.isArray(article.tags) ? article.tags.join(', ') : article.tags) : '');
-            } else {
-              setError('Нийтлэл олдсонгүй.');
+          // Fetch from admin endpoint which includes private agentNotes
+          let article: any = null;
+          const adminArtRes = await fetch(`/api/admin/articles/${id}`, { credentials: 'include' });
+          if (adminArtRes.ok) {
+            article = await adminArtRes.json();
+          } else {
+            const artRes = await fetch('/api/articles');
+            if (artRes.ok) {
+              const articles = await artRes.json();
+              article = articles.find((a: any) => a.id === id);
             }
+          }
+
+          if (article) {
+            setTitle(article.title || '');
+            setSlug(article.slug || '');
+            setExcerpt(article.excerpt || '');
+            setContent(article.content || '');
+            setThumbnail(article.thumbnail || '');
+            setStatus(article.status || 'DRAFT');
+            setCategoryId(article.categoryId || '');
+            setMetaTitle(article.metaTitle || '');
+            setMetaDesc(article.metaDesc || '');
+            setAgentNotes(article.agentNotes || '');
+            setTags(article.tags ? (Array.isArray(article.tags) ? article.tags.join(', ') : article.tags) : '');
+          } else {
+            setError('Нийтлэл олдсонгүй.');
           }
         }
       } catch (e) {
@@ -215,7 +224,8 @@ export const AdminArticleForm: React.FC = () => {
       status,
       categoryId: categoryId || undefined,
       metaTitle,
-      metaDesc
+      metaDesc,
+      agentNotes: agentNotes || undefined
     };
 
     try {
@@ -569,6 +579,85 @@ export const AdminArticleForm: React.FC = () => {
                   className="w-full px-4 py-3 bg-background border border-border rounded-xl text-text-main text-sm outline-none focus:border-brand-purple/50 transition-colors resize-none"
                 />
               </div>
+            </div>
+
+            {/* Agent Notes (Internal & Private for Admin Editor only) */}
+            <div className="bg-surface border border-brand-purple/30 rounded-2xl p-6 space-y-4 shadow-sm">
+              <div className="flex items-center justify-between border-b border-border pb-3">
+                <div className="flex items-center gap-2">
+                  <Bot size={18} className="text-brand-purple" />
+                  <h3 className="text-text-main font-bold text-sm">AI Агент тэмдэглэл & Баримт шалгалт (Зөвхөн админ харна)</h3>
+                </div>
+                <span className="text-[11px] px-2.5 py-0.5 rounded-full bg-brand-purple/15 text-brand-purple font-semibold border border-brand-purple/20">
+                  Дотоод нууцлалтай
+                </span>
+              </div>
+
+              {(() => {
+                let parsed: any = null;
+                if (agentNotes) {
+                  try {
+                    parsed = JSON.parse(agentNotes);
+                  } catch (e) {
+                    parsed = null;
+                  }
+                }
+
+                return (
+                  <div className="space-y-4">
+                    {parsed && (
+                      <div className="space-y-3">
+                        {parsed.short_idea && (
+                          <div className="p-3.5 bg-background border border-border rounded-xl">
+                            <span className="text-xs font-bold text-brand-purple uppercase tracking-wider block mb-1">
+                              Богино санаа / Hook & Outline:
+                            </span>
+                            <p className="text-sm text-text-main leading-relaxed whitespace-pre-wrap">{parsed.short_idea}</p>
+                          </div>
+                        )}
+
+                        {parsed.fact_check && (
+                          <div className="p-3.5 bg-emerald-500/5 border border-emerald-500/20 rounded-xl">
+                            <span className="text-xs font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-1.5 mb-1.5">
+                              <CheckCircle2 size={14} />
+                              Баримт шалгалт (Fact Check):
+                            </span>
+                            {Array.isArray(parsed.fact_check) ? (
+                              <ul className="list-disc list-inside text-sm text-text-main space-y-1">
+                                {parsed.fact_check.map((item: any, idx: number) => (
+                                  <li key={idx} className="leading-relaxed">{typeof item === 'string' ? item : JSON.stringify(item)}</li>
+                                ))}
+                              </ul>
+                            ) : (
+                              <p className="text-sm text-text-main leading-relaxed whitespace-pre-wrap">{typeof parsed.fact_check === 'string' ? parsed.fact_check : JSON.stringify(parsed.fact_check, null, 2)}</p>
+                            )}
+                          </div>
+                        )}
+
+                        {parsed.ai_prompt && (
+                          <div className="p-3.5 bg-background border border-border rounded-xl">
+                            <span className="text-xs font-bold text-blue-400 uppercase tracking-wider block mb-1">
+                              Зургийн AI Prompt:
+                            </span>
+                            <p className="text-xs font-mono text-text-muted bg-surfaceHighlight p-2 rounded-lg">{parsed.ai_prompt}</p>
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    <div className="space-y-1.5">
+                      <label className="text-text-muted text-xs font-medium">Түүхий тэмдэглэл (JSON эсвэл текст)</label>
+                      <textarea
+                        value={agentNotes}
+                        onChange={(e) => setAgentNotes(e.target.value)}
+                        placeholder="short_idea, fact_check, ai_prompt зэрэг дотоод тэмдэглэл..."
+                        rows={parsed ? 2 : 4}
+                        className="w-full px-4 py-2.5 bg-background border border-border rounded-xl text-text-main text-xs font-mono outline-none focus:border-brand-purple/50 transition-colors"
+                      />
+                    </div>
+                  </div>
+                );
+              })()}
             </div>
           </div>
 

@@ -77,6 +77,9 @@ model Article {
   metaTitle     String?
   metaDesc      String?
   ogImage       String?
+
+  // Private Agent Notes (visible only in admin article editor)
+  agentNotes    String?       @db.Text
   
   // Timestamps
   publishedAt   DateTime?

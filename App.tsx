@@ -1,4 +1,3 @@
-
 import React, { useEffect } from 'react';
 import * as ReactRouterDOM from 'react-router-dom';
 import { Navbar } from './components/Navbar';
@@ -44,12 +43,9 @@ import { AdminSettingsPage } from './pages/admin/AdminSettingsPage';
 import { AdminLogs } from './pages/admin/AdminLogs';
 
 import { CATEGORIES } from './constants';
-import { NewsListPage } from './pages/NewsListPage';
-import { NewsDetailPage } from './pages/NewsDetailPage';
-import { AdminNewsPage } from './pages/admin/AdminNewsPage';
 import { testFirestoreConnection } from './lib/firebase';
 
-const { HashRouter: Router, Routes, Route, useLocation } = ReactRouterDOM;
+const { HashRouter: Router, Routes, Route, useLocation, Navigate } = ReactRouterDOM;
 
 const ScrollToTop = () => {
   const { pathname } = useLocation();
@@ -104,12 +100,9 @@ const AnimatedRoutes = () => {
         <Route path="/admin/login" element={<AdminLoginPage />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
 
-        {/* Admin Routes */}
-        <Route path="/admin" element={<AdminNewsPage />} />
-
-        {/* Existing Admin Routes (Protected) */}
+        {/* Protected Unified Admin Panel */}
         <Route element={<ProtectedRoute roles={['ADMIN', 'EDITOR']} />}>
-          <Route path="/admin/system" element={<AdminLayout />}>
+          <Route path="/admin" element={<AdminLayout />}>
              <Route index element={<AdminDashboard />} />
              <Route path="dashboard" element={<AdminDashboard />} />
              <Route path="articles" element={<AdminArticlesPage />} />
@@ -124,6 +117,7 @@ const AnimatedRoutes = () => {
              <Route path="settings" element={<AdminSettingsPage />} />
              <Route path="logs" element={<AdminLogs />} />
           </Route>
+          <Route path="/admin/system/*" element={<Navigate to="/admin/dashboard" replace />} />
         </Route>
       </Routes>
     );
@@ -141,8 +135,9 @@ const AnimatedRoutes = () => {
         >
           <Routes location={location}>
             <Route path="/" element={<Home />} />
-            <Route path="/news" element={<NewsListPage />} />
-            <Route path="/news/:slug" element={<NewsDetailPage />} />
+            {/* Backward compatibility for /news */}
+            <Route path="/news" element={<Navigate to="/" replace />} />
+            <Route path="/news/:id" element={<DetailPage />} />
             {CATEGORIES.map(cat => (
                <Route key={cat.id} path={`/${cat.slug}`} element={<CategoriesPage categorySlug={cat.slug} />} />
             ))}

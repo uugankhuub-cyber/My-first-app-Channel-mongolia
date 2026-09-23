@@ -2,6 +2,7 @@ import React from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import remarkBreaks from 'remark-breaks';
+import DOMPurify from 'dompurify';
 
 interface ArticleBodyRendererProps {
   content?: string;
@@ -81,6 +82,11 @@ export const ArticleBodyRenderer: React.FC<ArticleBodyRendererProps> = ({ conten
   const hasHtmlBlocks = /<\s*(?:p|div|h[1-6]|blockquote|ul|ol|table|article|section)\b/i.test(content);
 
   if (hasHtmlBlocks) {
+    const sanitizedHtml = DOMPurify.sanitize(content, {
+      ADD_ATTR: ['target', 'rel'],
+      ADD_TAGS: ['iframe']
+    });
+
     return (
       <div 
         className={`article-content-body prose-custom text-text-main/90 text-lg md:text-xl leading-[1.85] font-normal space-y-6
@@ -100,7 +106,7 @@ export const ArticleBodyRenderer: React.FC<ArticleBodyRendererProps> = ({ conten
           [&_a]:text-brand-purple [&_a]:font-semibold [&_a]:underline [&_a]:underline-offset-4 hover:[&_a]:text-brand-orange transition-colors
           ${className}
         `}
-        dangerouslySetInnerHTML={{ __html: content }}
+        dangerouslySetInnerHTML={{ __html: sanitizedHtml }}
       />
     );
   }

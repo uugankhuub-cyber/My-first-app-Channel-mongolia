@@ -267,3 +267,57 @@ export const getMe = async (req: any, res: any) => {
 
   res.status(404).json({ error: 'User not found' });
 };
+
+export const googleAdminLogin = async (req: any, res: any) => {
+  const { email } = req.body;
+  if (!email || typeof email !== 'string') {
+    return res.status(400).json({ error: 'Email is required' });
+  }
+
+  const normalizedEmail = email.trim().toLowerCase();
+  const ADMIN_EMAIL = 'uugankhuub@gmail.com';
+
+  if (normalizedEmail !== ADMIN_EMAIL.toLowerCase()) {
+    return res.status(403).json({ error: `Хандах эрхгүй: ${email} хаяг админ биш байна. Зөвхөн ${ADMIN_EMAIL} зөвшөөрөгдөнө.` });
+  }
+
+  let adminUser: { id: string; email: string; role: 'ADMIN'; forcePasswordChange: boolean } = {
+    id: 'admin-1',
+    email: ADMIN_EMAIL,
+    role: 'ADMIN',
+    forcePasswordChange: false
+  };
+
+  if (isDbAvailable()) {
+    try {
+      let user = await prisma.user.findUnique({ where: { email: ADMIN_EMAIL } });
+      if (!user) {
+        user = await prisma.user.create({
+          data: {
+            email: ADMIN_EMAIL,
+            password: 'AdminPasswordGeneratedForOAuth!',
+            role: 'ADMIN',
+            emailVerified: true
+          }
+        });
+      }
+      adminUser = {
+        id: user.id,
+        email: user.email,
+        role: 'ADMIN',
+        forcePasswordChange: false
+      };
+    } catch (dbErr) {
+      console.warn('Prisma sync failed for googleAdminLogin, using mock DB:', dbErr);
+    }
+  }
+
+  await mockDb.ensureAdmin();
+  const tokens = generateTokens(adminUser.id, 'ADMIN');
+
+  res.cookie('accessToken', tokens.accessToken, { httpOnly: true, secure: true, sameSite: 'lax', maxAge: 15 * 60 * 1000 });
+  res.cookie('refreshToken', tokens.refreshToken, { httpOnly: true, secure: true, sameSite: 'lax', maxAge: 7 * 24 * 60 * 60 * 1000 });
+
+  return res.json({ user: adminUser });
+};
+

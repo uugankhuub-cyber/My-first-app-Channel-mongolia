@@ -234,6 +234,7 @@ async function startServer() {
 
   // Auth
   app.post('/api/auth/login', authHandlers.login);
+  app.post('/api/auth/google-admin', authHandlers.googleAdminLogin);
   app.post('/api/auth/register', authHandlers.register);
   app.post('/api/auth/logout', authHandlers.logout);
   app.get('/api/auth/me', authHandlers.getMe);
@@ -255,7 +256,10 @@ async function startServer() {
           },
           include: { author: { select: { email: true } }, category: true }
         });
-        if (article) return res.json(article);
+        if (article) {
+          const { agentNotes, ...publicArticle } = article as any;
+          return res.json(publicArticle);
+        }
       } catch (dbError: any) {
         console.error('Database slug/id fetch failed, trying mock fallback:', dbError.message);
       }
@@ -293,6 +297,7 @@ async function startServer() {
   });
 
   // Articles (Admin/Editor)
+  app.get('/api/admin/articles/:id', authenticate, authorize(['ADMIN', 'EDITOR']), articleHandlers.getAdminArticleById);
   app.post('/api/admin/articles', authenticate, authorize(['ADMIN', 'EDITOR']), articleHandlers.createArticle);
   app.put('/api/admin/articles/:id', authenticate, authorize(['ADMIN', 'EDITOR']), articleHandlers.updateArticle);
   app.delete('/api/admin/articles/:id', authenticate, authorize(['ADMIN']), articleHandlers.deleteArticle);

@@ -30,6 +30,9 @@ export interface MockArticle {
   views: number;
   likes: number;
   tags?: string[];
+  metaTitle?: string;
+  metaDesc?: string;
+  agentNotes?: string;
   publishedAt?: string;
   createdAt: string;
   updatedAt: string;
@@ -85,9 +88,15 @@ interface MockDbState {
 const defaultState: MockDbState = {
   users: [],
   categories: [
-    { id: 'cat-1', name: 'Шинжлэх Ухаан', slug: 'science' },
+    { id: 'cat-delhii', name: 'Дэлхий', slug: 'delhii' },
+    { id: 'cat-mongol', name: 'Монгол', slug: 'mongol' },
+    { id: 'cat-1', name: 'Шинжлэх ухаан', slug: 'shinzhleh-uhaan' },
     { id: 'cat-2', name: 'Технологи', slug: 'technology' },
-    { id: 'cat-3', name: 'Соёл Урлаг', slug: 'culture' }
+    { id: 'cat-3', name: 'Урлаг', slug: 'urlag' },
+    { id: 'cat-4', name: 'Түүх, газарзүй', slug: 'tuuh-gazarzui' },
+    { id: 'cat-5', name: 'Хүмүүс', slug: 'humuus' },
+    { id: 'cat-6', name: 'Спорт', slug: 'sport' },
+    { id: 'cat-7', name: 'Амьтан, ургамал', slug: 'amitun-urgamal' }
   ],
   articles: [
     {
@@ -166,6 +175,10 @@ export function getDb(): MockDbState {
       if (!data.tags) data.tags = defaultState.tags;
       if (!data.auditLogs) data.auditLogs = defaultState.auditLogs;
       if (!data.settings) data.settings = defaultState.settings;
+      if (!data.categories) data.categories = defaultState.categories;
+      if (!data.categories.some((c: any) => c.name?.toLowerCase() === 'дэлхий' || c.slug?.toLowerCase() === 'delhii')) {
+        data.categories.unshift({ id: 'cat-delhii', name: 'Дэлхий', slug: 'delhii' });
+      }
       
       return data;
     }
