@@ -596,7 +596,7 @@ async function startServer() {
 
   // 4. Vite / Static
   const distPath = path.join(process.cwd(), 'dist');
-  const isProduction = process.env.NODE_ENV === 'production' || fs.existsSync(path.join(distPath, 'index.html'));
+  const isProduction = process.env.NODE_ENV === 'production';
 
   if (!isProduction) {
     const vite = await createViteServer({
@@ -605,8 +605,13 @@ async function startServer() {
     });
     app.use(vite.middlewares);
   } else {
-    app.use(express.static(distPath));
-    app.get('*all', (req, res) => {
+    app.use(express.static(distPath, {
+      setHeaders: (res) => {
+        res.setHeader('Cross-Origin-Opener-Policy', 'same-origin-allow-popups');
+      }
+    }));
+    app.get('*all', (_req, res) => {
+      res.setHeader('Cross-Origin-Opener-Policy', 'same-origin-allow-popups');
       res.sendFile(path.join(distPath, 'index.html'));
     });
   }
