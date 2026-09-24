@@ -52,8 +52,10 @@ export const GlobalInfoBar: React.FC = () => {
     try {
       const res = await fetch('/api/weather?city=Ulaanbaatar');
       if (res.ok) setWeather(await res.json());
-    } catch (e) {
-      console.error('Weather widget error', e);
+    } catch (e: any) {
+      if (e?.name !== 'AbortError') {
+        console.warn('Weather widget notice:', e?.message || e);
+      }
     }
   };
 
@@ -61,8 +63,10 @@ export const GlobalInfoBar: React.FC = () => {
     try {
       const res = await fetch('/api/rates');
       if (res.ok) setRates(await res.json());
-    } catch (e) {
-      console.error('Rate widget error', e);
+    } catch (e: any) {
+      if (e?.name !== 'AbortError') {
+        console.warn('Rate widget notice:', e?.message || e);
+      }
     }
   };
 

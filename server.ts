@@ -19,6 +19,7 @@ import ratesHandler from './api/rates.ts';
 import uploadHandler from './api/upload.ts';
 import { handleCreateNews, handleNewsHealth, handleNewsInfo } from './api/news.ts';
 import * as agentHandlers from './api/agent-handlers.ts';
+import { handleGetVideos, handleUpdateVideoSettings } from './api/video-handlers.ts';
 
 async function startServer() {
   const isRunningFromDist = Boolean(
@@ -444,6 +445,11 @@ async function startServer() {
   app.get('/api/admin/agent/status', authenticate, authorize(['ADMIN', 'EDITOR']), agentHandlers.getAgentStatus);
   app.post('/api/admin/agent/generate', authenticate, authorize(['ADMIN', 'EDITOR']), agentHandlers.generateAgentNews);
   app.post('/api/admin/agent/test-connection', authenticate, authorize(['ADMIN', 'EDITOR']), agentHandlers.testAgentConnection);
+
+  // --- VIDEOS API (Channel YouTube RSS Feed + Firestore Settings) ---
+  app.get('/api/videos', handleGetVideos);
+  app.post('/api/videos/settings', authenticate, authorize(['ADMIN', 'EDITOR']), handleUpdateVideoSettings);
+  app.post('/api/admin/videos/settings', authenticate, authorize(['ADMIN', 'EDITOR']), handleUpdateVideoSettings);
 
   // 4. Vite / Static
   const distPath = path.join(process.cwd(), 'dist');

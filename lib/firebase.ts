@@ -1,6 +1,6 @@
 import { initializeApp, getApps, getApp } from 'firebase/app';
 import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult, signOut } from 'firebase/auth';
-import { getFirestore, doc, getDocFromServer } from 'firebase/firestore';
+import { initializeFirestore, getFirestore, doc, getDocFromServer } from 'firebase/firestore';
 import firebaseConfig from '../firebase-applet-config.json';
 
 // Ensure authDomain is explicitly <project-id>.firebaseapp.com as required
@@ -16,10 +16,18 @@ const resolvedConfig = {
 // Initialize Firebase App
 const app = !getApps().length ? initializeApp(resolvedConfig) : getApp();
 
-// CRITICAL: Must pass firebaseConfig.firestoreDatabaseId if specified
-export const db = firebaseConfig.firestoreDatabaseId 
-  ? getFirestore(app, firebaseConfig.firestoreDatabaseId)
-  : getFirestore(app);
+// CRITICAL: Initialize Firestore with ignoreUndefinedProperties: true
+export const db = (() => {
+  try {
+    return firebaseConfig.firestoreDatabaseId 
+      ? initializeFirestore(app, { ignoreUndefinedProperties: true }, firebaseConfig.firestoreDatabaseId)
+      : initializeFirestore(app, { ignoreUndefinedProperties: true });
+  } catch {
+    return firebaseConfig.firestoreDatabaseId 
+      ? getFirestore(app, firebaseConfig.firestoreDatabaseId)
+      : getFirestore(app);
+  }
+})();
 export const auth = getAuth(app);
 export const googleProvider = new GoogleAuthProvider();
 googleProvider.setCustomParameters({

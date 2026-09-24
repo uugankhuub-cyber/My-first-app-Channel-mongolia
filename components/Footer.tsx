@@ -80,7 +80,7 @@ export const Footer: React.FC = () => {
             <h3 className="text-[1.15rem] font-[800] text-text-main mb-6">{t('nav_categories')}</h3>
             <ul className="space-y-3 text-sm text-text-muted">
               <li><Link to="/shinzhleh-uhaan" className="hover:text-brand-purple transition-colors block">Science</Link></li>
-              <li><a href="https://www.youtube.com/@ChannelMongolia" target="_blank" rel="noopener noreferrer" className="hover:text-brand-purple transition-colors block">Video</a></li>
+              <li><Link to="/video" className="hover:text-brand-purple transition-colors block">Video</Link></li>
               <li><Link to="/tuuh-gazarzui" className="hover:text-brand-purple transition-colors block">History</Link></li>
             </ul>
           </motion.div>

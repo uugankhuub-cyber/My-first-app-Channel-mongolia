@@ -29,8 +29,10 @@ export const ContentProvider: React.FC<{ children: ReactNode }> = ({ children })
           console.log('Using fallback/mock content');
         }
       }
-    } catch (e) {
-      console.error("Failed to fetch content, using mocks", e);
+    } catch (e: any) {
+      if (e?.name !== 'AbortError') {
+        console.warn("Content fetch notice, using fallback", e?.message || e);
+      }
     } finally {
       setLoading(false);
     }

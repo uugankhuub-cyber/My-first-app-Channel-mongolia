@@ -5,6 +5,7 @@ import { Footer } from './components/Footer';
 import { Home } from './pages/Home';
 import { DetailPage } from './pages/DetailPage';
 import { CategoriesPage } from './pages/CategoriesPage';
+import { VideoPage } from './pages/VideoPage';
 import { SearchPage } from './pages/SearchPage';
 import { AboutPage } from './pages/AboutPage';
 import { ContactPage } from './pages/ContactPage';
@@ -36,6 +37,7 @@ import { AdminArticleForm } from './pages/admin/AdminArticleForm';
 import { AdminCategoriesPage } from './pages/admin/AdminCategoriesPage';
 import { AdminTagsPage } from './pages/admin/AdminTagsPage';
 import { AdminMediaPage } from './pages/admin/AdminMediaPage';
+import { AdminVideosPage } from './pages/admin/AdminVideosPage';
 import { AdminUsersPage } from './pages/admin/AdminUsersPage';
 import { AdminCommentsPage } from './pages/admin/AdminCommentsPage';
 import { AdminAnalyticsPage } from './pages/admin/AdminAnalyticsPage';
@@ -113,6 +115,7 @@ const AnimatedRoutes = () => {
              <Route path="categories" element={<AdminCategoriesPage />} />
              <Route path="tags" element={<AdminTagsPage />} />
              <Route path="media" element={<AdminMediaPage />} />
+             <Route path="videos" element={<AdminVideosPage />} />
              <Route path="users" element={<AdminUsersPage />} />
              <Route path="comments" element={<AdminCommentsPage />} />
              <Route path="analytics" element={<AdminAnalyticsPage />} />
@@ -140,10 +143,11 @@ const AnimatedRoutes = () => {
             {/* Backward compatibility for /news */}
             <Route path="/news" element={<Navigate to="/" replace />} />
             <Route path="/news/:id" element={<DetailPage />} />
-            {CATEGORIES.map(cat => (
+            {CATEGORIES.filter(cat => cat.slug !== 'video').map(cat => (
                <Route key={cat.id} path={`/${cat.slug}`} element={<CategoriesPage categorySlug={cat.slug} />} />
             ))}
-            <Route path="/video" element={<CategoriesPage filter="video" />} />
+            <Route path="/video" element={<VideoPage />} />
+            <Route path="/video/:videoId" element={<VideoPage />} />
             <Route path="/categories" element={<CategoriesPage />} />
             <Route path="/niitlel/:id" element={<DetailPage />} />
             <Route path="/search" element={<SearchPage />} />

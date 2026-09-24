@@ -70,14 +70,6 @@ export const Navbar: React.FC = () => {
     { label: t("nav_home"), path: "/", type: "link", external: false },
     ...CATEGORIES.map((cat) => {
       const label = language === "en" ? (cat.label_en || cat.label) : cat.label;
-      if (cat.slug === 'video') {
-        return {
-          label,
-          path: "https://www.youtube.com/@ChannelMongolia",
-          type: "external",
-          external: true
-        };
-      }
       return {
         label,
         path: `/${cat.slug}`,

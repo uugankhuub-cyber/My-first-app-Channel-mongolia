@@ -256,13 +256,14 @@ export async function generateAgentNews(req: Request, res: Response) {
       thumbnail: generatedData.image?.url || 'https://images.unsplash.com/photo-1585829365295-ab7cd400c167?auto=format&fit=crop&q=80&w=1200',
       images: generatedData.image?.url ? [{ url: generatedData.image.url, caption: generatedData.title }] : [],
       status: 'DRAFT', // Always created as DRAFT for review
-      categoryId: matchedCategory.id,
+      categoryId: matchedCategory.id || null,
       views: 0,
       likes: 0,
       tags: Array.isArray(generatedData.tags) ? generatedData.tags : ['Мэдээ'],
-      metaTitle: generatedData.title.trim(),
-      metaDesc: generatedData.seo?.meta_description || generatedData.lead.trim().slice(0, 160),
-      agentNotes: agentNotesStr,
+      metaTitle: generatedData.title.trim() || null,
+      metaDesc: (generatedData.seo?.meta_description || generatedData.lead.trim().slice(0, 160)) || null,
+      agentNotes: agentNotesStr || null,
+      publishedAt: null, // Always null for DRAFT
       createdAt: nowIso,
       updatedAt: nowIso
     }, newArticleId);

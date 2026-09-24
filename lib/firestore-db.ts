@@ -28,25 +28,48 @@ export interface User {
 export interface Article {
   id: string;
   title: string;
-  title_en?: string;
+  title_en?: string | null;
   slug: string;
-  excerpt?: string;
-  excerpt_en?: string;
+  excerpt?: string | null;
+  excerpt_en?: string | null;
   content: string;
-  content_en?: string;
-  thumbnail?: string;
+  content_en?: string | null;
+  thumbnail?: string | null;
   status: 'DRAFT' | 'PUBLISHED' | 'ARCHIVED';
-  categoryId?: string;
+  categoryId?: string | null;
   views?: number;
   likes?: number;
   tags?: string[];
   images?: Array<{ url: string; caption?: string } | string>;
-  metaTitle?: string;
-  metaDesc?: string;
-  agentNotes?: string;
-  publishedAt?: string;
+  metaTitle?: string | null;
+  metaDesc?: string | null;
+  agentNotes?: string | null;
+  publishedAt?: string | null;
   createdAt: string;
   updatedAt: string;
+}
+
+/**
+ * Strips undefined properties recursively so Firestore never throws
+ * "Unsupported field value: undefined".
+ */
+export function sanitizeForFirestore<T>(data: T): T {
+  if (data === null || data === undefined) {
+    return data;
+  }
+  if (Array.isArray(data)) {
+    return data.map(item => sanitizeForFirestore(item)) as unknown as T;
+  }
+  if (typeof data === 'object' && !(data instanceof Date)) {
+    const clean: Record<string, any> = {};
+    for (const [key, value] of Object.entries(data)) {
+      if (value !== undefined) {
+        clean[key] = sanitizeForFirestore(value);
+      }
+    }
+    return clean as T;
+  }
+  return data;
 }
 
 export interface Category {
@@ -136,7 +159,7 @@ export async function getCategoryBySlug(slug: string): Promise<Category | null> 
 
 export async function createCategory(cat: { name: string; slug: string; id?: string }): Promise<Category> {
   const id = cat.id || 'cat-' + cat.slug.toLowerCase().replace(/[^a-z0-9_-]/g, '-');
-  const newCat: Category = { id, name: cat.name, slug: cat.slug };
+  const newCat: Category = sanitizeForFirestore({ id, name: cat.name || '', slug: cat.slug || '' });
   await setDoc(doc(db, 'categories', id), newCat);
   return newCat;
 }
@@ -145,7 +168,7 @@ export async function updateCategory(id: string, data: { name?: string; slug?: s
   const ref = doc(db, 'categories', id);
   const snap = await getDoc(ref);
   if (!snap.exists()) return null;
-  const updated = { ...snap.data(), ...data, id } as Category;
+  const updated = sanitizeForFirestore({ ...snap.data(), ...data, id }) as Category;
   await setDoc(ref, updated, { merge: true });
   return updated;
 }
@@ -263,16 +286,43 @@ export async function createArticle(
 ): Promise<Article> {
   const id = customId || articleData.id || 'art-' + Math.random().toString(36).substring(2, 11);
   const now = new Date().toISOString();
-  const article: Article = {
-    ...articleData,
+  const status = articleData.status || 'DRAFT';
+
+  // When saving a DRAFT, set publishedAt: null (never undefined). When publishing, set publishedAt to the current ISO date.
+  let publishedAt: string | null = null;
+  if (status === 'PUBLISHED') {
+    publishedAt = articleData.publishedAt || now;
+  } else {
+    publishedAt = articleData.publishedAt ?? null;
+  }
+
+  const rawArticle: Article = {
     id,
-    views: articleData.views || 0,
-    likes: articleData.likes || 0,
+    title: articleData.title || '',
+    title_en: articleData.title_en ?? articleData.title ?? '',
+    slug: articleData.slug || ('news-' + Date.now()),
+    excerpt: articleData.excerpt ?? '',
+    excerpt_en: articleData.excerpt_en ?? '',
+    content: articleData.content || '',
+    content_en: articleData.content_en ?? articleData.content ?? '',
+    thumbnail: articleData.thumbnail ?? null,
+    status,
+    categoryId: articleData.categoryId ?? null,
+    views: typeof articleData.views === 'number' ? articleData.views : 0,
+    likes: typeof articleData.likes === 'number' ? articleData.likes : 0,
+    tags: Array.isArray(articleData.tags) ? articleData.tags : [],
+    images: Array.isArray(articleData.images) ? articleData.images : [],
+    metaTitle: articleData.metaTitle ?? null,
+    metaDesc: articleData.metaDesc ?? null,
+    agentNotes: articleData.agentNotes ?? null,
+    publishedAt,
     createdAt: articleData.createdAt || now,
     updatedAt: now
   };
+
+  const article = sanitizeForFirestore(rawArticle);
   await setDoc(doc(db, 'articles', id), article);
-  return article;
+  return article as Article;
 }
 
 export async function updateArticle(id: string, updates: Partial<Article>): Promise<Article | null> {
@@ -280,14 +330,38 @@ export async function updateArticle(id: string, updates: Partial<Article>): Prom
   const snap = await getDoc(ref);
   if (!snap.exists()) return null;
   const existing = snap.data() as Article;
-  const updated: Article = {
+  const now = new Date().toISOString();
+
+  let status = updates.status !== undefined ? updates.status : existing.status;
+  let publishedAt = updates.publishedAt !== undefined ? updates.publishedAt : existing.publishedAt;
+
+  // When saving a DRAFT, set publishedAt: null. When publishing, set publishedAt to the current ISO date.
+  if (updates.status === 'DRAFT') {
+    publishedAt = null;
+  } else if (updates.status === 'PUBLISHED') {
+    publishedAt = updates.publishedAt || existing.publishedAt || now;
+  }
+
+  const merged: Article = {
     ...existing,
     ...updates,
     id,
-    updatedAt: new Date().toISOString()
+    status,
+    publishedAt: publishedAt !== undefined ? publishedAt : null,
+    thumbnail: updates.thumbnail !== undefined ? (updates.thumbnail ?? null) : (existing.thumbnail ?? null),
+    categoryId: updates.categoryId !== undefined ? (updates.categoryId ?? null) : (existing.categoryId ?? null),
+    metaTitle: updates.metaTitle !== undefined ? (updates.metaTitle ?? null) : (existing.metaTitle ?? null),
+    metaDesc: updates.metaDesc !== undefined ? (updates.metaDesc ?? null) : (existing.metaDesc ?? null),
+    agentNotes: updates.agentNotes !== undefined ? (updates.agentNotes ?? null) : (existing.agentNotes ?? null),
+    tags: updates.tags !== undefined ? (Array.isArray(updates.tags) ? updates.tags : []) : (existing.tags || []),
+    excerpt: updates.excerpt !== undefined ? (updates.excerpt ?? '') : (existing.excerpt ?? ''),
+    excerpt_en: updates.excerpt_en !== undefined ? (updates.excerpt_en ?? '') : (existing.excerpt_en ?? ''),
+    updatedAt: now
   };
-  await setDoc(ref, updated, { merge: true });
-  return updated;
+
+  const cleanMerged = sanitizeForFirestore(merged);
+  await setDoc(ref, cleanMerged, { merge: true });
+  return cleanMerged as Article;
 }
 
 export async function deleteArticle(id: string): Promise<boolean> {
@@ -358,12 +432,14 @@ export async function createUser(
 ): Promise<User> {
   const id = customId || data.id || 'user-' + Math.random().toString(36).substring(2, 11);
   const now = new Date().toISOString();
-  const user: User = {
+  const user: User = sanitizeForFirestore({
     ...data,
     id,
+    failedLoginAttempts: typeof data.failedLoginAttempts === 'number' ? data.failedLoginAttempts : 0,
+    lockedUntil: data.lockedUntil || null,
     createdAt: data.createdAt || now,
     updatedAt: now
-  };
+  });
   await setDoc(doc(db, 'users', id), user);
   return user;
 }
@@ -373,12 +449,13 @@ export async function updateUser(id: string, updates: Partial<User>): Promise<Us
   const snap = await getDoc(ref);
   if (!snap.exists()) return null;
   const existing = snap.data() as User;
-  const updated: User = {
+  const updated: User = sanitizeForFirestore({
     ...existing,
     ...updates,
     id,
+    lockedUntil: updates.lockedUntil !== undefined ? (updates.lockedUntil || null) : (existing.lockedUntil || null),
     updatedAt: new Date().toISOString()
-  };
+  });
   await setDoc(ref, updated, { merge: true });
   return updated;
 }
@@ -396,7 +473,7 @@ export async function ensureAdminUser(): Promise<void> {
       console.log(`[FIRESTORE] Seeding initial admin user: ${ADMIN_EMAIL}`);
       const { hashPassword } = await import('./auth.ts');
       const passwordHash = await hashPassword('Admin123!');
-      await setDoc(doc(db, 'users', 'admin-1'), {
+      await setDoc(doc(db, 'users', 'admin-1'), sanitizeForFirestore({
         id: 'admin-1',
         email: ADMIN_EMAIL,
         passwordHash,
@@ -406,7 +483,7 @@ export async function ensureAdminUser(): Promise<void> {
         lockedUntil: null,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
-      });
+      }));
     } else if (existing.role !== 'ADMIN') {
       await updateUser(existing.id, { role: 'ADMIN' });
     }
@@ -430,7 +507,7 @@ export async function getTags(): Promise<Tag[]> {
 
 export async function createTag(name: string): Promise<Tag> {
   const id = 'tag-' + Math.random().toString(36).substring(2, 9);
-  const tag: Tag = { id, name };
+  const tag: Tag = sanitizeForFirestore({ id, name: name || '' });
   await setDoc(doc(db, 'tags', id), tag);
   return tag;
 }
@@ -439,7 +516,7 @@ export async function updateTag(id: string, name: string): Promise<Tag | null> {
   const ref = doc(db, 'tags', id);
   const snap = await getDoc(ref);
   if (!snap.exists()) return null;
-  const updated: Tag = { id, name };
+  const updated: Tag = sanitizeForFirestore({ id, name: name || '' });
   await setDoc(ref, updated, { merge: true });
   return updated;
 }
@@ -466,7 +543,7 @@ export async function updateCommentStatus(id: string, status: 'PENDING' | 'APPRO
   const ref = doc(db, 'comments', id);
   const snap = await getDoc(ref);
   if (!snap.exists()) return null;
-  const updated = { ...(snap.data() as Comment), id, status };
+  const updated = sanitizeForFirestore({ ...(snap.data() as Comment), id, status });
   await setDoc(ref, updated, { merge: true });
   return updated;
 }
@@ -492,7 +569,8 @@ export async function getSettings(): Promise<Setting[]> {
 export async function updateSettings(settingsList: Array<{ key: string; value: string }>): Promise<Setting[]> {
   for (const s of settingsList) {
     const id = 'set-' + s.key;
-    await setDoc(doc(db, 'settings', id), { id, key: s.key, value: s.value }, { merge: true });
+    const cleanSetting = sanitizeForFirestore({ id, key: s.key, value: s.value !== undefined ? String(s.value) : '' });
+    await setDoc(doc(db, 'settings', id), cleanSetting, { merge: true });
   }
   return getSettings();
 }
@@ -513,7 +591,52 @@ export async function getAuditLogs(): Promise<AuditLog[]> {
 
 export async function createAuditLog(log: Omit<AuditLog, 'id'>): Promise<AuditLog> {
   const id = 'log-' + Math.random().toString(36).substring(2, 9);
-  const item: AuditLog = { ...log, id };
+  const item: AuditLog = sanitizeForFirestore({
+    ...log,
+    id,
+    details: log.details || '',
+    ipAddress: log.ipAddress || '',
+    createdAt: log.createdAt || new Date().toISOString()
+  });
   await setDoc(doc(db, 'auditLogs', id), item);
   return item;
 }
+
+// --- VIDEO SETTINGS ---
+export interface VideoSettings {
+  pinnedVideoIds: string[];
+  hiddenVideoIds: string[];
+  updatedAt?: string;
+}
+
+export async function getVideoSettings(): Promise<VideoSettings> {
+  try {
+    const snap = await getDoc(doc(db, 'settings', 'video-management'));
+    if (snap.exists()) {
+      const data = snap.data() as any;
+      return {
+        pinnedVideoIds: Array.isArray(data.pinnedVideoIds) ? data.pinnedVideoIds : [],
+        hiddenVideoIds: Array.isArray(data.hiddenVideoIds) ? data.hiddenVideoIds : [],
+        updatedAt: data.updatedAt
+      };
+    }
+  } catch (err: any) {
+    console.error('[FIRESTORE] getVideoSettings error:', err.message);
+  }
+  return { pinnedVideoIds: [], hiddenVideoIds: [] };
+}
+
+export async function updateVideoSettings(data: {
+  pinnedVideoIds?: string[];
+  hiddenVideoIds?: string[];
+}): Promise<VideoSettings> {
+  const current = await getVideoSettings();
+  const updated: VideoSettings = sanitizeForFirestore({
+    pinnedVideoIds: Array.isArray(data.pinnedVideoIds) ? data.pinnedVideoIds : current.pinnedVideoIds,
+    hiddenVideoIds: Array.isArray(data.hiddenVideoIds) ? data.hiddenVideoIds : current.hiddenVideoIds,
+    updatedAt: new Date().toISOString()
+  });
+  await setDoc(doc(db, 'settings', 'video-management'), updated, { merge: true });
+  return updated;
+}
+

@@ -172,7 +172,12 @@ export async function handleCreateNews(req: Request, res: Response) {
       .trim()
       .toLowerCase()
       .replace(/[^a-z0-9_-]/g, '-')
-      .replace(/-+/g, '-');
+      .replace(/-+/g, '-')
+      .replace(/^-+|-+$/g, '');
+
+    if (!cleanSlug) {
+      cleanSlug = 'news-' + Date.now();
+    }
 
     const existingArticles = await db.getArticles();
     const slugExists = existingArticles.some(a => a.slug === cleanSlug);
@@ -213,15 +218,15 @@ export async function handleCreateNews(req: Request, res: Response) {
     };
     const agentNotesStr = JSON.stringify(agentNotesObj);
 
-    // 7. Thumbnail resolution
-    let finalThumbnail: string | undefined = undefined;
-    if (explicitThumbnail && typeof explicitThumbnail === 'string') {
+    // 7. Thumbnail resolution - use null instead of undefined
+    let finalThumbnail: string | null = null;
+    if (explicitThumbnail && typeof explicitThumbnail === 'string' && explicitThumbnail.trim()) {
       finalThumbnail = explicitThumbnail.trim();
     } else if (image) {
-      if (typeof image === 'string') {
+      if (typeof image === 'string' && image.trim()) {
         finalThumbnail = image.trim();
       } else if (typeof image === 'object' && image.url) {
-        finalThumbnail = String(image.url).trim();
+        finalThumbnail = String(image.url).trim() || null;
       }
     }
 
@@ -229,11 +234,11 @@ export async function handleCreateNews(req: Request, res: Response) {
       ? tags.map(t => String(t).trim()).filter(Boolean) 
       : (typeof tags === 'string' ? tags.split(',').map(t => t.trim()).filter(Boolean) : ['Мэдээ']);
 
-    const metaDesc = seo?.meta_description 
+    const metaDesc = (seo?.meta_description 
       ? String(seo.meta_description) 
-      : articleLead.substring(0, 160);
+      : articleLead.substring(0, 160)) || null;
     
-    const metaTitle = articleTitle;
+    const metaTitle = articleTitle || null;
     const nowIso = new Date().toISOString();
     const newArticleId = 'art-' + Math.random().toString(36).substring(2, 11);
 
@@ -242,39 +247,40 @@ export async function handleCreateNews(req: Request, res: Response) {
     if (Array.isArray(images)) {
       imageGalleryList = images.map((img: any) => {
         if (typeof img === 'string') return { url: img };
-        return { url: img.url || '', caption: img.caption };
+        return { url: img?.url || '', caption: img?.caption || '' };
       }).filter(img => Boolean(img.url));
     } else if (finalThumbnail) {
       imageGalleryList = [{ url: finalThumbnail, caption: articleTitle }];
     }
 
     // 8. Create Article with status "DRAFT" in Firestore
+    // Requirement: When saving a DRAFT, set publishedAt: null (never undefined).
+    // Apply same rule to all optional fields: thumbnail, categoryId, metaTitle, metaDesc, agentNotes, tags, excerpt -> use null or ""
     const createdArticle = await db.createArticle({
       title: articleTitle,
       title_en: articleTitle,
       slug: cleanSlug,
-      excerpt: articleLead,
-      excerpt_en: articleLead,
+      excerpt: articleLead || '',
+      excerpt_en: articleLead || '',
       content: fullContent,
       content_en: fullContent,
       thumbnail: finalThumbnail,
       images: imageGalleryList,
       status: 'DRAFT', // Always DRAFT for editorial safety
-      categoryId: matchedCategory.id,
+      categoryId: matchedCategory?.id || null,
       views: 0,
       likes: 0,
       tags: tagsList,
       metaTitle: metaTitle,
       metaDesc: metaDesc,
       agentNotes: agentNotesStr,
-      publishedAt: undefined,
+      publishedAt: null, // Always null for DRAFT (never undefined)
       createdAt: nowIso,
       updatedAt: nowIso
     }, newArticleId);
 
-    // 9. Return 201 Success
+    // 9. Return 201 Success { id, slug }
     return res.status(201).json({
-      success: true,
       id: createdArticle.id,
       slug: cleanSlug,
       title: articleTitle,

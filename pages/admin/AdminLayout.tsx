@@ -30,6 +30,7 @@ export const AdminLayout: React.FC = () => {
     { label: 'Ангилал', path: '/admin/categories', icon: <Folder size={20} /> },
     { label: 'Шошгонууд', path: '/admin/tags', icon: <Hash size={20} /> },
     { label: 'Медиа сан', path: '/admin/media', icon: <ImageIcon size={20} /> },
+    { label: 'Видео удирдлага', path: '/admin/videos', icon: <MonitorPlay size={20} /> },
     { label: 'Хэрэглэгчид', path: '/admin/users', icon: <Users size={20} /> },
     { label: 'Сэтгэгдэл', path: '/admin/comments', icon: <MessageSquare size={20} /> },
     { label: 'Аналитик', path: '/admin/analytics', icon: <TrendingUp size={20} /> },

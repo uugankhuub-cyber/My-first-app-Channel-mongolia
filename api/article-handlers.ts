@@ -113,6 +113,7 @@ export const createArticle = async (req: any, res: any) => {
     }
 
     const now = new Date().toISOString();
+    const isPublished = body.status === 'PUBLISHED';
     const newArt = await db.createArticle({
       title: body.title,
       title_en: body.title,
@@ -121,17 +122,17 @@ export const createArticle = async (req: any, res: any) => {
       excerpt_en: body.excerpt || body.content.substring(0, 150),
       content: body.content,
       content_en: body.content,
-      thumbnail: body.thumbnail,
+      thumbnail: body.thumbnail || null,
       images: body.images || [],
-      status: body.status,
-      categoryId: finalCategoryId,
+      status: body.status || 'DRAFT',
+      categoryId: finalCategoryId || null,
       tags: body.tags || [],
-      metaTitle: body.metaTitle,
-      metaDesc: body.metaDesc,
-      agentNotes: body.agentNotes,
+      metaTitle: body.metaTitle || null,
+      metaDesc: body.metaDesc || null,
+      agentNotes: body.agentNotes || null,
       views: 0,
       likes: 0,
-      publishedAt: body.status === 'PUBLISHED' ? now : undefined,
+      publishedAt: isPublished ? now : null,
       createdAt: now,
       updatedAt: now
     });
@@ -161,10 +162,20 @@ export const updateArticle = async (req: any, res: any) => {
       }
     }
 
+    const isPublishing = body.status === 'PUBLISHED';
+    const isDraft = body.status === 'DRAFT';
+    const now = new Date().toISOString();
+
     const updates: Partial<db.Article> = {
       ...body,
-      ...(finalCategoryId !== undefined && { categoryId: finalCategoryId }),
-      ...(body.status === 'PUBLISHED' && { publishedAt: new Date().toISOString() }),
+      ...(finalCategoryId !== undefined && { categoryId: finalCategoryId || null }),
+      ...(body.thumbnail !== undefined && { thumbnail: body.thumbnail || null }),
+      ...(body.metaTitle !== undefined && { metaTitle: body.metaTitle || null }),
+      ...(body.metaDesc !== undefined && { metaDesc: body.metaDesc || null }),
+      ...(body.agentNotes !== undefined && { agentNotes: body.agentNotes || null }),
+      ...(body.excerpt !== undefined && { excerpt: body.excerpt || '' }),
+      ...(isPublishing && { publishedAt: now }),
+      ...(isDraft && { publishedAt: null }),
     };
 
     const updated = await db.updateArticle(id, updates);
