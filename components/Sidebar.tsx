@@ -68,7 +68,7 @@ export const Sidebar: React.FC = () => {
     
     return (
       <motion.div variants={itemVariants}>
-        <Link to={`/niitlel/${item.id}`} className="group flex gap-3 items-start p-2 rounded-xl hover:bg-black/5 dark:hover:bg-white/5 transition-colors focus-visible:ring-2 focus-visible:ring-brand-purple">
+        <Link to={`/article/${item.slug || item.id}`} className="group flex gap-3 items-start p-2 rounded-xl hover:bg-black/5 dark:hover:bg-white/5 transition-colors focus-visible:ring-2 focus-visible:ring-brand-purple">
           {showImage && (
             <div className="relative w-16 h-12 flex-shrink-0">
                <Thumbnail 
@@ -180,7 +180,7 @@ export const Sidebar: React.FC = () => {
                   const title = isEn ? item.title_en : item.title;
                   return (
                    <motion.div key={item.id} variants={itemVariants}>
-                     <Link to={`/niitlel/${item.id}`} className="block group outline-none focus-visible:ring-2 focus-visible:ring-brand-purple rounded-xl">
+                     <Link to={`/article/${item.slug || item.id}`} className="block group outline-none focus-visible:ring-2 focus-visible:ring-brand-purple rounded-xl">
                        <div className="relative rounded-xl overflow-hidden mb-2 shadow-sm border border-border">
                           <Thumbnail 
                              src={item.thumbnailUrl} 

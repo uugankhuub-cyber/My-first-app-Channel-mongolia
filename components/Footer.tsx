@@ -88,7 +88,7 @@ export const Footer: React.FC = () => {
            <motion.div variants={itemVariants} className="md:col-span-2">
             <h3 className="text-[1.15rem] font-[800] text-text-main mb-6">Legal</h3>
             <ul className="space-y-3 text-sm text-text-muted">
-              <li><Link to="/nuuts-lalin-bodlogo" className="hover:text-text-main transition-colors block">{t('privacy')}</Link></li>
+              <li><Link to="/privacy" className="hover:text-text-main transition-colors block">{t('privacy')}</Link></li>
               <li><Link to="/uilchilgeenii-nukhtsul" className="hover:text-text-main transition-colors block">{t('terms')}</Link></li>
             </ul>
           </motion.div>

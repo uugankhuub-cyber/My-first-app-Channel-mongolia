@@ -5,7 +5,7 @@ import {
   Save, ArrowLeft, Image as ImageIcon, Globe, FileText, CheckCircle, 
   AlertTriangle, Sparkles, Sliders, Hash, Compass, Info, ChevronRight,
   Bold, Italic, Heading2, Heading3, List, ListOrdered, Quote, Link2, 
-  Eye, Edit3, AlignLeft, Wand2, Plus, CornerDownLeft, Bot, CheckCircle2
+  Eye, Edit3, AlignLeft, Wand2, Plus, CornerDownLeft, Bot, CheckCircle2, RefreshCw
 } from 'lucide-react';
 import { motion } from 'motion/react';
 import { ArticleBodyRenderer } from '../../components/ArticleBodyRenderer';
@@ -29,6 +29,10 @@ export const AdminArticleForm: React.FC = () => {
   const [images, setImages] = useState<ArticleImageItem[]>([]);
   const [showImageModal, setShowImageModal] = useState(false);
   const [status, setStatus] = useState<'DRAFT' | 'PUBLISHED' | 'ARCHIVED'>('DRAFT');
+  const [postToFacebook, setPostToFacebook] = useState(true);
+  const [fbPostId, setFbPostId] = useState<string | null>(null);
+  const [fbShareStatus, setFbShareStatus] = useState<string | null>(null);
+  const [fbRetrying, setFbRetrying] = useState(false);
   const [categoryId, setCategoryId] = useState('');
   const [metaTitle, setMetaTitle] = useState('');
   const [metaDesc, setMetaDesc] = useState('');
@@ -237,6 +241,8 @@ export const AdminArticleForm: React.FC = () => {
             setCategoryId(article.categoryId || '');
             setMetaTitle(article.metaTitle || '');
             setMetaDesc(article.metaDesc || '');
+            setFbPostId(article.fbPostId || null);
+            setFbShareStatus(article.fbShareStatus || null);
             
             const rawNotes = article.agentNotes;
             setAgentNotes(typeof rawNotes === 'string' ? rawNotes : (rawNotes ? JSON.stringify(rawNotes, null, 2) : ''));
@@ -334,6 +340,7 @@ export const AdminArticleForm: React.FC = () => {
       content,
       thumbnail,
       status,
+      postToFacebook,
       categoryId: categoryId || undefined,
       metaTitle,
       metaDesc,
@@ -356,6 +363,9 @@ export const AdminArticleForm: React.FC = () => {
       });
 
       if (res.ok) {
+        const savedArt = await res.json();
+        if (savedArt?.fbShareStatus) setFbShareStatus(savedArt.fbShareStatus);
+        if (savedArt?.fbPostId) setFbPostId(savedArt.fbPostId);
         setSuccess(isEdit ? 'Амжилттай хадгалагдлаа!' : 'Шинэ нийтлэл амжилттай үүсгэгдлээ!');
         setTimeout(() => {
           navigate('/admin/articles');
@@ -368,6 +378,36 @@ export const AdminArticleForm: React.FC = () => {
       setError(e.message);
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Retry Facebook auto-post handler
+  const handleRetryFacebook = async () => {
+    if (!id) return;
+    setFbRetrying(true);
+    setError(null);
+    setSuccess(null);
+    try {
+      const res = await fetch(`/api/admin/articles/${id}/facebook-retry`, {
+        method: 'POST',
+        credentials: 'include'
+      });
+      const data = await res.json();
+      if (data.fbShareStatus) {
+        setFbShareStatus(data.fbShareStatus);
+      }
+      if (data.fbPostId) {
+        setFbPostId(data.fbPostId);
+      }
+      if (data.success) {
+        setSuccess('Facebook хуудсанд амжилттай нийтлэгдлээ!');
+      } else {
+        setError(`Facebook нийтлэхэд алдаа гарлаа: ${data.fbShareStatus || data.error || 'Тодорхойгүй алдаа'}`);
+      }
+    } catch (err: any) {
+      setError(err.message || 'Facebook дахин илгээх холболтод алдаа гарлаа.');
+    } finally {
+      setFbRetrying(false);
     }
   };
 
@@ -857,6 +897,77 @@ export const AdminArticleForm: React.FC = () => {
                   <option value="PUBLISHED">Нийтлэх (Бүгдэд нээлттэй)</option>
                   <option value="ARCHIVED">Архивлах (Дарагдсан төлөв)</option>
                 </select>
+              </div>
+
+              {/* Facebook Auto-Post Configuration */}
+              <div className="p-3.5 bg-background border border-border rounded-xl space-y-3">
+                <div className="flex items-center justify-between">
+                  <label className="flex items-center gap-2.5 cursor-pointer select-none">
+                    <input 
+                      type="checkbox"
+                      checked={postToFacebook}
+                      onChange={(e) => setPostToFacebook(e.target.checked)}
+                      className="w-4 h-4 rounded border-border text-blue-600 focus:ring-blue-500 transition-colors cursor-pointer"
+                    />
+                    <span className="text-xs font-bold text-text-main flex items-center gap-1.5">
+                      <svg className="w-3.5 h-3.5 text-[#1877F2] fill-current flex-shrink-0" viewBox="0 0 24 24">
+                        <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                      </svg>
+                      Facebook-т нийтлэх
+                    </span>
+                  </label>
+                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-500 font-semibold">
+                    Auto-post
+                  </span>
+                </div>
+
+                {/* Facebook Share Status Indicator */}
+                {fbPostId || fbShareStatus === 'ok' ? (
+                  <div className="p-2.5 bg-green-500/10 border border-green-500/20 rounded-lg space-y-1">
+                    <div className="flex items-center gap-1.5 text-xs font-semibold text-green-500">
+                      <CheckCircle2 size={13} />
+                      <span>Facebook-т амжилттай нийтлэгдсэн</span>
+                    </div>
+                    {fbPostId && (
+                      <p className="text-[10px] font-mono text-text-muted break-all">
+                        Post ID: {fbPostId}
+                      </p>
+                    )}
+                  </div>
+                ) : fbShareStatus && fbShareStatus !== 'ok' ? (
+                  <div className="p-2.5 bg-amber-500/10 border border-amber-500/20 rounded-lg space-y-2">
+                    <div className="flex items-start gap-1.5 text-xs font-semibold text-amber-500">
+                      <AlertTriangle size={14} className="flex-shrink-0 mt-0.5" />
+                      <div className="min-w-0">
+                        <span>Facebook нийтлэл амжилтгүй:</span>
+                        <p className="text-[11px] font-normal text-text-muted mt-0.5 break-words">
+                          {fbShareStatus}
+                        </p>
+                      </div>
+                    </div>
+                    {isEdit && (
+                      <button
+                        type="button"
+                        onClick={handleRetryFacebook}
+                        disabled={fbRetrying}
+                        className="w-full flex items-center justify-center gap-1.5 px-3 py-2 bg-amber-500 hover:bg-amber-600 text-slate-950 rounded-lg text-xs font-bold transition-all disabled:opacity-50 cursor-pointer shadow-sm"
+                      >
+                        {fbRetrying ? (
+                          <div className="w-3 h-3 border-2 border-slate-950 border-t-transparent rounded-full animate-spin"></div>
+                        ) : (
+                          <RefreshCw size={13} />
+                        )}
+                        <span>Дахин оролдох</span>
+                      </button>
+                    )}
+                  </div>
+                ) : (
+                  <p className="text-[11px] text-text-muted leading-tight">
+                    {status === 'PUBLISHED' 
+                      ? 'Хадгалах үед Facebook хуудсанд автоматаар нийтлэгдэнэ.' 
+                      : 'Ноорог төлөвт Facebook-т нийтлэгдэхгүй. Нийтлэх (PUBLISHED) үед автоматаар Facebook хуудас руу орно.'}
+                  </p>
+                )}
               </div>
 
               {/* Category selector */}

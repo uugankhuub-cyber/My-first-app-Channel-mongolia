@@ -197,6 +197,7 @@ async function startServer() {
   app.post('/api/admin/articles', authenticate, authorize(['ADMIN', 'EDITOR']), articleHandlers.createArticle);
   app.put('/api/admin/articles/:id', authenticate, authorize(['ADMIN', 'EDITOR']), articleHandlers.updateArticle);
   app.delete('/api/admin/articles/:id', authenticate, authorize(['ADMIN']), articleHandlers.deleteArticle);
+  app.post('/api/admin/articles/:id/facebook-retry', authenticate, authorize(['ADMIN', 'EDITOR']), articleHandlers.retryFacebookPost);
 
   // Dashboard Stats
   app.get('/api/admin/stats', authenticate, authorize(['ADMIN', 'EDITOR']), async (req, res) => {
@@ -454,12 +455,111 @@ async function startServer() {
   app.post('/api/videos/settings', authenticate, authorize(['ADMIN', 'EDITOR']), handleUpdateVideoSettings);
   app.post('/api/admin/videos/settings', authenticate, authorize(['ADMIN', 'EDITOR']), handleUpdateVideoSettings);
 
-  // 4. Vite / Static
+  // 4. Vite / Static & OpenGraph Server-side Meta Rendering
   const distPath = path.join(process.cwd(), 'dist');
   const isProduction = process.env.NODE_ENV === 'production' || isRunningFromDist;
 
+  const escapeHtml = (str: string) =>
+    (str || '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+
+  // Server-side HTML renderer injecting real og:title, og:description, og:image
+  const renderArticleWithMeta = async (req: express.Request, res: express.Response, next: express.NextFunction, viteInstance?: any) => {
+    try {
+      const rawSlug = req.params.slug;
+      const slug = Array.isArray(rawSlug) ? rawSlug[0] : rawSlug;
+      if (!slug) {
+        return next();
+      }
+      const article = await db.getArticleByIdOrSlug(slug);
+
+      const templatePath = isProduction 
+        ? path.join(distPath, 'index.html') 
+        : path.join(process.cwd(), 'index.html');
+
+      if (!fs.existsSync(templatePath)) {
+        return next();
+      }
+
+      let html = fs.readFileSync(templatePath, 'utf-8');
+
+      if (!isProduction && viteInstance) {
+        try {
+          html = await viteInstance.transformIndexHtml(req.originalUrl || req.url, html);
+        } catch (viteErr: any) {
+          console.warn('[VITE] transformIndexHtml error:', viteErr.message);
+        }
+      }
+
+      const forwardedProto = req.get('x-forwarded-proto');
+      const proto = (forwardedProto && forwardedProto.split(',')[0].trim()) || req.protocol || 'https';
+      const host = req.get('host') || 'localhost:3000';
+      const origin = (process.env.SITE_URL || process.env.APP_URL || `${proto}://${host}`).replace(/\/+$/, '');
+
+      let title = 'Channel Mongolia';
+      let description = 'A modern digital knowledge & media platform sharing interesting knowledge, science, and facts.';
+      let imageUrl = `${origin}/og-image.jpg`;
+      let pageUrl = `${origin}/article/${encodeURIComponent(slug)}`;
+
+      if (article && article.status === 'PUBLISHED') {
+        title = article.title || title;
+        description = article.excerpt || (article.content ? article.content.substring(0, 180).replace(/\s+/g, ' ').trim() : description);
+        pageUrl = `${origin}/article/${encodeURIComponent(article.slug || article.id)}`;
+        if (article.thumbnail) {
+          const thumb = article.thumbnail.trim();
+          imageUrl = (thumb.startsWith('http://') || thumb.startsWith('https://')) ? thumb : `${origin}${thumb.startsWith('/') ? '' : '/'}${thumb}`;
+        }
+      }
+
+      const safeTitle = escapeHtml(title);
+      const safeDesc = escapeHtml(description);
+      const safeImage = escapeHtml(imageUrl);
+      const safeUrl = escapeHtml(pageUrl);
+
+      // Update <title>
+      if (html.includes('<title>')) {
+        html = html.replace(/<title>.*?<\/title>/i, `<title>${safeTitle} - Channel Mongolia</title>`);
+      }
+
+      // Remove static description meta if present
+      html = html.replace(/<meta\s+name=["']description["'][^>]*>/i, '');
+
+      const metaTags = `
+    <!-- Dynamic OpenGraph & Twitter Meta Tags (Server-Rendered for Social Crawlers) -->
+    <meta name="description" content="${safeDesc}" />
+    <meta property="og:site_name" content="Channel Mongolia" />
+    <meta property="og:type" content="article" />
+    <meta property="og:title" content="${safeTitle}" />
+    <meta property="og:description" content="${safeDesc}" />
+    <meta property="og:image" content="${safeImage}" />
+    <meta property="og:url" content="${safeUrl}" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="${safeTitle}" />
+    <meta name="twitter:description" content="${safeDesc}" />
+    <meta name="twitter:image" content="${safeImage}" />`;
+
+      html = html.replace('</head>', `${metaTags}\n  </head>`);
+
+      res.setHeader('Content-Type', 'text/html; charset=utf-8');
+      res.setHeader('Cross-Origin-Opener-Policy', 'same-origin-allow-popups');
+      return res.send(html);
+    } catch (err: any) {
+      console.error('[OG] Error serving article with OpenGraph tags:', err);
+      next();
+    }
+  };
+
   if (isProduction) {
     console.log('[SERVER] Production mode active: serving pre-built static assets from dist.');
+    // Serve real article paths with OpenGraph tags
+    app.get(['/article/:slug', '/niitlel/:slug'], (req, res, next) => {
+      renderArticleWithMeta(req, res, next);
+    });
+
     app.use(express.static(distPath, {
       setHeaders: (res) => {
         res.setHeader('Cross-Origin-Opener-Policy', 'same-origin-allow-popups');
@@ -475,6 +575,12 @@ async function startServer() {
       server: { middlewareMode: true },
       appType: 'spa',
     });
+
+    // Serve real article paths with OpenGraph tags even in dev
+    app.get(['/article/:slug', '/niitlel/:slug'], (req, res, next) => {
+      renderArticleWithMeta(req, res, next, vite);
+    });
+
     app.use(vite.middlewares);
   }
 

@@ -23,6 +23,9 @@
         "agentNotes": { "type": "string" },
         "views": { "type": "number" },
         "likes": { "type": "number" },
+        "fbPostId": { "type": "string" },
+        "fbShareStatus": { "type": "string" },
+        "fbPostedAt": { "type": "string" },
         "publishedAt": { "type": "string" },
         "createdAt": { "type": "string" },
         "updatedAt": { "type": "string" }

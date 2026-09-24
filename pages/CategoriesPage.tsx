@@ -170,7 +170,7 @@ export const CategoriesPage: React.FC<CategoriesPageProps> = ({ categorySlug, fi
                   return (
                     <motion.div key={item.id} variants={itemVariants}>
                       <ReactRouterDOM.Link 
-                        to={`/niitlel/${item.id}`} 
+                        to={`/article/${item.slug || item.id}`} 
                         className="group/yt block space-y-3"
                       >
                         {/* Thumbnail card with Hover effect */}

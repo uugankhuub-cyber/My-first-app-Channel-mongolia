@@ -15,6 +15,7 @@ export type ContentStatus = 'published' | 'draft' | 'archived';
 
 export interface ContentItem {
   id: string;
+  slug?: string;
   title: string;
   title_en: string;
   description: string;

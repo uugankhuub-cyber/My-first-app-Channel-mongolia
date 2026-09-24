@@ -49,7 +49,7 @@ import { AdminNewsAgentPage } from './pages/admin/AdminNewsAgentPage';
 import { CATEGORIES } from './constants';
 import { testFirestoreConnection } from './lib/firebase';
 
-const { HashRouter: Router, Routes, Route, useLocation, Navigate } = ReactRouterDOM;
+const { BrowserRouter: Router, Routes, Route, useLocation, Navigate } = ReactRouterDOM;
 
 const ScrollToTop = () => {
   const { pathname } = useLocation();
@@ -148,7 +148,10 @@ const AnimatedRoutes = () => {
         >
           <Routes location={location}>
             <Route path="/" element={<Home />} />
-            {/* Backward compatibility for /news */}
+            {/* Real article paths */}
+            <Route path="/article/:id" element={<DetailPage />} />
+            <Route path="/privacy" element={<PrivacyPage />} />
+            {/* Backward compatibility for /news and /niitlel */}
             <Route path="/news" element={<Navigate to="/" replace />} />
             <Route path="/news/:id" element={<DetailPage />} />
             {CATEGORIES.filter(cat => cat.slug !== 'video').map(cat => (
@@ -164,7 +167,7 @@ const AnimatedRoutes = () => {
             <Route path="/profile" element={<ProfilePage />} />
             <Route path="/bidnii-tukhai" element={<AboutPage />} />
             <Route path="/holboo-barikh" element={<ContactPage />} />
-            <Route path="/nuuts-lalin-bodlogo" element={<PrivacyPage />} />
+            <Route path="/nuuts-lalin-bodlogo" element={<Navigate to="/privacy" replace />} />
             <Route path="/uilchilgeenii-nukhtsul" element={<TermsPage />} />
           </Routes>
         </motion.div>
@@ -176,6 +179,11 @@ const AnimatedRoutes = () => {
 const App: React.FC = () => {
   useEffect(() => {
     testFirestoreConnection();
+    // Backward compatibility: gracefully migrate any #/ legacy hash paths to real paths
+    if (typeof window !== 'undefined' && window.location.hash && window.location.hash.startsWith('#/')) {
+      const realPath = window.location.hash.replace(/^#/, '');
+      window.history.replaceState(null, '', realPath);
+    }
   }, []);
 
   return (

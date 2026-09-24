@@ -20,6 +20,9 @@ interface ArticleItem {
   publishedAt: string | null;
   createdAt: string;
   views: number;
+  fbPostId?: string | null;
+  fbShareStatus?: string | null;
+  fbPostedAt?: string | null;
 }
 
 export const AdminArticlesPage: React.FC = () => {
@@ -271,24 +274,42 @@ export const AdminArticlesPage: React.FC = () => {
 
                     {/* Status badge */}
                     <td className="p-4">
-                      {item.status === 'PUBLISHED' && (
-                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-green-500/10 text-green-400 border border-green-500/10">
-                          <CheckCircle size={12} />
-                          Нийтлэгдсэн
-                        </span>
-                      )}
-                      {item.status === 'DRAFT' && (
-                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-400 border border-amber-500/10">
-                          <Clock size={12} />
-                          Ноорог
-                        </span>
-                      )}
-                      {item.status === 'ARCHIVED' && (
-                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-slate-500/10 text-text-muted border border-slate-500/10">
-                          <Archive size={12} />
-                          Архивласан
-                        </span>
-                      )}
+                      <div className="flex flex-col items-start gap-1">
+                        {item.status === 'PUBLISHED' && (
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-green-500/10 text-green-400 border border-green-500/10">
+                            <CheckCircle size={12} />
+                            Нийтлэгдсэн
+                          </span>
+                        )}
+                        {item.status === 'DRAFT' && (
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-400 border border-amber-500/10">
+                            <Clock size={12} />
+                            Ноорог
+                          </span>
+                        )}
+                        {item.status === 'ARCHIVED' && (
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-slate-500/10 text-text-muted border border-slate-500/10">
+                            <Archive size={12} />
+                            Архивласан
+                          </span>
+                        )}
+
+                        {/* FB status indicator */}
+                        {item.status === 'PUBLISHED' && (item.fbPostId || item.fbShareStatus === 'ok') && (
+                          <span title="Facebook хуудсанд амжилттай нийтлэгдсэн" className="inline-flex items-center gap-1 text-[10px] text-blue-500 font-semibold">
+                            <svg className="w-2.5 h-2.5 fill-current" viewBox="0 0 24 24">
+                              <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                            </svg>
+                            FB: Нийтлэгдсэн
+                          </span>
+                        )}
+                        {item.status === 'PUBLISHED' && item.fbShareStatus && item.fbShareStatus !== 'ok' && (
+                          <span title={`Facebook алдаа: ${item.fbShareStatus}`} className="inline-flex items-center gap-1 text-[10px] text-amber-500 font-medium">
+                            <AlertTriangle size={10} />
+                            FB алдаа
+                          </span>
+                        )}
+                      </div>
                     </td>
 
                     {/* Views */}

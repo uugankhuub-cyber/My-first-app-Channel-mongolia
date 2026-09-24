@@ -44,6 +44,9 @@ export interface Article {
   metaTitle?: string | null;
   metaDesc?: string | null;
   agentNotes?: string | null;
+  fbPostId?: string | null;
+  fbShareStatus?: string | null;
+  fbPostedAt?: string | null;
   publishedAt?: string | null;
   createdAt: string;
   updatedAt: string;
@@ -315,6 +318,9 @@ export async function createArticle(
     metaTitle: articleData.metaTitle ?? null,
     metaDesc: articleData.metaDesc ?? null,
     agentNotes: articleData.agentNotes ?? null,
+    fbPostId: articleData.fbPostId ?? null,
+    fbShareStatus: articleData.fbShareStatus ?? null,
+    fbPostedAt: articleData.fbPostedAt ?? null,
     publishedAt,
     createdAt: articleData.createdAt || now,
     updatedAt: now
@@ -353,6 +359,9 @@ export async function updateArticle(id: string, updates: Partial<Article>): Prom
     metaTitle: updates.metaTitle !== undefined ? (updates.metaTitle ?? null) : (existing.metaTitle ?? null),
     metaDesc: updates.metaDesc !== undefined ? (updates.metaDesc ?? null) : (existing.metaDesc ?? null),
     agentNotes: updates.agentNotes !== undefined ? (updates.agentNotes ?? null) : (existing.agentNotes ?? null),
+    fbPostId: updates.fbPostId !== undefined ? (updates.fbPostId ?? null) : (existing.fbPostId ?? null),
+    fbShareStatus: updates.fbShareStatus !== undefined ? (updates.fbShareStatus ?? null) : (existing.fbShareStatus ?? null),
+    fbPostedAt: updates.fbPostedAt !== undefined ? (updates.fbPostedAt ?? null) : (existing.fbPostedAt ?? null),
     tags: updates.tags !== undefined ? (Array.isArray(updates.tags) ? updates.tags : []) : (existing.tags || []),
     excerpt: updates.excerpt !== undefined ? (updates.excerpt ?? '') : (existing.excerpt ?? ''),
     excerpt_en: updates.excerpt_en !== undefined ? (updates.excerpt_en ?? '') : (existing.excerpt_en ?? ''),

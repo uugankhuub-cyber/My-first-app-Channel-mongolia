@@ -68,7 +68,7 @@ export const KnowledgeCard: React.FC<KnowledgeCardProps> = ({ item, featured = f
   );
 
   return (
-    <Link to={`/niitlel/${item.id}`} className="block h-full outline-none group focus-visible:ring-2 ring-brand-purple rounded-2xl">
+    <Link to={`/article/${item.slug || item.id}`} className="block h-full outline-none group focus-visible:ring-2 ring-brand-purple rounded-2xl">
       <Card 
         className={`h-full flex flex-col group-hover:shadow-card-hover ${featured ? 'md:flex-row md:min-h-[380px]' : ''}`}
         animate={true}

@@ -16,6 +16,7 @@ export default async function handle(req: any, res: any) {
 
         return {
           id: item.id,
+          slug: item.slug,
           title: item.title,
           title_en: item.title_en || item.title,
           description: item.excerpt || item.content.substring(0, 150),

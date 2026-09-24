@@ -1,5 +1,15 @@
 import { z } from 'zod';
 import * as db from '../lib/firestore-db.ts';
+import { postArticleToFacebook } from '../lib/facebook-service.ts';
+
+export function getOrigin(req: any): string {
+  if (process.env.SITE_URL) return process.env.SITE_URL.replace(/\/+$/, '');
+  if (process.env.APP_URL) return process.env.APP_URL.replace(/\/+$/, '');
+  const forwardedProto = req.get('x-forwarded-proto');
+  const proto = (forwardedProto && forwardedProto.split(',')[0].trim()) || req.protocol || 'https';
+  const host = req.get('host') || 'localhost:3000';
+  return `${proto}://${host}`;
+}
 
 const articleSchema = z.object({
   title: z.string().min(1),
@@ -131,7 +141,10 @@ export const getAdminArticles = async (req: any, res: any) => {
         publishedAt: art.publishedAt,
         createdAt: art.createdAt,
         updatedAt: art.updatedAt,
-        agentNotes: art.agentNotes
+        agentNotes: art.agentNotes,
+        fbPostId: art.fbPostId || null,
+        fbShareStatus: art.fbShareStatus || null,
+        fbPostedAt: art.fbPostedAt || null
       };
     });
 
@@ -191,7 +204,23 @@ export const createArticle = async (req: any, res: any) => {
       updatedAt: now
     });
 
-    res.json(newArt);
+    let finalArt = newArt;
+
+    // Trigger Facebook auto-post if published and not opted out
+    if (isPublished && req.body?.postToFacebook !== false) {
+      try {
+        const origin = getOrigin(req);
+        const fbResult = await postArticleToFacebook(newArt, origin);
+        if (fbResult.attempted) {
+          const refreshed = await db.getArticleByIdOrSlug(newArt.id);
+          if (refreshed) finalArt = refreshed;
+        }
+      } catch (fbErr: any) {
+        console.error('[ARTICLES] Facebook auto-post error in createArticle:', fbErr.message);
+      }
+    }
+
+    res.json(finalArt);
   } catch (error: any) {
     console.error('[ARTICLES] createArticle error:', error);
     res.status(400).json({ error: error.message || 'Create article failed' });
@@ -201,6 +230,11 @@ export const createArticle = async (req: any, res: any) => {
 export const updateArticle = async (req: any, res: any) => {
   const { id } = req.params;
   try {
+    const existing = await db.getArticleByIdOrSlug(id);
+    if (!existing) {
+      return res.status(404).json({ error: 'Article not found' });
+    }
+
     const body = articleSchema.partial().parse(req.body);
     const categories = await db.getCategories();
 
@@ -216,8 +250,11 @@ export const updateArticle = async (req: any, res: any) => {
       }
     }
 
-    const isPublishing = body.status === 'PUBLISHED';
-    const isDraft = body.status === 'DRAFT';
+    const prevStatus = existing.status;
+    const targetStatus = body.status || prevStatus;
+    const isPublishing = targetStatus === 'PUBLISHED';
+    const becamePublished = prevStatus !== 'PUBLISHED' && isPublishing;
+    const isDraft = targetStatus === 'DRAFT';
     const now = new Date().toISOString();
 
     const updates: Partial<db.Article> = {
@@ -228,7 +265,7 @@ export const updateArticle = async (req: any, res: any) => {
       ...(body.metaDesc !== undefined && { metaDesc: body.metaDesc || null }),
       ...(body.agentNotes !== undefined && { agentNotes: body.agentNotes || null }),
       ...(body.excerpt !== undefined && { excerpt: body.excerpt || '' }),
-      ...(isPublishing && { publishedAt: now }),
+      ...(becamePublished && { publishedAt: now }),
       ...(isDraft && { publishedAt: null }),
     };
 
@@ -237,10 +274,62 @@ export const updateArticle = async (req: any, res: any) => {
       return res.status(404).json({ error: 'Article not found' });
     }
 
-    res.json(updated);
+    let finalArt = updated;
+
+    // Facebook Auto-post:
+    // 1. When status changes to PUBLISHED (admin "Publish" button)
+    // 2. Or if explicitly requested for an already PUBLISHED article that hasn't succeeded yet
+    const postToFacebookRequested = req.body?.postToFacebook !== false;
+    const notYetSuccessfullyShared = !existing.fbPostId && existing.fbShareStatus !== 'ok';
+    const shouldPostToFb = isPublishing && postToFacebookRequested && (becamePublished || (notYetSuccessfullyShared && req.body?.postToFacebook === true));
+
+    if (shouldPostToFb) {
+      try {
+        const origin = getOrigin(req);
+        const fbResult = await postArticleToFacebook(updated, origin);
+        if (fbResult.attempted) {
+          const refreshed = await db.getArticleByIdOrSlug(id);
+          if (refreshed) finalArt = refreshed;
+        }
+      } catch (fbErr: any) {
+        console.error('[ARTICLES] Facebook auto-post error in updateArticle:', fbErr.message);
+      }
+    }
+
+    res.json(finalArt);
   } catch (error: any) {
     console.error('[ARTICLES] updateArticle error:', error);
     res.status(400).json({ error: error.message || 'Update article failed' });
+  }
+};
+
+export const retryFacebookPost = async (req: any, res: any) => {
+  const { id } = req.params;
+  try {
+    const art = await db.getArticleByIdOrSlug(id);
+    if (!art) {
+      return res.status(404).json({ error: 'Article not found' });
+    }
+
+    // Guard: Drafts are NEVER posted
+    if (art.status !== 'PUBLISHED') {
+      return res.status(400).json({
+        error: 'Зөвхөн нийтлэгдсэн (PUBLISHED) нийтлэлийг Facebook-т нийтэлнэ. Ноорог нийтлэлийг нийтлэх боломжгүй.'
+      });
+    }
+
+    const origin = getOrigin(req);
+    const result = await postArticleToFacebook(art, origin, { forceRetry: true });
+
+    return res.json({
+      success: result.success,
+      fbPostId: result.fbPostId || null,
+      fbShareStatus: result.fbShareStatus || (result.success ? 'ok' : 'Failed'),
+      error: result.error || null
+    });
+  } catch (error: any) {
+    console.error('[ARTICLES] retryFacebookPost error:', error);
+    res.status(500).json({ error: error.message || 'Facebook retry failed' });
   }
 };
 
