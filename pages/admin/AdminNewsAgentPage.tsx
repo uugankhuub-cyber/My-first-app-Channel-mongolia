@@ -712,7 +712,13 @@ sendNewsToAgent();`
                             )}
                             {notes.short_idea && (
                               <div className="text-[11px] text-text-muted line-clamp-1 italic">
-                                Гол санаа: {typeof notes.short_idea === 'object' ? (notes.short_idea.hook || notes.short_idea.outline) : notes.short_idea}
+                                Гол санаа: {(() => {
+                                  if (typeof notes.short_idea === 'object' && notes.short_idea !== null) {
+                                    const val = notes.short_idea.hook || notes.short_idea.outline;
+                                    return typeof val === 'string' ? val : JSON.stringify(val);
+                                  }
+                                  return typeof notes.short_idea === 'string' ? notes.short_idea : JSON.stringify(notes.short_idea);
+                                })()}
                               </div>
                             )}
                           </div>

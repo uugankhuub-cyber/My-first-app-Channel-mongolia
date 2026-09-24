@@ -19,6 +19,7 @@ import { ChatAssistant } from './components/ChatAssistant';
 import { GlobalInfoBar } from './components/GlobalInfoBar';
 import { motion, AnimatePresence } from 'motion/react';
 import { ProtectedRoute } from './components/ProtectedRoute';
+import { ErrorBoundary } from './components/ErrorBoundary';
 
 // Contexts
 import { ContentProvider } from './context/ContentContext';
@@ -105,7 +106,14 @@ const AnimatedRoutes = () => {
 
         {/* Protected Unified Admin Panel */}
         <Route element={<ProtectedRoute roles={['ADMIN', 'EDITOR']} />}>
-          <Route path="/admin" element={<AdminLayout />}>
+          <Route
+            path="/admin"
+            element={
+              <ErrorBoundary fallbackTitle="Админ удирдлагын хэсэгт алдаа гарлаа">
+                <AdminLayout />
+              </ErrorBoundary>
+            }
+          >
              <Route index element={<AdminDashboard />} />
              <Route path="dashboard" element={<AdminDashboard />} />
              <Route path="agent" element={<AdminNewsAgentPage />} />
@@ -148,6 +156,8 @@ const AnimatedRoutes = () => {
             ))}
             <Route path="/video" element={<VideoPage />} />
             <Route path="/video/:videoId" element={<VideoPage />} />
+            <Route path="/videos" element={<Navigate to="/video" replace />} />
+            <Route path="/videos/:videoId" element={<VideoPage />} />
             <Route path="/categories" element={<CategoriesPage />} />
             <Route path="/niitlel/:id" element={<DetailPage />} />
             <Route path="/search" element={<SearchPage />} />

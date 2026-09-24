@@ -37,8 +37,11 @@ export const AdminArticlesPage: React.FC = () => {
   const fetchData = async () => {
     setLoading(true);
     try {
-      // Fetch articles
-      const artRes = await fetch(`/api/articles?search=${search}&status=${statusFilter}&category=${categoryFilter}`);
+      // Fetch articles from admin endpoint (which includes DRAFT and ARCHIVED)
+      const artRes = await fetch(
+        `/api/admin/articles?search=${encodeURIComponent(search)}&status=${encodeURIComponent(statusFilter)}&category=${encodeURIComponent(categoryFilter)}`,
+        { credentials: 'include' }
+      );
       if (artRes.ok) {
         const data = await artRes.json();
         setArticles(data);

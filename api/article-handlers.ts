@@ -39,18 +39,71 @@ export const getAdminArticleById = async (req: any, res: any) => {
 };
 
 export const getArticles = async (req: any, res: any) => {
-  const { status, category, search } = req.query;
+  const { category, search } = req.query;
 
   try {
+    // SECURITY: Public endpoint MUST return ONLY PUBLISHED articles, never DRAFT or ARCHIVED.
     const articles = await db.getArticles({
-      status: status as string | undefined,
+      status: 'PUBLISHED',
       category: category as string | undefined,
       search: search as string | undefined
     });
 
     const categories = await db.getCategories();
 
-    // Map to expected frontend structure (omits private agentNotes for public)
+    // Map to public frontend structure (strictly NO agentNotes)
+    const mapped = articles
+      .filter(art => art.status === 'PUBLISHED')
+      .map(art => {
+        const cat = categories.find(c => c.id === art.categoryId || c.slug === art.categoryId);
+        return {
+          id: art.id,
+          title: art.title,
+          title_en: art.title_en || art.title,
+          slug: art.slug,
+          excerpt: art.excerpt || '',
+          excerpt_en: art.excerpt_en || art.excerpt || '',
+          content: art.content,
+          content_en: art.content_en || art.content,
+          thumbnail: art.thumbnail,
+          images: art.images || [],
+          status: 'PUBLISHED',
+          views: art.views || 0,
+          likes: art.likes || 0,
+          thumbnailUrl: art.thumbnail,
+          authorId: 'admin-1',
+          author: { email: 'uugankhuub@gmail.com' },
+          categoryId: art.categoryId,
+          category: cat ? { id: cat.id, name: cat.name, slug: cat.slug } : null,
+          tags: art.tags || [],
+          metaTitle: art.metaTitle,
+          metaDesc: art.metaDesc,
+          publishedAt: art.publishedAt,
+          createdAt: art.createdAt,
+          updatedAt: art.updatedAt
+        };
+      });
+
+    res.json(mapped);
+  } catch (error: any) {
+    console.error('[ARTICLES] getArticles error:', error);
+    res.status(500).json({ error: 'Failed to fetch articles' });
+  }
+};
+
+export const getAdminArticles = async (req: any, res: any) => {
+  const { status, category, search } = req.query;
+
+  try {
+    const filterStatus = (status && status !== 'ALL') ? (status as string) : undefined;
+    const articles = await db.getArticles({
+      status: filterStatus,
+      category: category as string | undefined,
+      search: search as string | undefined
+    });
+
+    const categories = await db.getCategories();
+
     const mapped = articles.map(art => {
       const cat = categories.find(c => c.id === art.categoryId || c.slug === art.categoryId);
       return {
@@ -77,14 +130,15 @@ export const getArticles = async (req: any, res: any) => {
         metaDesc: art.metaDesc,
         publishedAt: art.publishedAt,
         createdAt: art.createdAt,
-        updatedAt: art.updatedAt
+        updatedAt: art.updatedAt,
+        agentNotes: art.agentNotes
       };
     });
 
     res.json(mapped);
   } catch (error: any) {
-    console.error('[ARTICLES] getArticles error:', error);
-    res.status(500).json({ error: 'Failed to fetch articles' });
+    console.error('[ARTICLES] getAdminArticles error:', error);
+    res.status(500).json({ error: 'Failed to fetch admin articles' });
   }
 };
 

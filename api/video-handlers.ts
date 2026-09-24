@@ -5,6 +5,7 @@ import fallbackVideosData from '../lib/channel-videos-data.json' assert { type: 
 export interface VideoItem {
   videoId: string;
   title: string;
+  date: string;
   published: string;
   thumbnail: string;
   author?: string;
@@ -22,7 +23,11 @@ let videoCache: {
   videos: VideoItem[];
 } = {
   timestamp: Date.now(),
-  videos: fallbackVideosData as VideoItem[]
+  videos: (fallbackVideosData as any[]).map(v => ({
+    ...v,
+    date: v.date || v.published || new Date().toISOString(),
+    published: v.published || v.date || new Date().toISOString()
+  }))
 };
 
 // Helper to parse YouTube RSS XML
@@ -48,6 +53,7 @@ function parseYouTubeRss(xmlText: string): VideoItem[] {
       items.push({
         videoId,
         title,
+        date: published,
         published,
         thumbnail,
         author: 'Channel Mongolia'
@@ -103,7 +109,7 @@ export async function handleGetVideos(req: Request, res: Response) {
     const force = req.query.refresh === 'true';
     const showAll = req.query.all === 'true'; // For admin views
     
-    // 1. Fetch / get cached videos
+    // 1. Fetch / get cached videos (cached for 1 hour)
     const rawVideos = await fetchAndCacheVideos(force);
 
     // 2. Fetch admin video settings from Firestore
@@ -114,6 +120,8 @@ export async function handleGetVideos(req: Request, res: Response) {
     // 3. Mark pinned and hidden flags
     let processed: VideoItem[] = rawVideos.map(v => ({
       ...v,
+      date: v.date || v.published,
+      published: v.published || v.date,
       pinned: pinnedSet.has(v.videoId),
       hidden: hiddenSet.has(v.videoId)
     }));
@@ -123,49 +131,35 @@ export async function handleGetVideos(req: Request, res: Response) {
       processed = processed.filter(v => !v.hidden);
     }
 
-    // 5. Sort: Pinned first (in the order specified in pinnedVideoIds), then newest by published date
-    const pinnedList: VideoItem[] = [];
-    const regularList: VideoItem[] = [];
-
-    // Ensure pinned items appear in order of pinnedVideoIds array
-    if (settings.pinnedVideoIds && settings.pinnedVideoIds.length > 0) {
-      for (const pId of settings.pinnedVideoIds) {
-        const match = processed.find(v => v.videoId === pId);
-        if (match) {
-          pinnedList.push(match);
-        }
-      }
-    }
-
-    for (const v of processed) {
-      if (!pinnedSet.has(v.videoId)) {
-        regularList.push(v);
-      }
-    }
-
-    // Sort regular list by published date descending
-    regularList.sort((a, b) => {
-      const timeA = new Date(a.published).getTime();
-      const timeB = new Date(b.published).getTime();
+    // 5. Sort: newest first by date
+    processed.sort((a, b) => {
+      const timeA = new Date(a.date || a.published).getTime();
+      const timeB = new Date(b.date || b.published).getTime();
       return timeB - timeA;
     });
 
-    const finalVideos = [...pinnedList, ...regularList];
+    const finalVideos = processed;
 
-    return res.status(200).json({
-      ok: true,
-      channel: {
-        id: YOUTUBE_CHANNEL_ID,
-        name: 'Channel Mongolia',
-        subscribeUrl: `https://www.youtube.com/channel/${YOUTUBE_CHANNEL_ID}?sub_confirmation=1`,
-        channelUrl: 'https://www.youtube.com/@ChannelMongolia'
-      },
-      total: finalVideos.length,
-      pinnedVideoIds: settings.pinnedVideoIds,
-      hiddenVideoIds: settings.hiddenVideoIds,
-      videos: finalVideos,
-      cachedAt: new Date(videoCache.timestamp).toISOString()
-    });
+    // Support both object response (for admin or format=object) and direct array
+    if (showAll || req.query.format === 'object') {
+      return res.status(200).json({
+        ok: true,
+        channel: {
+          id: YOUTUBE_CHANNEL_ID,
+          name: 'Channel Mongolia',
+          subscribeUrl: `https://www.youtube.com/channel/${YOUTUBE_CHANNEL_ID}?sub_confirmation=1`,
+          channelUrl: 'https://www.youtube.com/@ChannelMongolia'
+        },
+        total: finalVideos.length,
+        pinnedVideoIds: settings.pinnedVideoIds,
+        hiddenVideoIds: settings.hiddenVideoIds,
+        videos: finalVideos,
+        cachedAt: new Date(videoCache.timestamp).toISOString()
+      });
+    }
+
+    // Default: return the list of video items (newest first, containing videoId, title, date, thumbnail)
+    return res.status(200).json(finalVideos);
   } catch (error: any) {
     console.error('[VIDEOS] handleGetVideos error:', error);
     return res.status(500).json({

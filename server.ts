@@ -160,7 +160,8 @@ async function startServer() {
   app.get('/api/articles/:slug', async (req, res) => {
     const param = req.params.slug;
     const art = await db.getArticleByIdOrSlug(param);
-    if (!art) {
+    // SECURITY: Public endpoint only serves PUBLISHED articles
+    if (!art || art.status !== 'PUBLISHED') {
       return res.status(404).json({ error: 'Not found' });
     }
 
@@ -170,6 +171,7 @@ async function startServer() {
     const categories = await db.getCategories();
     const cat = categories.find(c => c.id === art.categoryId || c.slug === art.categoryId);
     
+    // Strictly no agentNotes in public responses
     res.json({
       id: art.id,
       title: art.title,
@@ -190,6 +192,7 @@ async function startServer() {
   });
 
   // Articles (Admin/Editor)
+  app.get('/api/admin/articles', authenticate, authorize(['ADMIN', 'EDITOR']), articleHandlers.getAdminArticles);
   app.get('/api/admin/articles/:id', authenticate, authorize(['ADMIN', 'EDITOR']), articleHandlers.getAdminArticleById);
   app.post('/api/admin/articles', authenticate, authorize(['ADMIN', 'EDITOR']), articleHandlers.createArticle);
   app.put('/api/admin/articles/:id', authenticate, authorize(['ADMIN', 'EDITOR']), articleHandlers.updateArticle);

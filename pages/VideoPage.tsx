@@ -23,6 +23,7 @@ const { useParams, useNavigate, Link } = ReactRouterDOM;
 export interface VideoItem {
   videoId: string;
   title: string;
+  date?: string;
   published: string;
   thumbnail: string;
   author?: string;
@@ -69,9 +70,16 @@ export const VideoPage: React.FC = () => {
       setLoading(true);
       const res = await fetch('/api/videos');
       if (res.ok) {
-        const data: VideosApiResponse = await res.json();
-        setVideos(data.videos || []);
-        if (data.channel) {
+        const data = await res.json();
+        const list: VideoItem[] = Array.isArray(data) ? data : (data.videos || []);
+        // Sort newest first
+        const sorted = [...list].sort((a, b) => {
+          const dateA = new Date(a.date || a.published || 0).getTime();
+          const dateB = new Date(b.date || b.published || 0).getTime();
+          return dateB - dateA;
+        });
+        setVideos(sorted);
+        if (!Array.isArray(data) && data.channel) {
           setChannelInfo(data.channel);
         }
       }
@@ -215,7 +223,7 @@ export const VideoPage: React.FC = () => {
                 aria-label="Subscribe to Channel Mongolia on YouTube"
               >
                 <Youtube size={20} className="fill-white transition-transform group-hover:rotate-12" />
-                <span>{isEn ? 'Subscribe' : 'Бүртгүүлэх'}</span>
+                <span>Subscribe</span>
                 <ExternalLink size={14} className="opacity-70 group-hover:opacity-100" />
               </a>
             </div>
@@ -277,7 +285,7 @@ export const VideoPage: React.FC = () => {
 
         {/* Loading State */}
         {loading && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {Array.from({ length: 6 }).map((_, i) => (
               <div key={i} className="rounded-2xl border border-border bg-surface overflow-hidden animate-pulse">
                 <div className="aspect-video bg-surfaceHighlight w-full" />
@@ -313,9 +321,9 @@ export const VideoPage: React.FC = () => {
           </div>
         )}
 
-        {/* Video Cards Grid: 1 col on mobile, 2 on tablet, 3 cols on desktop */}
+        {/* Video Cards Grid: 1 col on mobile, 3 cols on desktop */}
         {!loading && filteredVideos.length > 0 && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {filteredVideos.map((video) => (
               <motion.article
                 key={video.videoId}

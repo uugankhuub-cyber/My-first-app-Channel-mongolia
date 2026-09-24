@@ -220,7 +220,7 @@ export const AdminArticleForm: React.FC = () => {
           if (adminArtRes.ok) {
             article = await adminArtRes.json();
           } else {
-            const artRes = await fetch('/api/articles');
+            const artRes = await fetch('/api/admin/articles', { credentials: 'include' });
             if (artRes.ok) {
               const articles = await artRes.json();
               article = articles.find((a: any) => a.id === id);
@@ -727,37 +727,49 @@ export const AdminArticleForm: React.FC = () => {
                   }
                 }
 
+                // Helper to never render raw objects as React children
+                const safeText = (val: any): string => {
+                  if (val === null || val === undefined) return '';
+                  return typeof val === 'string' ? val : JSON.stringify(val, null, 2);
+                };
+
                 return (
                   <div className="space-y-4">
                     {parsed && (
                       <div className="space-y-3">
                         {parsed.short_idea && (
-                          <div className="p-3.5 bg-background border border-border rounded-xl space-y-1.5">
+                          <div className="p-3.5 bg-background border border-border rounded-xl space-y-2">
                             <span className="text-xs font-bold text-brand-purple uppercase tracking-wider block">
-                              Богино санаа / Hook & Outline:
+                              Богино санаа:
                             </span>
-                            {typeof parsed.short_idea === 'object' ? (
+                            {typeof parsed.short_idea === 'object' && parsed.short_idea !== null ? (
                               <div className="space-y-2 text-sm text-text-main pt-1">
-                                {parsed.short_idea.hook && (
-                                  <div className="p-2 bg-surfaceHighlight rounded-lg">
-                                    <span className="text-xs font-semibold text-text-muted block mb-0.5">Hook (Эхлэлийн дэгээ):</span>
-                                    <p className="text-text-main font-medium">{String(parsed.short_idea.hook)}</p>
+                                {parsed.short_idea.hook !== undefined && (
+                                  <div className="p-2.5 bg-surfaceHighlight rounded-lg">
+                                    <span className="text-xs font-bold text-text-muted block mb-0.5">Hook:</span>
+                                    <p className="text-text-main font-medium whitespace-pre-wrap">
+                                      {safeText(parsed.short_idea.hook)}
+                                    </p>
                                   </div>
                                 )}
-                                {parsed.short_idea.outline && (
-                                  <div className="p-2 bg-surfaceHighlight rounded-lg">
-                                    <span className="text-xs font-semibold text-text-muted block mb-0.5">Outline (Бүтэц):</span>
-                                    <p className="text-text-main whitespace-pre-wrap">{String(parsed.short_idea.outline)}</p>
+                                {parsed.short_idea.outline !== undefined && (
+                                  <div className="p-2.5 bg-surfaceHighlight rounded-lg">
+                                    <span className="text-xs font-bold text-text-muted block mb-0.5">Outline:</span>
+                                    <p className="text-text-main whitespace-pre-wrap">
+                                      {safeText(parsed.short_idea.outline)}
+                                    </p>
                                   </div>
                                 )}
-                                {!parsed.short_idea.hook && !parsed.short_idea.outline && (
+                                {!('hook' in parsed.short_idea) && !('outline' in parsed.short_idea) && (
                                   <pre className="text-xs font-mono bg-surfaceHighlight p-2 rounded whitespace-pre-wrap">
-                                    {JSON.stringify(parsed.short_idea, null, 2)}
+                                    {safeText(parsed.short_idea)}
                                   </pre>
                                 )}
                               </div>
                             ) : (
-                              <p className="text-sm text-text-main leading-relaxed whitespace-pre-wrap">{String(parsed.short_idea)}</p>
+                              <p className="text-sm text-text-main leading-relaxed whitespace-pre-wrap">
+                                {safeText(parsed.short_idea)}
+                              </p>
                             )}
                           </div>
                         )}
@@ -772,13 +784,13 @@ export const AdminArticleForm: React.FC = () => {
                               <ul className="list-disc list-inside text-sm text-text-main space-y-1">
                                 {parsed.fact_check.map((item: any, idx: number) => (
                                   <li key={idx} className="leading-relaxed">
-                                    {typeof item === 'string' ? item : JSON.stringify(item)}
+                                    {safeText(item)}
                                   </li>
                                 ))}
                               </ul>
                             ) : (
                               <p className="text-sm text-text-main leading-relaxed whitespace-pre-wrap">
-                                {typeof parsed.fact_check === 'string' ? parsed.fact_check : JSON.stringify(parsed.fact_check, null, 2)}
+                                {safeText(parsed.fact_check)}
                               </p>
                             )}
                           </div>
@@ -790,7 +802,7 @@ export const AdminArticleForm: React.FC = () => {
                               Зургийн AI Prompt:
                             </span>
                             <p className="text-xs font-mono text-text-muted bg-surfaceHighlight p-2 rounded-lg whitespace-pre-wrap">
-                              {typeof parsed.ai_prompt === 'string' ? parsed.ai_prompt : JSON.stringify(parsed.ai_prompt, null, 2)}
+                              {safeText(parsed.ai_prompt)}
                             </p>
                           </div>
                         )}
@@ -801,7 +813,7 @@ export const AdminArticleForm: React.FC = () => {
                               Зургийн тэмдэглэл:
                             </span>
                             <p className="text-xs text-text-muted whitespace-pre-wrap">
-                              {typeof parsed.image_note === 'string' ? parsed.image_note : JSON.stringify(parsed.image_note, null, 2)}
+                              {safeText(parsed.image_note)}
                             </p>
                           </div>
                         )}
@@ -811,7 +823,7 @@ export const AdminArticleForm: React.FC = () => {
                     <div className="space-y-1.5">
                       <label className="text-text-muted text-xs font-medium">Түүхий тэмдэглэл (JSON эсвэл текст)</label>
                       <textarea
-                        value={agentNotes}
+                        value={typeof agentNotes === 'string' ? agentNotes : (agentNotes ? JSON.stringify(agentNotes, null, 2) : '')}
                         onChange={(e) => setAgentNotes(e.target.value)}
                         placeholder="short_idea, fact_check, ai_prompt зэрэг дотоод тэмдэглэл..."
                         rows={parsed ? 2 : 4}
