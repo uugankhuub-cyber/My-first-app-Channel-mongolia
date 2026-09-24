@@ -214,12 +214,23 @@ export const Sidebar: React.FC = () => {
          >
             {CATEGORIES.map(cat => (
                <motion.div key={cat.id} variants={itemVariants}>
-                 <Link 
-                   to={`/${cat.slug}`}
-                   className="px-3 py-1.5 bg-surface border border-border text-text-muted hover:text-white hover:bg-brand-purple rounded-lg text-xs font-semibold transition-all focus-visible:ring-2 focus-visible:ring-brand-purple"
-                 >
-                   {cat.label}
-                 </Link>
+                 {cat.slug === 'video' ? (
+                   <a
+                     href="https://www.youtube.com/@ChannelMongolia"
+                     target="_blank"
+                     rel="noopener noreferrer"
+                     className="px-3 py-1.5 bg-surface border border-border text-text-muted hover:text-white hover:bg-brand-purple rounded-lg text-xs font-semibold transition-all focus-visible:ring-2 focus-visible:ring-brand-purple"
+                   >
+                     {cat.label}
+                   </a>
+                 ) : (
+                   <Link 
+                     to={`/${cat.slug}`}
+                     className="px-3 py-1.5 bg-surface border border-border text-text-muted hover:text-white hover:bg-brand-purple rounded-lg text-xs font-semibold transition-all focus-visible:ring-2 focus-visible:ring-brand-purple"
+                   >
+                     {cat.label}
+                   </Link>
+                 )}
                </motion.div>
             ))}
          </motion.div>

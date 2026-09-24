@@ -1,99 +1,142 @@
 {
   "entities": {
-    "News": {
-      "title": "News",
-      "description": "News article entity with markdown body, sources, SEO, and status",
+    "Article": {
+      "title": "Article",
+      "description": "Article entity with title, markdown body, sources, category, tags, and status",
       "type": "object",
       "properties": {
-        "slug": {
-          "type": "string",
-          "description": "Unique URL slug for the article",
-          "maxLength": 200
-        },
-        "status": {
-          "type": "string",
-          "description": "Article publication status: draft or published",
-          "enum": ["draft", "published"]
-        },
-        "date": {
-          "type": "string",
-          "description": "Publication or creation date string",
-          "maxLength": 100
-        },
-        "category": {
-          "type": "string",
-          "description": "News category name",
-          "maxLength": 100
-        },
-        "tags": {
-          "type": "array",
-          "description": "Array of keyword tags"
-        },
-        "title": {
-          "type": "string",
-          "description": "Article title",
-          "maxLength": 500
-        },
-        "lead": {
-          "type": "string",
-          "description": "Introductory summary / lead paragraph",
-          "maxLength": 2000
-        },
-        "body_markdown": {
-          "type": "string",
-          "description": "Article markdown body content",
-          "maxLength": 100000
-        },
-        "sources": {
-          "type": "array",
-          "description": "Array of source objects containing name and url"
-        },
-        "image": {
-          "type": "object",
-          "description": "Image metadata with note, ai_prompt, and optional url"
-        },
-        "seo": {
-          "type": "object",
-          "description": "SEO metadata including meta_description and keywords"
-        },
-        "short_idea": {
-          "type": "object",
-          "description": "Short idea with hook and outline"
-        },
-        "fact_check": {
-          "type": "array",
-          "description": "Array of fact check items"
-        },
-        "created_at": {
-          "type": "string",
-          "description": "Creation timestamp in ISO format"
-        },
-        "published_at": {
-          "type": "string",
-          "description": "Publication timestamp in ISO format or null"
-        }
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "title_en": { "type": "string" },
+        "slug": { "type": "string" },
+        "excerpt": { "type": "string" },
+        "excerpt_en": { "type": "string" },
+        "content": { "type": "string" },
+        "content_en": { "type": "string" },
+        "thumbnail": { "type": "string" },
+        "images": { "type": "array" },
+        "status": { "type": "string", "enum": ["DRAFT", "PUBLISHED", "ARCHIVED"] },
+        "categoryId": { "type": "string" },
+        "tags": { "type": "array" },
+        "metaTitle": { "type": "string" },
+        "metaDesc": { "type": "string" },
+        "agentNotes": { "type": "string" },
+        "views": { "type": "number" },
+        "likes": { "type": "number" },
+        "publishedAt": { "type": "string" },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" }
       },
-      "required": ["slug", "status", "title", "lead", "body_markdown", "sources"]
+      "required": ["id", "title", "slug", "content", "status"]
     },
-    "NewsSlug": {
-      "title": "News Slug",
-      "description": "Slug reference record",
+    "Category": {
+      "title": "Category",
+      "description": "News category matching top navigation",
       "type": "object",
       "properties": {
-        "slug": { "type": "string", "maxLength": 200 },
-        "created_at": { "type": "string" }
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "slug": { "type": "string" }
       },
-      "required": ["slug"]
+      "required": ["id", "name", "slug"]
+    },
+    "Tag": {
+      "title": "Tag",
+      "description": "Topic tag",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" }
+      },
+      "required": ["id", "name"]
+    },
+    "User": {
+      "title": "User",
+      "description": "CMS User account",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "email": { "type": "string" },
+        "passwordHash": { "type": "string" },
+        "role": { "type": "string", "enum": ["ADMIN", "EDITOR", "USER"] },
+        "emailVerified": { "type": "boolean" },
+        "failedLoginAttempts": { "type": "number" },
+        "lockedUntil": { "type": "string" },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["id", "email", "role"]
+    },
+    "Comment": {
+      "title": "Comment",
+      "description": "Article comment",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "articleId": { "type": "string" },
+        "articleTitle": { "type": "string" },
+        "authorName": { "type": "string" },
+        "authorEmail": { "type": "string" },
+        "content": { "type": "string" },
+        "status": { "type": "string", "enum": ["PENDING", "APPROVED", "REJECTED", "SPAM"] },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["id", "articleId", "content", "status"]
+    },
+    "Setting": {
+      "title": "Setting",
+      "description": "Site key-value settings",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "key": { "type": "string" },
+        "value": { "type": "string" }
+      },
+      "required": ["id", "key", "value"]
+    },
+    "AuditLog": {
+      "title": "AuditLog",
+      "description": "Security and activity log",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userEmail": { "type": "string" },
+        "action": { "type": "string" },
+        "details": { "type": "string" },
+        "ipAddress": { "type": "string" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["id", "userEmail", "action", "createdAt"]
     }
   },
   "firestore": {
-    "/news/{newsId}": {
-      "schema": "News",
-      "description": "Collection of all news articles, both drafts and published"
+    "/articles/{articleId}": {
+      "schema": "Article",
+      "description": "Collection of all news articles"
     },
-    "/slugs/{slug}": {
-      "schema": "NewsSlug",
-      "description": "Unique index of news slugs"
+    "/categories/{categoryId}": {
+      "schema": "Category",
+      "description": "Collection of categories"
+    },
+    "/tags/{tagId}": {
+      "schema": "Tag",
+      "description": "Collection of tags"
+    },
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "Collection of CMS users"
+    },
+    "/comments/{commentId}": {
+      "schema": "Comment",
+      "description": "Collection of comments"
+    },
+    "/settings/{settingId}": {
+      "schema": "Setting",
+      "description": "Collection of site settings"
+    },
+    "/auditLogs/{logId}": {
+      "schema": "AuditLog",
+      "description": "Collection of audit logs"
     }
   }
 }

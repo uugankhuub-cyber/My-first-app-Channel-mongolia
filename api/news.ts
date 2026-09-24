@@ -1,6 +1,5 @@
 import { Request, Response } from 'express';
-import { prisma, getDbStatus } from '../lib/prisma.ts';
-import * as mockDb from '../lib/mock-db.ts';
+import * as db from '../lib/firestore-db.ts';
 
 // Server-side secret keys (supports user's configured env key or fallbacks)
 const ACCEPTED_NEWS_API_KEYS = [
@@ -44,7 +43,8 @@ export async function handleNewsHealth(req: Request, res: Response) {
     ok: true,
     service: 'Channel Mongolia News API Ingestion Service',
     status: 'ONLINE',
-    version: '2.6',
+    version: '3.0',
+    database: 'Firestore',
     keyConfigured: Boolean(process.env.NEWS_API_KEY),
     timestamp: new Date().toISOString()
   });
@@ -52,22 +52,27 @@ export async function handleNewsHealth(req: Request, res: Response) {
 
 // 2. Info endpoint (GET /api/news)
 export async function handleNewsInfo(req: Request, res: Response) {
-  const db = mockDb.getDb();
+  const categories = await db.getCategories();
+  const articles = await db.getArticles();
+  const ingestedArticlesCount = articles.filter(a => !!a.agentNotes).length;
+
   return res.status(200).json({
     name: 'Channel Mongolia News API',
     status: 'ONLINE',
+    database: 'Firestore',
     authentication: 'Bearer <NEWS_API_KEY> or x-api-key header',
     sampleEndpoint: '/api/news',
-    categories: db.categories.map(c => ({ id: c.id, name: c.name, slug: c.slug })),
-    totalIngestedArticles: db.articles.filter(a => !!a.agentNotes).length,
+    categories: categories.map(c => ({ id: c.id, name: c.name, slug: c.slug })),
+    totalArticles: articles.length,
+    totalIngestedArticles: ingestedArticlesCount,
     timestamp: new Date().toISOString()
   });
 }
 
 function matchCategory(
   incomingName: string | undefined, 
-  availableCategories: { id: string; name: string; slug: string }[]
-): { id: string; name: string; slug: string } {
+  availableCategories: db.Category[]
+): db.Category {
   let norm = (incomingName || '').trim().toLowerCase();
   
   if (norm) {
@@ -75,26 +80,28 @@ function matchCategory(
     if (norm === 'culture') norm = 'urlag';
     if (norm === 'technology') norm = 'delhii';
 
-    // 1. Exact match by name or slug (case-insensitive)
+    // 1. Exact match by slug or name (case-insensitive)
     const exact = availableCategories.find(c => 
-      c.name.toLowerCase() === norm || 
-      c.slug.toLowerCase() === norm
+      c.slug.toLowerCase() === norm || 
+      c.name.toLowerCase() === norm ||
+      c.id.toLowerCase() === norm ||
+      c.id.toLowerCase() === `cat-${norm}`
     );
     if (exact) return exact;
 
     // 2. Partial match
     const partial = availableCategories.find(c => 
+      norm.includes(c.slug.toLowerCase()) ||
       norm.includes(c.name.toLowerCase()) || 
-      c.name.toLowerCase().includes(norm) ||
-      norm.includes(c.slug.toLowerCase())
+      c.name.toLowerCase().includes(norm)
     );
     if (partial) return partial;
   }
 
-  // 3. Fallback to "Дэлхий"
+  // 3. Fallback to "Дэлхий" (delhii)
   const delhii = availableCategories.find(c => 
-    c.name.toLowerCase() === 'дэлхий' || 
-    c.slug.toLowerCase() === 'delhii'
+    c.slug.toLowerCase() === 'delhii' || 
+    c.name.toLowerCase() === 'дэлхий'
   );
   if (delhii) return delhii;
 
@@ -167,25 +174,10 @@ export async function handleCreateNews(req: Request, res: Response) {
       .replace(/[^a-z0-9_-]/g, '-')
       .replace(/-+/g, '-');
 
-    const db = mockDb.getDb();
-    
-    // If slug exists, add unique timestamp suffix so incoming API news is never discarded
-    const slugExistsInMock = db.articles.some(a => a.slug === cleanSlug);
-    if (slugExistsInMock) {
+    const existingArticles = await db.getArticles();
+    const slugExists = existingArticles.some(a => a.slug === cleanSlug);
+    if (slugExists) {
       cleanSlug = `${cleanSlug.slice(0, 45)}-${Date.now().toString(36).slice(-4)}`;
-    }
-
-    if (getDbStatus()) {
-      try {
-        const existingInPrisma = await prisma.article.findUnique({
-          where: { slug: cleanSlug }
-        });
-        if (existingInPrisma) {
-          cleanSlug = `${cleanSlug.slice(0, 45)}-${Date.now().toString(36).slice(-4)}`;
-        }
-      } catch (err) {
-        console.warn('Prisma check slug error, relying on mock DB:', err);
-      }
     }
 
     // 4. Sources formatting
@@ -206,8 +198,9 @@ export async function handleCreateNews(req: Request, res: Response) {
       ? `${articleBody}\n\n## Эх сурвалж\n${sourceLinks}`
       : articleBody;
 
-    // 5. Category matching
-    const matchedCategory = matchCategory(category, db.categories);
+    // 5. Category matching from Firestore categories
+    const categories = await db.getCategories();
+    const matchedCategory = matchCategory(category, categories);
 
     // 6. Private agentNotes
     const agentNotesObj = {
@@ -255,9 +248,8 @@ export async function handleCreateNews(req: Request, res: Response) {
       imageGalleryList = [{ url: finalThumbnail, caption: articleTitle }];
     }
 
-    // 8. Create Article with status "DRAFT" in mock DB
-    const newMockArticle: mockDb.MockArticle = {
-      id: newArticleId,
+    // 8. Create Article with status "DRAFT" in Firestore
+    const createdArticle = await db.createArticle({
       title: articleTitle,
       title_en: articleTitle,
       slug: cleanSlug,
@@ -278,66 +270,17 @@ export async function handleCreateNews(req: Request, res: Response) {
       publishedAt: undefined,
       createdAt: nowIso,
       updatedAt: nowIso
-    };
+    }, newArticleId);
 
-    db.articles.unshift(newMockArticle);
-    mockDb.saveDb(db);
-
-    // 9. Also persist to Prisma if database is available
-    let createdArticleId = newArticleId;
-    if (getDbStatus()) {
-      try {
-        let author = await prisma.user.findFirst({ where: { role: 'ADMIN' } });
-        if (!author) author = await prisma.user.findFirst();
-
-        let prismaCat = await prisma.category.findFirst({
-          where: {
-            OR: [
-              { name: { equals: matchedCategory.name, mode: 'insensitive' } },
-              { slug: { equals: matchedCategory.slug, mode: 'insensitive' } }
-            ]
-          }
-        });
-
-        if (!prismaCat) {
-          prismaCat = await prisma.category.create({
-            data: { name: matchedCategory.name, slug: matchedCategory.slug }
-          });
-        }
-
-        if (author) {
-          const prismaArticle = await prisma.article.create({
-            data: {
-              title: articleTitle,
-              slug: cleanSlug,
-              excerpt: articleLead,
-              content: fullContent,
-              thumbnail: finalThumbnail || null,
-              status: 'DRAFT',
-              metaTitle: metaTitle,
-              metaDesc: metaDesc,
-              agentNotes: agentNotesStr,
-              authorId: author.id,
-              categoryId: prismaCat.id,
-              publishedAt: null
-            }
-          });
-          createdArticleId = prismaArticle.id;
-        }
-      } catch (prismaErr: any) {
-        console.warn('Prisma save error in handleCreateNews, saved to mockDb:', prismaErr.message);
-      }
-    }
-
-    // 10. Return 201 Success
+    // 9. Return 201 Success
     return res.status(201).json({
       success: true,
-      id: createdArticleId,
+      id: createdArticle.id,
       slug: cleanSlug,
       title: articleTitle,
       status: 'DRAFT',
       category: matchedCategory.name,
-      message: 'Article successfully ingested and placed in DRAFT for editorial review.'
+      message: 'Article successfully ingested into Firestore and placed in DRAFT for editorial review.'
     });
   } catch (error: any) {
     console.error('Error creating article in /api/news:', error);

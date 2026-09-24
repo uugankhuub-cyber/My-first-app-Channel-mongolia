@@ -1,108 +1,45 @@
-import { prisma, getDbStatus } from '../lib/prisma.ts';
 import { hashPassword, comparePassword, generateTokens, verifyAccessToken } from '../lib/auth.ts';
 import { z } from 'zod';
-import * as mockDb from '../lib/mock-db.ts';
+import * as db from '../lib/firestore-db.ts';
 
 const registerSchema = z.object({
   email: z.string().email(),
   password: z.string().min(8).regex(/[A-Z]/).regex(/[a-z]/).regex(/[0-9]/).regex(/[^A-Za-z0-9]/),
 });
 
-const isDbAvailable = () => {
-  return getDbStatus();
-};
-
 export const login = async (req: any, res: any) => {
   const { email, password } = req.body;
   console.log(`[AUTH-LOGIN] Login attempt initiated for email: "${email}"`);
 
   try {
-    if (isDbAvailable()) {
-      console.log('[AUTH-LOGIN] Prisma DB is connected/available. Querying Prisma.');
-      try {
-        const user = await prisma.user.findUnique({ where: { email } });
-
-        if (user) {
-          console.log(`[AUTH-LOGIN] Found user "${email}" in Prisma DB. Role: ${user.role}`);
-          // Check locking
-          if (user.lockedUntil && user.lockedUntil > new Date()) {
-            console.log(`[AUTH-LOGIN] User account "${email}" is locked until ${user.lockedUntil}`);
-            return res.status(403).json({ error: 'Account locked. Try again later.' });
-          }
-
-          const isValid = await comparePassword(password, user.password);
-          console.log(`[AUTH-LOGIN] Password comparison result in Prisma for "${email}": ${isValid}`);
-
-          if (!isValid) {
-            // Increment failed attempts
-            const failedAttempts = user.failedLoginAttempts + 1;
-            let lockedUntil = null;
-            if (failedAttempts >= 5) {
-              lockedUntil = new Date(Date.now() + 15 * 60 * 1000); // 15 mins
-            }
-            await prisma.user.update({
-              where: { id: user.id },
-              data: { failedLoginAttempts: failedAttempts, lockedUntil },
-            });
-            console.log(`[AUTH-LOGIN] Invalid credentials entered for "${email}" in Prisma DB.`);
-            return res.status(401).json({ error: 'Invalid credentials' });
-          }
-
-          // Reset failed attempts
-          await prisma.user.update({
-            where: { id: user.id },
-            data: { failedLoginAttempts: 0, lockedUntil: null },
-          });
-
-          // Check for email verification
-          if (!user.emailVerified && user.role !== 'ADMIN') {
-            console.log(`[AUTH-LOGIN] User "${email}" is not verified (non-admin).`);
-            return res.status(403).json({ error: 'Email not verified. Please check your inbox.' });
-          }
-
-          const tokens = generateTokens(user.id, user.role);
-
-          // Set HttpOnly cookies with sameSite: 'lax' for robust iframe preview and top-level navigation support
-          res.cookie('accessToken', tokens.accessToken, { httpOnly: true, secure: true, sameSite: 'lax', maxAge: 15 * 60 * 1000 });
-          res.cookie('refreshToken', tokens.refreshToken, { httpOnly: true, secure: true, sameSite: 'lax', maxAge: 7 * 24 * 60 * 60 * 1000 });
-
-          console.log(`[AUTH-LOGIN] Login successful for "${email}" via Prisma. Role: ${user.role}`);
-          return res.json({
-            user: {
-              id: user.id,
-              email: user.email,
-              role: user.role,
-              forcePasswordChange: user.forcePasswordChange,
-            }
-          });
-        } else {
-          console.log(`[AUTH-LOGIN] User "${email}" not found in Prisma DB. Falling back to Mock DB.`);
-        }
-      } catch (dbError: any) {
-        console.error('[AUTH-LOGIN] Database query failed in login, falling back to mock DB:', dbError.message);
-      }
-    } else {
-      console.log('[AUTH-LOGIN] Prisma DB is NOT available. Using Mock DB directly.');
-    }
-
-    // FALLBACK TO MOCK DB
-    await mockDb.ensureAdmin();
-    const db = mockDb.getDb();
-    const user = db.users.find(u => u.email === email);
+    const user = await db.getUserByEmail(email);
 
     if (!user) {
-      console.log(`[AUTH-LOGIN] User "${email}" not found in Mock DB.`);
+      console.log(`[AUTH-LOGIN] User "${email}" not found in Firestore.`);
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
-    console.log(`[AUTH-LOGIN] Found user "${email}" in Mock DB. Role: ${user.role}`);
+    // Check locking
+    if (user.lockedUntil && new Date(user.lockedUntil) > new Date()) {
+      console.log(`[AUTH-LOGIN] User account "${email}" is locked until ${user.lockedUntil}`);
+      return res.status(403).json({ error: 'Account locked. Try again later.' });
+    }
+
     const isValid = await comparePassword(password, user.passwordHash);
-    console.log(`[AUTH-LOGIN] Password comparison result in Mock DB for "${email}": ${isValid}`);
-    
+    console.log(`[AUTH-LOGIN] Password comparison result for "${email}": ${isValid}`);
+
     if (!isValid) {
-      console.log(`[AUTH-LOGIN] Invalid credentials entered for "${email}" in Mock DB.`);
+      const failedAttempts = (user.failedLoginAttempts || 0) + 1;
+      let lockedUntil: string | null = null;
+      if (failedAttempts >= 5) {
+        lockedUntil = new Date(Date.now() + 15 * 60 * 1000).toISOString();
+      }
+      await db.updateUser(user.id, { failedLoginAttempts: failedAttempts, lockedUntil });
       return res.status(401).json({ error: 'Invalid credentials' });
     }
+
+    // Reset failed attempts on success
+    await db.updateUser(user.id, { failedLoginAttempts: 0, lockedUntil: null });
 
     const tokens = generateTokens(user.id, user.role);
 
@@ -110,8 +47,8 @@ export const login = async (req: any, res: any) => {
     res.cookie('accessToken', tokens.accessToken, { httpOnly: true, secure: true, sameSite: 'lax', maxAge: 15 * 60 * 1000 });
     res.cookie('refreshToken', tokens.refreshToken, { httpOnly: true, secure: true, sameSite: 'lax', maxAge: 7 * 24 * 60 * 60 * 1000 });
 
-    console.log(`[AUTH-LOGIN] Login successful for "${email}" via Mock DB. Role: ${user.role}`);
-    res.json({
+    console.log(`[AUTH-LOGIN] Login successful for "${email}". Role: ${user.role}`);
+    return res.json({
       user: {
         id: user.id,
         email: user.email,
@@ -119,9 +56,8 @@ export const login = async (req: any, res: any) => {
         forcePasswordChange: false,
       }
     });
-
   } catch (error: any) {
-    console.error('[AUTH-LOGIN] Unexpected login error:', error);
+    console.error('[AUTH-LOGIN] Login error:', error);
     res.status(500).json({ error: 'Login failed' });
   }
 };
@@ -130,79 +66,30 @@ export const register = async (req: any, res: any) => {
   try {
     const { email, password } = registerSchema.parse(req.body);
 
-    if (isDbAvailable()) {
-      try {
-        const existing = await prisma.user.findUnique({ where: { email } });
-        if (existing) return res.status(400).json({ error: 'Email already registered' });
-
-        const hashedPassword = await hashPassword(password);
-        const verificationToken = Math.random().toString(36).substring(2, 15);
-
-        const user = await prisma.user.create({
-          data: {
-            email,
-            password: hashedPassword,
-            verificationToken,
-            emailVerified: true, // Auto-verify email for seamless UX on Railway
-          },
-        });
-
-        console.log(`Verification link: /api/auth/verify?token=${verificationToken}`);
-
-        const tokens = generateTokens(user.id, user.role);
-
-        // Set HttpOnly cookies
-        res.cookie('accessToken', tokens.accessToken, { httpOnly: true, secure: true, sameSite: 'lax', maxAge: 15 * 60 * 1000 });
-        res.cookie('refreshToken', tokens.refreshToken, { httpOnly: true, secure: true, sameSite: 'lax', maxAge: 7 * 24 * 60 * 60 * 1000 });
-
-        return res.json({
-          message: 'Registration successful. Please verify your email.',
-          user: {
-            id: user.id,
-            email: user.email,
-            role: user.role,
-            forcePasswordChange: user.forcePasswordChange,
-          }
-        });
-      } catch (dbError: any) {
-        console.error('Database query failed in register, falling back to mock DB:', dbError.message);
-      }
-    }
-
-    // FALLBACK TO MOCK DB
-    const db = mockDb.getDb();
-    const existing = db.users.find(u => u.email === email);
+    const existing = await db.getUserByEmail(email);
     if (existing) {
-      return res.status(400).json({ error: 'Email already registered' });
+      return res.status(400).json({ error: 'User already exists' });
     }
 
     const hashedPassword = await hashPassword(password);
-    const verificationToken = Math.random().toString(36).substring(2, 15);
-
-    const newUser: mockDb.MockUser = {
-      id: 'user-' + Math.random().toString(36).substring(2, 15),
+    const newUser = await db.createUser({
       email,
       passwordHash: hashedPassword,
       role: 'USER',
-      emailVerified: true, // Auto-verify in mock mode for better UX
-      verificationToken,
+      emailVerified: true,
+      failedLoginAttempts: 0,
+      lockedUntil: null,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
-    };
-
-    db.users.push(newUser);
-    mockDb.saveDb(db);
-
-    console.log(`Mock verification link: /api/auth/verify?token=${verificationToken}`);
+    });
 
     const tokens = generateTokens(newUser.id, newUser.role);
 
-    // Set HttpOnly cookies
     res.cookie('accessToken', tokens.accessToken, { httpOnly: true, secure: true, sameSite: 'lax', maxAge: 15 * 60 * 1000 });
     res.cookie('refreshToken', tokens.refreshToken, { httpOnly: true, secure: true, sameSite: 'lax', maxAge: 7 * 24 * 60 * 60 * 1000 });
 
     res.json({
-      message: 'Registration successful. Account pre-verified for seamless testing!',
+      message: 'Registration successful.',
       user: {
         id: newUser.id,
         email: newUser.email,
@@ -210,7 +97,6 @@ export const register = async (req: any, res: any) => {
         forcePasswordChange: false,
       }
     });
-
   } catch (error: any) {
     console.error('Register error:', error);
     res.status(400).json({ error: error.message || 'Registration failed' });
@@ -234,26 +120,7 @@ export const getMe = async (req: any, res: any) => {
     return res.status(401).json({ error: 'Invalid or expired token' });
   }
 
-  if (isDbAvailable()) {
-    try {
-      const user = await prisma.user.findUnique({ where: { id: decoded.userId } });
-      if (user) {
-        return res.json({
-          user: {
-            id: user.id,
-            email: user.email,
-            role: user.role,
-            forcePasswordChange: user.forcePasswordChange,
-          }
-        });
-      }
-    } catch (e) {
-      console.error('Database query failed in getMe, falling back to mock DB');
-    }
-  }
-
-  const db = mockDb.getDb();
-  const user = db.users.find(u => u.id === decoded.userId);
+  const user = await db.getUserById(decoded.userId);
   if (user) {
     return res.json({
       user: {
@@ -281,43 +148,34 @@ export const googleAdminLogin = async (req: any, res: any) => {
     return res.status(403).json({ error: `Хандах эрхгүй: ${email} хаяг админ биш байна. Зөвхөн ${ADMIN_EMAIL} зөвшөөрөгдөнө.` });
   }
 
-  let adminUser: { id: string; email: string; role: 'ADMIN'; forcePasswordChange: boolean } = {
-    id: 'admin-1',
-    email: ADMIN_EMAIL,
-    role: 'ADMIN',
-    forcePasswordChange: false
-  };
-
-  if (isDbAvailable()) {
-    try {
-      let user = await prisma.user.findUnique({ where: { email: ADMIN_EMAIL } });
-      if (!user) {
-        user = await prisma.user.create({
-          data: {
-            email: ADMIN_EMAIL,
-            password: 'AdminPasswordGeneratedForOAuth!',
-            role: 'ADMIN',
-            emailVerified: true
-          }
-        });
-      }
-      adminUser = {
-        id: user.id,
-        email: user.email,
-        role: 'ADMIN',
-        forcePasswordChange: false
-      };
-    } catch (dbErr) {
-      console.warn('Prisma sync failed for googleAdminLogin, using mock DB:', dbErr);
-    }
+  let adminUser = await db.getUserByEmail(ADMIN_EMAIL);
+  if (!adminUser) {
+    const { hashPassword } = await import('../lib/auth.ts');
+    const dummyHash = await hashPassword('AdminPasswordGeneratedForOAuth!');
+    adminUser = await db.createUser({
+      email: ADMIN_EMAIL,
+      passwordHash: dummyHash,
+      role: 'ADMIN',
+      emailVerified: true,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    }, 'admin-1');
+  } else if (adminUser.role !== 'ADMIN') {
+    await db.updateUser(adminUser.id, { role: 'ADMIN' });
+    adminUser.role = 'ADMIN';
   }
 
-  await mockDb.ensureAdmin();
   const tokens = generateTokens(adminUser.id, 'ADMIN');
 
   res.cookie('accessToken', tokens.accessToken, { httpOnly: true, secure: true, sameSite: 'lax', maxAge: 15 * 60 * 1000 });
   res.cookie('refreshToken', tokens.refreshToken, { httpOnly: true, secure: true, sameSite: 'lax', maxAge: 7 * 24 * 60 * 60 * 1000 });
 
-  return res.json({ user: adminUser });
+  return res.json({
+    user: {
+      id: adminUser.id,
+      email: adminUser.email,
+      role: adminUser.role,
+      forcePasswordChange: false
+    }
+  });
 };
-

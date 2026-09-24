@@ -1,7 +1,6 @@
 import { Request, Response } from 'express';
 import { GoogleGenAI } from '@google/genai';
-import { prisma, getDbStatus } from '../lib/prisma.ts';
-import * as mockDb from '../lib/mock-db.ts';
+import * as db from '../lib/firestore-db.ts';
 
 // Secret key for news ingestion API
 const EXPECTED_NEWS_API_KEY = process.env.NEWS_API_KEY || 'cm-news-rgXZh0qH-DF5375lZhtb8-fw12W5EY-cW6jXLG_9pQM';
@@ -12,7 +11,7 @@ export async function testAgentConnection(req: Request, res: Response) {
     const key = process.env.NEWS_API_KEY || 'cm-news-rgXZh0qH-DF5375lZhtb8-fw12W5EY-cW6jXLG_9pQM';
     return res.status(200).json({
       success: true,
-      message: 'Холболт амжилттай шалгагдлаа! News API нь зөв холбогдсон бөгөөд мэдээ хүлээн авахад бэлэн байна.',
+      message: 'Холболт амжилттай шалгагдлаа! News API нь зөв холбогдсон бөгөөд Firestore дээр мэдээ хүлээн авахад бэлэн байна.',
       endpoint: '/api/news',
       healthUrl: '/api/news/health',
       httpStatus: 200,
@@ -26,28 +25,30 @@ export async function testAgentConnection(req: Request, res: Response) {
 
 function matchCategory(
   incomingName: string | undefined, 
-  availableCategories: { id: string; name: string; slug: string }[]
-): { id: string; name: string; slug: string } {
+  availableCategories: db.Category[]
+): db.Category {
   const norm = (incomingName || '').trim().toLowerCase();
   
   if (norm) {
     const exact = availableCategories.find(c => 
-      c.name.toLowerCase() === norm || 
-      c.slug.toLowerCase() === norm
+      c.slug.toLowerCase() === norm || 
+      c.name.toLowerCase() === norm ||
+      c.id.toLowerCase() === norm ||
+      c.id.toLowerCase() === `cat-${norm}`
     );
     if (exact) return exact;
 
     const partial = availableCategories.find(c => 
-      norm.includes(c.name.toLowerCase()) || 
+      norm.includes(c.slug.toLowerCase()) || 
       c.name.toLowerCase().includes(norm) ||
-      norm.includes(c.slug.toLowerCase())
+      norm.includes(c.name.toLowerCase())
     );
     if (partial) return partial;
   }
 
   const delhii = availableCategories.find(c => 
-    c.name.toLowerCase() === 'дэлхий' || 
-    c.slug.toLowerCase() === 'delhii'
+    c.slug.toLowerCase() === 'delhii' || 
+    c.name.toLowerCase() === 'дэлхий'
   );
   if (delhii) return delhii;
 
@@ -57,31 +58,23 @@ function matchCategory(
 // 1. Get Agent Overview & Status
 export async function getAgentStatus(req: Request, res: Response) {
   try {
-    const db = mockDb.getDb();
+    const articles = await db.getArticles();
+    const categories = await db.getCategories();
     
-    // Check mock DB agent articles
-    const mockAgentArticles = db.articles.filter(a => !!a.agentNotes);
-    let total = mockAgentArticles.length;
-    let drafts = mockAgentArticles.filter(a => a.status === 'DRAFT').length;
-    let published = mockAgentArticles.filter(a => a.status === 'PUBLISHED').length;
+    // Check Firestore agent articles
+    const agentArticles = articles.filter(a => !!a.agentNotes);
+    const total = agentArticles.length;
+    const drafts = agentArticles.filter(a => a.status === 'DRAFT').length;
+    const published = agentArticles.filter(a => a.status === 'PUBLISHED').length;
 
-    let recent: Array<{
-      id: string;
-      title: string;
-      slug: string;
-      status: string;
-      category: string;
-      thumbnail?: string;
-      createdAt: string;
-      agentNotes: any;
-    }> = mockAgentArticles.slice(0, 10).map(a => {
+    const recent = agentArticles.slice(0, 10).map(a => {
       let parsedNotes: any = null;
       try {
         parsedNotes = typeof a.agentNotes === 'string' ? JSON.parse(a.agentNotes) : a.agentNotes;
       } catch (e) {
         parsedNotes = { raw: a.agentNotes };
       }
-      const cat = db.categories.find(c => c.id === a.categoryId);
+      const cat = categories.find(c => c.id === a.categoryId || c.slug === a.categoryId);
       return {
         id: a.id,
         title: a.title,
@@ -94,57 +87,9 @@ export async function getAgentStatus(req: Request, res: Response) {
       };
     });
 
-    // If Prisma is online, fetch accurate counts
-    if (getDbStatus()) {
-      try {
-        const prismaArticles = await prisma.article.findMany({
-          where: { agentNotes: { not: null } },
-          orderBy: { createdAt: 'desc' },
-          take: 10,
-          include: { category: true }
-        });
-
-        const prismaTotal = await prisma.article.count({
-          where: { agentNotes: { not: null } }
-        });
-        const prismaDrafts = await prisma.article.count({
-          where: { agentNotes: { not: null }, status: 'DRAFT' }
-        });
-        const prismaPublished = await prisma.article.count({
-          where: { agentNotes: { not: null }, status: 'PUBLISHED' }
-        });
-
-        if (prismaTotal > 0) {
-          total = prismaTotal;
-          drafts = prismaDrafts;
-          published = prismaPublished;
-          recent = prismaArticles.map(a => {
-            let parsedNotes: any = null;
-            try {
-              parsedNotes = a.agentNotes ? JSON.parse(a.agentNotes) : null;
-            } catch (e) {
-              parsedNotes = { raw: a.agentNotes };
-            }
-            return {
-              id: a.id,
-              title: a.title,
-              slug: a.slug,
-              status: a.status,
-              category: a.category ? a.category.name : 'Дэлхий',
-              thumbnail: a.thumbnail || undefined,
-              createdAt: a.createdAt.toISOString(),
-              agentNotes: parsedNotes
-            };
-          });
-        }
-      } catch (prismaErr: any) {
-        console.warn('Prisma getAgentStatus error, fallback to mock data:', prismaErr.message);
-      }
-    }
-
     return res.status(200).json({
       status: 'ONLINE',
-      agentName: 'Channel Mongolia News Agent (v2.6)',
+      agentName: 'Channel Mongolia News Agent (v3.0 - Firestore)',
       model: 'gemini-3.8-flash',
       ingestionEndpoint: '/api/news',
       apiKeyConfigured: !!process.env.GEMINI_API_KEY,
@@ -232,7 +177,6 @@ export async function generateAgentNews(req: Request, res: Response) {
         try {
           generatedData = JSON.parse(rawText.trim());
         } catch (jsonErr) {
-          // If JSON parse fails, attempt regex extraction
           const match = rawText.match(/\{[\s\S]*\}/);
           if (match) {
             generatedData = JSON.parse(match[0]);
@@ -269,9 +213,9 @@ export async function generateAgentNews(req: Request, res: Response) {
       };
     }
 
-    // Now save this directly into CMS via our unified ingestion logic
-    const db = mockDb.getDb();
-    const matchedCategory = matchCategory(generatedData.category, db.categories);
+    // Save directly into Firestore
+    const categories = await db.getCategories();
+    const matchedCategory = matchCategory(generatedData.category, categories);
 
     // Format sources into body
     const sourceLinks = (generatedData.sources || []).map((s: any) => {
@@ -301,8 +245,7 @@ export async function generateAgentNews(req: Request, res: Response) {
     const newArticleId = 'art-' + Math.random().toString(36).substring(2, 11);
     const nowIso = new Date().toISOString();
 
-    const newMockArticle: mockDb.MockArticle = {
-      id: newArticleId,
+    const createdArticle = await db.createArticle({
       title: generatedData.title.trim(),
       title_en: generatedData.title.trim(),
       slug: cleanSlug,
@@ -322,67 +265,18 @@ export async function generateAgentNews(req: Request, res: Response) {
       agentNotes: agentNotesStr,
       createdAt: nowIso,
       updatedAt: nowIso
-    };
-
-    db.articles.unshift(newMockArticle);
-    mockDb.saveDb(db);
-
-    // Save to Prisma if DB is active
-    let finalArticleId = newArticleId;
-    if (getDbStatus()) {
-      try {
-        let author = await prisma.user.findFirst({ where: { role: 'ADMIN' } });
-        if (!author) author = await prisma.user.findFirst();
-
-        let prismaCat = await prisma.category.findFirst({
-          where: {
-            OR: [
-              { name: { equals: matchedCategory.name, mode: 'insensitive' } },
-              { slug: { equals: matchedCategory.slug, mode: 'insensitive' } }
-            ]
-          }
-        });
-
-        if (!prismaCat) {
-          prismaCat = await prisma.category.create({
-            data: { name: matchedCategory.name, slug: matchedCategory.slug }
-          });
-        }
-
-        if (author) {
-          const prismaArticle = await prisma.article.create({
-            data: {
-              title: generatedData.title.trim(),
-              slug: cleanSlug,
-              excerpt: generatedData.lead.trim(),
-              content: fullContent,
-              thumbnail: generatedData.image?.url || null,
-              status: 'DRAFT',
-              metaTitle: generatedData.title.trim(),
-              metaDesc: generatedData.seo?.meta_description || generatedData.lead.trim().slice(0, 160),
-              agentNotes: agentNotesStr,
-              authorId: author.id,
-              categoryId: prismaCat.id,
-              publishedAt: null
-            }
-          });
-          finalArticleId = prismaArticle.id;
-        }
-      } catch (prismaErr: any) {
-        console.warn('Prisma save in generateAgentNews fallback to mockDb:', prismaErr.message);
-      }
-    }
+    }, newArticleId);
 
     return res.status(201).json({
       success: true,
-      message: 'Агент мэдээг амжилттай бэлтгэж, Ноорог төлөвт хадгаллаа.',
+      message: 'Агент мэдээг амжилттай бэлтгэж, Firestore дээр Ноорог төлөвт хадгаллаа.',
       article: {
-        id: finalArticleId,
+        id: createdArticle.id,
         slug: cleanSlug,
         title: generatedData.title,
         excerpt: generatedData.lead,
         category: matchedCategory.name,
-        thumbnail: newMockArticle.thumbnail,
+        thumbnail: createdArticle.thumbnail,
         agentNotes: agentNotesObj
       }
     });
