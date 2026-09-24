@@ -183,6 +183,7 @@ export const CATEGORIES: Category[] = [
   { id: '5', label: 'Урлаг', label_en: 'Art', slug: 'urlag' },
   { id: '6', label: 'Спорт', label_en: 'Sports', slug: 'sport' },
   { id: '8', label: 'Амьтан, ургамал', label_en: 'Flora & Fauna', slug: 'amitun-urgamal' },
+  { id: '9', label: 'Видео', label_en: 'Video', slug: 'video' },
 ];
 
 export const MOCK_CONTENT: ContentItem[] = [

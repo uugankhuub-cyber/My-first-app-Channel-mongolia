@@ -47,14 +47,15 @@ export const Footer: React.FC = () => {
             </p>
             <div className="flex space-x-3">
                 {[
-                  { icon: Facebook, label: 'Facebook' },
-                  { icon: Instagram, label: 'Instagram' },
-                  { icon: Twitter, label: 'Twitter' },
-                  { icon: Youtube, label: 'Youtube' }
+                  { icon: Facebook, label: 'Facebook', href: '#' },
+                  { icon: Instagram, label: 'Instagram', href: '#' },
+                  { icon: Twitter, label: 'Twitter', href: '#' },
+                  { icon: Youtube, label: 'Youtube', href: 'https://www.youtube.com/@ChannelMongolia' }
                 ].map((social, idx) => (
                   <motion.a 
                     key={idx}
-                    href="#" 
+                    href={social.href}
+                    {...(social.href.startsWith('http') ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
                     whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.9 }}
                     className="w-9 h-9 rounded-lg bg-surfaceHighlight flex items-center justify-center text-text-muted hover:bg-brand-purple hover:text-white transition-all duration-300"
@@ -79,7 +80,7 @@ export const Footer: React.FC = () => {
             <h3 className="text-[1.15rem] font-[800] text-text-main mb-6">{t('nav_categories')}</h3>
             <ul className="space-y-3 text-sm text-text-muted">
               <li><Link to="/shinzhleh-uhaan" className="hover:text-brand-purple transition-colors block">Science</Link></li>
-              <li><Link to="/video" className="hover:text-brand-purple transition-colors block">Video</Link></li>
+              <li><a href="https://www.youtube.com/@ChannelMongolia" target="_blank" rel="noopener noreferrer" className="hover:text-brand-purple transition-colors block">Video</a></li>
               <li><Link to="/tuuh-gazarzui" className="hover:text-brand-purple transition-colors block">History</Link></li>
             </ul>
           </motion.div>

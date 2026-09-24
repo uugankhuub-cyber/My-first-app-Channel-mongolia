@@ -91,13 +91,13 @@ const defaultState: MockDbState = {
   categories: [
     { id: 'cat-delhii', name: 'Дэлхий', slug: 'delhii' },
     { id: 'cat-mongol', name: 'Монгол', slug: 'mongol' },
-    { id: 'cat-1', name: 'Шинжлэх ухаан', slug: 'shinzhleh-uhaan' },
-    { id: 'cat-2', name: 'Технологи', slug: 'technology' },
-    { id: 'cat-3', name: 'Урлаг', slug: 'urlag' },
-    { id: 'cat-4', name: 'Түүх, газарзүй', slug: 'tuuh-gazarzui' },
-    { id: 'cat-5', name: 'Хүмүүс', slug: 'humuus' },
-    { id: 'cat-6', name: 'Спорт', slug: 'sport' },
-    { id: 'cat-7', name: 'Амьтан, ургамал', slug: 'amitun-urgamal' }
+    { id: 'cat-humuus', name: 'Хүмүүс', slug: 'humuus' },
+    { id: 'cat-shinzhleh', name: 'Шинжлэх ухаан', slug: 'shinzhleh-uhaan' },
+    { id: 'cat-tuuh', name: 'Түүх, газарзүй', slug: 'tuuh-gazarzui' },
+    { id: 'cat-urlag', name: 'Урлаг', slug: 'urlag' },
+    { id: 'cat-sport', name: 'Спорт', slug: 'sport' },
+    { id: 'cat-amitun', name: 'Амьтан, ургамал', slug: 'amitun-urgamal' },
+    { id: 'cat-video', name: 'Видео', slug: 'video' }
   ],
   articles: [
     {

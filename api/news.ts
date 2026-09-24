@@ -68,9 +68,13 @@ function matchCategory(
   incomingName: string | undefined, 
   availableCategories: { id: string; name: string; slug: string }[]
 ): { id: string; name: string; slug: string } {
-  const norm = (incomingName || '').trim().toLowerCase();
+  let norm = (incomingName || '').trim().toLowerCase();
   
   if (norm) {
+    if (norm === 'science') norm = 'shinzhleh-uhaan';
+    if (norm === 'culture') norm = 'urlag';
+    if (norm === 'technology') norm = 'delhii';
+
     // 1. Exact match by name or slug (case-insensitive)
     const exact = availableCategories.find(c => 
       c.name.toLowerCase() === norm || 

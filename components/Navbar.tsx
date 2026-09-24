@@ -66,14 +66,25 @@ export const Navbar: React.FC = () => {
     setIsOpen(false);
   };
 
-  const mainNavItems = [
-    { label: t("nav_home"), path: "/", type: "link" },
-    ...CATEGORIES.map((cat) => ({
-      label: cat.label,
-      path: `/${cat.slug}`,
-      type: "category",
-    })),
-    { label: t("nav_video"), path: "/video", type: "link" },
+  const mainNavItems: Array<{ label: string; path: string; type: string; external?: boolean }> = [
+    { label: t("nav_home"), path: "/", type: "link", external: false },
+    ...CATEGORIES.map((cat) => {
+      const label = language === "en" ? (cat.label_en || cat.label) : cat.label;
+      if (cat.slug === 'video') {
+        return {
+          label,
+          path: "https://www.youtube.com/@ChannelMongolia",
+          type: "external",
+          external: true
+        };
+      }
+      return {
+        label,
+        path: `/${cat.slug}`,
+        type: "category",
+        external: false
+      };
+    }),
   ];
 
   return (
@@ -237,20 +248,32 @@ export const Navbar: React.FC = () => {
           <Container className="relative">
             <div className="flex items-center h-12 md:h-14 gap-2 overflow-x-auto no-scrollbar px-1 py-2">
               {mainNavItems.map((item) => (
-                <NavLink
-                  key={item.label}
-                  to={item.path}
-                  className={({ isActive }) => `
-                    flex-shrink-0 inline-flex items-center justify-center h-9 px-4 text-sm rounded-full whitespace-nowrap transition-all duration-200
-                    ${
-                      isActive
-                        ? "bg-brand-purple text-white font-semibold shadow-md shadow-brand-purple/20 ring-1 ring-inset ring-white/10"
-                        : "text-text-muted font-medium hover:text-brand-purple dark:hover:text-white hover:bg-brand-purple/10 dark:hover:bg-brand-purple/10"
-                    }
-                  `}
-                >
-                  {item.label}
-                </NavLink>
+                item.external ? (
+                  <a
+                    key={item.label}
+                    href={item.path}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex-shrink-0 inline-flex items-center justify-center h-9 px-4 text-sm rounded-full whitespace-nowrap transition-all duration-200 text-text-muted font-medium hover:text-brand-purple dark:hover:text-white hover:bg-brand-purple/10 dark:hover:bg-brand-purple/10"
+                  >
+                    {item.label}
+                  </a>
+                ) : (
+                  <NavLink
+                    key={item.label}
+                    to={item.path}
+                    className={({ isActive }) => `
+                      flex-shrink-0 inline-flex items-center justify-center h-9 px-4 text-sm rounded-full whitespace-nowrap transition-all duration-200
+                      ${
+                        isActive
+                          ? "bg-brand-purple text-white font-semibold shadow-md shadow-brand-purple/20 ring-1 ring-inset ring-white/10"
+                          : "text-text-muted font-medium hover:text-brand-purple dark:hover:text-white hover:bg-brand-purple/10 dark:hover:bg-brand-purple/10"
+                      }
+                    `}
+                  >
+                    {item.label}
+                  </NavLink>
+                )
               ))}
             </div>
           </Container>
@@ -329,20 +352,32 @@ export const Navbar: React.FC = () => {
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: idx * 0.05 }}
                       >
-                        <NavLink
-                          to={item.path}
-                          onClick={() => setIsOpen(false)}
-                          className={({ isActive }) => `
-                            block px-4 py-3 rounded-xl text-base transition-all
-                            ${
-                              isActive
-                                ? "bg-brand-purple text-white font-semibold shadow-md"
-                                : "text-text-muted font-medium hover:bg-surfaceHighlight"
-                            }
-                          `}
-                        >
-                          {item.label}
-                        </NavLink>
+                        {item.external ? (
+                          <a
+                            href={item.path}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={() => setIsOpen(false)}
+                            className="block px-4 py-3 rounded-xl text-base transition-all text-text-muted font-medium hover:bg-surfaceHighlight"
+                          >
+                            {item.label}
+                          </a>
+                        ) : (
+                          <NavLink
+                            to={item.path}
+                            onClick={() => setIsOpen(false)}
+                            className={({ isActive }) => `
+                              block px-4 py-3 rounded-xl text-base transition-all
+                              ${
+                                isActive
+                                  ? "bg-brand-purple text-white font-semibold shadow-md"
+                                  : "text-text-muted font-medium hover:bg-surfaceHighlight"
+                              }
+                            `}
+                          >
+                            {item.label}
+                          </NavLink>
+                        )}
                       </motion.div>
                     ))}
                   </nav>

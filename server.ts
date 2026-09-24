@@ -196,6 +196,28 @@ async function startServer() {
           });
         }
       }
+
+      // 3. Ensure all default categories exist in Prisma
+      const defaultCategories = [
+        { name: 'Монгол', slug: 'mongol' },
+        { name: 'Дэлхий', slug: 'delhii' },
+        { name: 'Хүмүүс', slug: 'humuus' },
+        { name: 'Шинжлэх ухаан', slug: 'shinzhleh-uhaan' },
+        { name: 'Түүх, газарзүй', slug: 'tuuh-gazarzui' },
+        { name: 'Урлаг', slug: 'urlag' },
+        { name: 'Спорт', slug: 'sport' },
+        { name: 'Амьтан, ургамал', slug: 'amitun-urgamal' },
+        { name: 'Видео', slug: 'video' },
+      ];
+
+      for (const cat of defaultCategories) {
+        await prisma.category.upsert({
+          where: { slug: cat.slug },
+          update: { name: cat.name },
+          create: { name: cat.name, slug: cat.slug }
+        });
+      }
+      console.log('[STARTUP-DB] Ensured default categories in Prisma.');
     } catch (err: any) {
       console.error('[STARTUP-DB] Database query error in initAdmin:', err.message);
     }
