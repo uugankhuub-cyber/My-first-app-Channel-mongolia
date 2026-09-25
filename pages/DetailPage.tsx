@@ -365,7 +365,14 @@ export const DetailPage: React.FC = () => {
               transition={{ delay: 0.2, duration: 0.5 }}
               className="relative aspect-video bg-surfaceHighlight rounded-3xl overflow-hidden mb-12 shadow-2xl border border-border group"
             >
-               <img src={content.thumbnailUrl} alt={title} className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-[1.05]" />
+               <img 
+                 src={content.thumbnailUrl || '/placeholder-article.svg'} 
+                 alt={title} 
+                 onError={(e) => {
+                   (e.currentTarget as HTMLImageElement).src = '/placeholder-article.svg';
+                 }}
+                 className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-[1.05]" 
+               />
                {content.isVideo && (
                    <div className="absolute inset-0 flex items-center justify-center bg-black/20 backdrop-blur-[2px]">
                        <motion.div 

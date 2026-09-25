@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext.tsx';
 import { 
   Settings, Save, CheckCircle, AlertTriangle, RefreshCw, X, 
-  Globe, Mail, Phone, Facebook, ShieldCheck, Database 
+  Globe, Mail, Phone, Facebook, ShieldCheck, Database,
+  Eye, EyeOff, Key, CheckCircle2, AlertCircle, Share2
 } from 'lucide-react';
 import { motion } from 'motion/react';
 
@@ -10,6 +11,23 @@ interface SettingItem {
   id: string;
   key: string;
   value: string;
+}
+
+interface FacebookStatusResponse {
+  configured: boolean;
+  source: 'settings' | 'env' | 'none';
+  pageId: string | null;
+  pageTokenMasked: string | null;
+  status: {
+    success: boolean;
+    pageId: string | null;
+    pageName: string | null;
+    canPost: boolean;
+    isPageToken: boolean;
+    tokenSource: string;
+    message: string;
+    error?: string;
+  };
 }
 
 export const AdminSettingsPage: React.FC = () => {
@@ -26,6 +44,16 @@ export const AdminSettingsPage: React.FC = () => {
   const [fbLink, setFbLink] = useState('');
   const [seoTitle, setSeoTitle] = useState('');
   const [seoDesc, setSeoDesc] = useState('');
+
+  // Facebook Auto-post settings
+  const [fbPageId, setFbPageId] = useState('');
+  const [fbPageToken, setFbPageToken] = useState('');
+  const [showToken, setShowToken] = useState(false);
+  const [fbStatus, setFbStatus] = useState<FacebookStatusResponse | null>(null);
+  const [fbTesting, setFbTesting] = useState(false);
+  const [fbTestMessage, setFbTestMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [retryingArticles, setRetryingArticles] = useState(false);
+  const [retrySummary, setRetrySummary] = useState<string | null>(null);
 
   const fetchSettings = async () => {
     setLoading(true);
@@ -45,6 +73,18 @@ export const AdminSettingsPage: React.FC = () => {
         setFbLink(getVal('fbLink'));
         setSeoTitle(getVal('seoTitle'));
         setSeoDesc(getVal('seoDesc'));
+        setFbPageId(getVal('fbPageId') || '251450398641244');
+        setFbPageToken(getVal('fbPageToken'));
+      }
+
+      // Fetch live Facebook connection status
+      const fbRes = await fetch('/api/admin/facebook/status', { credentials: 'include' });
+      if (fbRes.ok) {
+        const fbData: FacebookStatusResponse = await fbRes.json();
+        setFbStatus(fbData);
+        if (fbData.pageId && !fbPageId) {
+          setFbPageId(fbData.pageId);
+        }
       }
     } catch (e) {
       console.error(e);
@@ -57,6 +97,67 @@ export const AdminSettingsPage: React.FC = () => {
   useEffect(() => {
     fetchSettings();
   }, []);
+
+  const handleTestFacebook = async () => {
+    setFbTesting(true);
+    setFbTestMessage(null);
+    try {
+      const res = await fetch('/api/admin/facebook/test', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          token: fbPageToken.trim() || undefined,
+          pageId: fbPageId.trim() || undefined
+        })
+      });
+      const data = await res.json();
+      if (data.success) {
+        setFbTestMessage({
+          type: 'success',
+          text: `Амжилттай холбогдлоо! Хуудас: "${data.pageName}" (ID: ${data.pageId}). Нийтлэл оруулах боломжтой: ${data.canPost ? 'Тийм' : 'Үгүй'}.`
+        });
+        // Refresh status
+        const fbRes = await fetch('/api/admin/facebook/status', { credentials: 'include' });
+        if (fbRes.ok) setFbStatus(await fbRes.json());
+      } else {
+        setFbTestMessage({
+          type: 'error',
+          text: data.message || data.error || 'Facebook холболт амжилтгүй боллоо.'
+        });
+      }
+    } catch (err: any) {
+      setFbTestMessage({
+        type: 'error',
+        text: `Холболт шалгахад сүлжээний алдаа гарлаа: ${err.message}`
+      });
+    } finally {
+      setFbTesting(false);
+    }
+  };
+
+  const handleRetryAllFailedArticles = async () => {
+    if (!confirm('Facebook-т амжилтгүй болсон бүх нийтлэлүүдийг одоо дахин нийтлэх үү?')) return;
+    setRetryingArticles(true);
+    setRetrySummary(null);
+    try {
+      const res = await fetch('/api/admin/facebook/retry-all-failed', {
+        method: 'POST',
+        credentials: 'include'
+      });
+      const data = await res.json();
+      if (res.ok) {
+        const successCount = (data.results || []).filter((r: any) => r.success).length;
+        setRetrySummary(`Нийт ${data.totalAttempted || 0} нийтлэлээс ${successCount} нь Facebook-т амжилттай нийтлэгдлээ!`);
+      } else {
+        setRetrySummary(`Алдаа гарлаа: ${data.error || 'Дахин нийтлэх амжилтгүй'}`);
+      }
+    } catch (err: any) {
+      setRetrySummary(`Хүсэлт илгээхэд алдаа гарлаа: ${err.message}`);
+    } finally {
+      setRetryingArticles(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -74,7 +175,9 @@ export const AdminSettingsPage: React.FC = () => {
       { key: 'contactPhone', value: contactPhone },
       { key: 'fbLink', value: fbLink },
       { key: 'seoTitle', value: seoTitle },
-      { key: 'seoDesc', value: seoDesc }
+      { key: 'seoDesc', value: seoDesc },
+      { key: 'fbPageId', value: fbPageId },
+      { key: 'fbPageToken', value: fbPageToken }
     ];
 
     try {
@@ -213,6 +316,140 @@ export const AdminSettingsPage: React.FC = () => {
                   />
                 </div>
               </div>
+            </div>
+          </div>
+
+          {/* Facebook Auto-Post & Graph API Settings */}
+          <div className="bg-surface border border-border rounded-2xl p-6 space-y-5">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border pb-3">
+              <h3 className="text-text-main font-bold text-sm flex items-center gap-2">
+                <Facebook size={16} className="text-[#1877F2]" />
+                <span>Facebook Авто Нийтлэл & Graph API Тохиргоо</span>
+              </h3>
+              <div className="flex items-center gap-2">
+                {fbStatus?.status?.success ? (
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-green-500/10 text-green-400 border border-green-500/20">
+                    <CheckCircle2 size={12} />
+                    <span>Холбогдсон ({fbStatus.status.pageName || 'Channel Mongolia'})</span>
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                    <AlertCircle size={12} />
+                    <span>Холболт шалгах шаардлагатай</span>
+                  </span>
+                )}
+              </div>
+            </div>
+
+            <p className="text-text-muted text-xs leading-relaxed">
+              Нийтлэлийг админ системээс <strong>"Нийтлэх"</strong> төлөвт шилжүүлэх үед Facebook Page рүү зурагтай (эсвэл холбоос бүхий) автоматаар нийтэлнэ. Хэрэв токен хугацаа нь дууссан эсвэл солигдсон бол энд шинэ токеноо оруулаад хадгална уу.
+            </p>
+
+            {/* Test result message if any */}
+            {fbTestMessage && (
+              <div className={`p-3.5 rounded-xl border text-xs flex items-start gap-2.5 ${
+                fbTestMessage.type === 'success' 
+                  ? 'bg-green-500/10 border-green-500/20 text-green-300' 
+                  : 'bg-red-500/10 border-red-500/20 text-red-300'
+              }`}>
+                {fbTestMessage.type === 'success' ? <CheckCircle2 size={16} className="shrink-0 mt-0.5 text-green-400" /> : <AlertTriangle size={16} className="shrink-0 mt-0.5 text-red-400" />}
+                <div className="flex-1 font-medium">{fbTestMessage.text}</div>
+                <button type="button" onClick={() => setFbTestMessage(null)} className="text-text-muted hover:text-text-main">
+                  <X size={14} />
+                </button>
+              </div>
+            )}
+
+            {/* Retry summary if any */}
+            {retrySummary && (
+              <div className="p-3.5 rounded-xl border bg-brand-purple/10 border-brand-purple/20 text-text-main text-xs flex items-center justify-between">
+                <span>{retrySummary}</span>
+                <button type="button" onClick={() => setRetrySummary(null)} className="text-text-muted hover:text-text-main">
+                  <X size={14} />
+                </button>
+              </div>
+            )}
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Page ID */}
+              <div className="space-y-1.5">
+                <label className="text-text-main text-xs font-semibold flex items-center justify-between">
+                  <span>Facebook Хуудасны ID (FB_PAGE_ID)</span>
+                  <span className="text-[10px] text-text-muted">Үндсэн: 251450398641244</span>
+                </label>
+                <div className="relative">
+                  <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-text-muted">
+                    <Facebook size={14} />
+                  </span>
+                  <input 
+                    type="text"
+                    value={fbPageId}
+                    onChange={(e) => setFbPageId(e.target.value)}
+                    placeholder="251450398641244"
+                    className="w-full pl-10 pr-4 py-2.5 bg-background border border-border rounded-xl text-text-main text-sm outline-none focus:border-brand-purple/50 transition-colors font-mono"
+                  />
+                </div>
+              </div>
+
+              {/* Page Token */}
+              <div className="space-y-1.5">
+                <label className="text-text-main text-xs font-semibold flex items-center justify-between">
+                  <span>Facebook Access Token (FB_PAGE_TOKEN)</span>
+                  {fbStatus?.pageTokenMasked && !fbPageToken && (
+                    <span className="text-[10px] text-green-400 font-mono">
+                      Тохируулагдсан ({fbStatus.source === 'settings' ? 'Өгөгдлийн сан' : 'Env'})
+                    </span>
+                  )}
+                </label>
+                <div className="relative">
+                  <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-text-muted">
+                    <Key size={14} />
+                  </span>
+                  <input 
+                    type={showToken ? 'text' : 'password'}
+                    value={fbPageToken}
+                    onChange={(e) => setFbPageToken(e.target.value)}
+                    placeholder={fbStatus?.pageTokenMasked || 'EAA... (шинэ токен оруулах)'}
+                    className="w-full pl-10 pr-10 py-2.5 bg-background border border-border rounded-xl text-text-main text-sm outline-none focus:border-brand-purple/50 transition-colors font-mono"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowToken(!showToken)}
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-main"
+                  >
+                    {showToken ? <EyeOff size={15} /> : <Eye size={15} />}
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Quick Actions Panel */}
+            <div className="pt-2 flex flex-wrap items-center justify-between gap-3 border-t border-border/60">
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  disabled={fbTesting}
+                  onClick={handleTestFacebook}
+                  className="inline-flex items-center gap-2 px-3.5 py-2 bg-background border border-border rounded-xl text-xs font-medium text-text-main hover:bg-surface-hover hover:border-brand-purple/40 transition-colors"
+                >
+                  {fbTesting ? <RefreshCw size={13} className="animate-spin text-brand-purple" /> : <Facebook size={13} className="text-[#1877F2]" />}
+                  <span>{fbTesting ? 'Шалгаж байна...' : 'Токен шалгах (Test Connection)'}</span>
+                </button>
+
+                <button
+                  type="button"
+                  disabled={retryingArticles}
+                  onClick={handleRetryAllFailedArticles}
+                  className="inline-flex items-center gap-2 px-3.5 py-2 bg-background border border-border rounded-xl text-xs font-medium text-text-main hover:bg-surface-hover hover:border-brand-purple/40 transition-colors"
+                >
+                  {retryingArticles ? <RefreshCw size={13} className="animate-spin text-brand-purple" /> : <Share2 size={13} className="text-brand-purple" />}
+                  <span>{retryingArticles ? 'Нийтэлж байна...' : 'Амжилтгүй болсон нийтлэлүүдийг дахин нийтлэх'}</span>
+                </button>
+              </div>
+
+              <span className="text-[11px] text-text-muted">
+                * Хэрэглэгчийн токен эсвэл Хуудасны токен аль алийг автоматаар таньж хөрвүүлнэ.
+              </span>
             </div>
           </div>
 

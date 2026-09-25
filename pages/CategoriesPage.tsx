@@ -176,8 +176,11 @@ export const CategoriesPage: React.FC<CategoriesPageProps> = ({ categorySlug, fi
                         {/* Thumbnail card with Hover effect */}
                         <div className="relative aspect-video rounded-2xl overflow-hidden bg-slate-900 border border-white/5">
                           <img 
-                            src={item.thumbnailUrl} 
+                            src={item.thumbnailUrl || '/placeholder-article.svg'} 
                             alt={title} 
+                            onError={(e) => {
+                              (e.currentTarget as HTMLImageElement).src = '/placeholder-article.svg';
+                            }}
                             className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover/yt:scale-105"
                           />
                           

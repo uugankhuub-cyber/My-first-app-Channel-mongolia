@@ -1,14 +1,28 @@
+import fs from 'fs';
+import path from 'path';
 import { z } from 'zod';
 import * as db from '../lib/firestore-db.ts';
 import { postArticleToFacebook } from '../lib/facebook-service.ts';
 
-export function getOrigin(req: any): string {
-  if (process.env.SITE_URL) return process.env.SITE_URL.replace(/\/+$/, '');
-  if (process.env.APP_URL) return process.env.APP_URL.replace(/\/+$/, '');
-  const forwardedProto = req.get('x-forwarded-proto');
-  const proto = (forwardedProto && forwardedProto.split(',')[0].trim()) || req.protocol || 'https';
-  const host = req.get('host') || 'localhost:3000';
-  return `${proto}://${host}`;
+export function getOrigin(req?: any): string {
+  const siteUrl = process.env.SITE_URL || 'https://my-first-app-channel-mongolia-production.up.railway.app';
+  return siteUrl.replace(/\/+$/, '');
+}
+
+export function sanitizeThumbnail(thumb?: string | null): string {
+  if (!thumb || typeof thumb !== 'string' || !thumb.trim()) {
+    return '/placeholder-article.svg';
+  }
+  const clean = thumb.trim();
+  if (clean.startsWith('/uploads/')) {
+    const rel = clean.replace(/^\//, '');
+    const pubFile = path.join(process.cwd(), 'public', rel);
+    const distFile = path.join(process.cwd(), 'dist', rel);
+    if (!fs.existsSync(pubFile) && !fs.existsSync(distFile)) {
+      return '/placeholder-article.svg';
+    }
+  }
+  return clean;
 }
 
 const articleSchema = z.object({
@@ -75,12 +89,12 @@ export const getArticles = async (req: any, res: any) => {
           excerpt_en: art.excerpt_en || art.excerpt || '',
           content: art.content,
           content_en: art.content_en || art.content,
-          thumbnail: art.thumbnail,
+          thumbnail: sanitizeThumbnail(art.thumbnail),
           images: art.images || [],
           status: 'PUBLISHED',
           views: art.views || 0,
           likes: art.likes || 0,
-          thumbnailUrl: art.thumbnail,
+          thumbnailUrl: sanitizeThumbnail(art.thumbnail),
           authorId: 'admin-1',
           author: { email: 'uugankhuub@gmail.com' },
           categoryId: art.categoryId,

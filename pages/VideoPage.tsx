@@ -127,7 +127,7 @@ export const VideoPage: React.FC = () => {
 
   const handleCopyLink = () => {
     if (!selectedVideo) return;
-    const shareUrl = `${window.location.origin}/#/video/${selectedVideo.videoId}`;
+    const shareUrl = `${window.location.origin}/video/${selectedVideo.videoId}`;
     navigator.clipboard.writeText(shareUrl).then(() => {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);

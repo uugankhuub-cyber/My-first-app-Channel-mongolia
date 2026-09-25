@@ -1,9 +1,11 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Image as ImageIcon } from 'lucide-react';
 
+const DEFAULT_PLACEHOLDER = '/placeholder-article.svg';
+
 interface ThumbnailProps {
-  src: string;
+  src?: string | null;
   alt: string;
   className?: string;
   aspectRatio?: 'video' | 'square' | 'wide';
@@ -20,7 +22,20 @@ export const Thumbnail: React.FC<ThumbnailProps> = ({
   overlayContent 
 }) => {
   const [isLoaded, setIsLoaded] = useState(false);
-  const [hasError, setHasError] = useState(false);
+  const [currentSrc, setCurrentSrc] = useState<string>(() => {
+    if (!src || typeof src !== 'string' || !src.trim()) {
+      return DEFAULT_PLACEHOLDER;
+    }
+    return src.trim();
+  });
+
+  useEffect(() => {
+    if (!src || typeof src !== 'string' || !src.trim()) {
+      setCurrentSrc(DEFAULT_PLACEHOLDER);
+    } else {
+      setCurrentSrc(src.trim());
+    }
+  }, [src]);
 
   // Exact aspect ratio enforcement for consistency
   const aspectClasses = {
@@ -29,29 +44,28 @@ export const Thumbnail: React.FC<ThumbnailProps> = ({
     wide: 'aspect-[21/9]'
   };
 
+  const handleImageError = () => {
+    if (currentSrc !== DEFAULT_PLACEHOLDER) {
+      setCurrentSrc(DEFAULT_PLACEHOLDER);
+    }
+  };
+
   return (
     <div className={`relative overflow-hidden bg-surfaceHighlight w-full ${aspectClasses[aspectRatio]} ${className}`}>
       {/* Skeleton / Loading State */}
-      <div className={`absolute inset-0 bg-gray-200 dark:bg-gray-800 flex items-center justify-center transition-opacity duration-500 ${isLoaded ? 'opacity-0' : 'opacity-100'}`}>
-         {!hasError && <ImageIcon className="text-gray-300 dark:text-gray-600 w-8 h-8 animate-pulse" />}
+      <div className={`absolute inset-0 bg-slate-200 dark:bg-slate-800 flex items-center justify-center transition-opacity duration-500 ${isLoaded ? 'opacity-0' : 'opacity-100'}`}>
+         <ImageIcon className="text-slate-400 dark:text-slate-600 w-8 h-8 animate-pulse" />
       </div>
 
-      {/* Actual Image */}
-      {!hasError ? (
-        <img 
-          src={src} 
-          alt={alt} 
-          loading="lazy"
-          className={`w-full h-full object-cover transition-all duration-700 ${isLoaded ? 'opacity-100 blur-0 scale-100' : 'opacity-0 blur-xl scale-110'}`}
-          onLoad={() => setIsLoaded(true)}
-          onError={() => setHasError(true)}
-        />
-      ) : (
-        <div className="absolute inset-0 flex items-center justify-center bg-surfaceHighlight text-text-muted text-sm flex-col gap-2">
-           <ImageIcon size={20} className="opacity-50" />
-           <span className="text-xs">Unavailable</span>
-        </div>
-      )}
+      {/* Actual Image with neutral Channel Mongolia fallback on error */}
+      <img 
+        src={currentSrc} 
+        alt={alt || 'Channel Mongolia'} 
+        loading="lazy"
+        className={`w-full h-full object-cover transition-all duration-700 ${isLoaded ? 'opacity-100 blur-0 scale-100' : 'opacity-0 blur-xl scale-110'}`}
+        onLoad={() => setIsLoaded(true)}
+        onError={handleImageError}
+      />
 
       {/* Subtle Gradient Overlay - Adjusted to be lighter/more transparent for better Light Mode look */}
       {showOverlay && (

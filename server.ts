@@ -155,6 +155,11 @@ async function startServer() {
   app.use('/uploads', express.static(devUploads));
   app.use('/uploads', express.static(distUploads));
 
+  // Requirement 3: Missing static files in /uploads must return 404, not index.html
+  app.all('/uploads/{*path}', (_req, res) => {
+    res.status(404).type('text/plain').send('File not found');
+  });
+
   // Articles (Public)
   app.get('/api/articles', articleHandlers.getArticles);
   app.get('/api/articles/:slug', async (req, res) => {
@@ -171,6 +176,23 @@ async function startServer() {
     const categories = await db.getCategories();
     const cat = categories.find(c => c.id === art.categoryId || c.slug === art.categoryId);
     
+    // Resolve thumbnail with fallback for missing /uploads/... images
+    const resolveThumb = (thumb?: string | null): string => {
+      if (!thumb || typeof thumb !== 'string' || !thumb.trim()) {
+        return '/placeholder-article.svg';
+      }
+      const clean = thumb.trim();
+      if (clean.startsWith('/uploads/')) {
+        const rel = clean.replace(/^\//, '');
+        const pubFile = path.join(devUploads, rel.replace(/^uploads\//, ''));
+        const distFile = path.join(distUploads, rel.replace(/^uploads\//, ''));
+        if (!fs.existsSync(pubFile) && !fs.existsSync(distFile)) {
+          return '/placeholder-article.svg';
+        }
+      }
+      return clean;
+    };
+
     // Strictly no agentNotes in public responses
     res.json({
       id: art.id,
@@ -178,7 +200,7 @@ async function startServer() {
       slug: art.slug,
       excerpt: art.excerpt,
       content: art.content,
-      thumbnail: art.thumbnail,
+      thumbnail: resolveThumb(art.thumbnail),
       images: art.images || [],
       status: art.status,
       authorId: 'admin-1',
@@ -455,6 +477,71 @@ async function startServer() {
   app.post('/api/videos/settings', authenticate, authorize(['ADMIN', 'EDITOR']), handleUpdateVideoSettings);
   app.post('/api/admin/videos/settings', authenticate, authorize(['ADMIN', 'EDITOR']), handleUpdateVideoSettings);
 
+  // Requirement 3: Unknown /api/* routes must return JSON 404, not the SPA HTML
+  app.all('/api/{*path}', (_req, res) => {
+    res.status(404).json({
+      error: 'Not Found',
+      message: 'Unknown API endpoint'
+    });
+  });
+
+  // Dynamic Sitemap & RSS using process.env.SITE_URL with required fallback
+  const SITE_URL = (process.env.SITE_URL || 'https://my-first-app-channel-mongolia-production.up.railway.app').replace(/\/+$/, '');
+
+  app.get('/sitemap.xml', async (_req, res) => {
+    try {
+      const articles = await db.getArticles({ status: 'PUBLISHED' });
+      const now = new Date().toISOString().split('T')[0];
+      let xml = `<?xml version="1.0" encoding="UTF-8"?>\n`;
+      xml += `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n`;
+      xml += `  <url><loc>${SITE_URL}/</loc><changefreq>daily</changefreq><priority>1.0</priority></url>\n`;
+      xml += `  <url><loc>${SITE_URL}/categories</loc><changefreq>daily</changefreq><priority>0.8</priority></url>\n`;
+      xml += `  <url><loc>${SITE_URL}/video</loc><changefreq>daily</changefreq><priority>0.8</priority></url>\n`;
+      xml += `  <url><loc>${SITE_URL}/privacy</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>\n`;
+      for (const art of articles) {
+        const artUrl = `${SITE_URL}/article/${encodeURIComponent(art.slug || art.id)}`;
+        const lastMod = (art.updatedAt || art.publishedAt || now).split('T')[0];
+        xml += `  <url><loc>${artUrl}</loc><lastmod>${lastMod}</lastmod><changefreq>weekly</changefreq><priority>0.9</priority></url>\n`;
+      }
+      xml += `</urlset>`;
+      res.setHeader('Content-Type', 'application/xml; charset=utf-8');
+      res.send(xml);
+    } catch (err: any) {
+      res.status(500).send('Error generating sitemap');
+    }
+  });
+
+  app.get(['/rss.xml', '/feed.xml'], async (_req, res) => {
+    try {
+      const articles = await db.getArticles({ status: 'PUBLISHED' });
+      let xml = `<?xml version="1.0" encoding="UTF-8"?>\n`;
+      xml += `<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">\n`;
+      xml += `  <channel>\n`;
+      xml += `    <title>Channel Mongolia</title>\n`;
+      xml += `    <link>${SITE_URL}</link>\n`;
+      xml += `    <description>A modern digital knowledge &amp; media platform</description>\n`;
+      xml += `    <language>mn</language>\n`;
+      xml += `    <atom:link href="${SITE_URL}/rss.xml" rel="self" type="application/rss+xml" />\n`;
+      for (const art of articles.slice(0, 30)) {
+        const artUrl = `${SITE_URL}/article/${encodeURIComponent(art.slug || art.id)}`;
+        const pubDate = art.publishedAt ? new Date(art.publishedAt).toUTCString() : new Date().toUTCString();
+        xml += `    <item>\n`;
+        xml += `      <title><![CDATA[${art.title}]]></title>\n`;
+        xml += `      <link>${artUrl}</link>\n`;
+        xml += `      <guid isPermaLink="true">${artUrl}</guid>\n`;
+        xml += `      <pubDate>${pubDate}</pubDate>\n`;
+        xml += `      <description><![CDATA[${art.excerpt || art.title}]]></description>\n`;
+        xml += `    </item>\n`;
+      }
+      xml += `  </channel>\n`;
+      xml += `</rss>`;
+      res.setHeader('Content-Type', 'application/xml; charset=utf-8');
+      res.send(xml);
+    } catch (err: any) {
+      res.status(500).send('Error generating RSS');
+    }
+  });
+
   // 4. Vite / Static & OpenGraph Server-side Meta Rendering
   const distPath = path.join(process.cwd(), 'dist');
   const isProduction = process.env.NODE_ENV === 'production' || isRunningFromDist;
@@ -467,6 +554,113 @@ async function startServer() {
       .replace(/"/g, '&quot;')
       .replace(/'/g, '&#039;');
 
+  // Requirement 3: Mongolian "Нийтлэл олдсонгүй" 404 HTML Page with link to home
+  const renderNotFoundHtml = (_slug?: string): string => `<!DOCTYPE html>
+<html lang="mn">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Нийтлэл олдсонгүй - Channel Mongolia</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background: #0b0e18;
+      color: #e8ecf4;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      text-align: center;
+    }
+    .card {
+      background: #12162a;
+      border: 1px solid #1e2440;
+      border-radius: 24px;
+      padding: 48px 32px;
+      max-width: 520px;
+      width: 100%;
+      box-shadow: 0 20px 40px -15px rgba(0,0,0,0.5);
+    }
+    .badge {
+      display: inline-block;
+      width: 80px;
+      height: 80px;
+      line-height: 80px;
+      background: rgba(37, 99, 235, 0.12);
+      color: #3b82f6;
+      border: 1px solid rgba(37, 99, 235, 0.25);
+      border-radius: 24px;
+      font-size: 28px;
+      font-weight: 900;
+      margin-bottom: 24px;
+    }
+    h1 {
+      font-size: 28px;
+      font-weight: 900;
+      color: #ffffff;
+      margin-bottom: 12px;
+      letter-spacing: -0.02em;
+    }
+    p {
+      color: #8892a4;
+      font-size: 15px;
+      line-height: 1.6;
+      margin-bottom: 32px;
+    }
+    .actions {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #2563eb 0%, #06b6d4 100%);
+      color: #ffffff;
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 14px;
+      padding: 12px 24px;
+      border-radius: 12px;
+      transition: opacity 0.2s;
+    }
+    .btn-primary:hover { opacity: 0.9; }
+    .btn-secondary {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: #1a1f36;
+      border: 1px solid #1e2440;
+      color: #e8ecf4;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 14px;
+      padding: 12px 20px;
+      border-radius: 12px;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="badge">404</div>
+    <h1>Нийтлэл олдсонгүй</h1>
+    <p>Уучлаарай, таны хайсан нийтлэл олдсонгүй эсвэл хаяг нь буруу байна.</p>
+    <div class="actions">
+      <a href="/" class="btn-primary">Нүүр хуудас руу буцах</a>
+      <a href="/categories" class="btn-secondary">Бүх ангилал</a>
+    </div>
+  </div>
+</body>
+</html>`;
+
   // Server-side HTML renderer injecting real og:title, og:description, og:image
   const renderArticleWithMeta = async (req: express.Request, res: express.Response, next: express.NextFunction, viteInstance?: any) => {
     try {
@@ -476,6 +670,14 @@ async function startServer() {
         return next();
       }
       const article = await db.getArticleByIdOrSlug(slug);
+
+      // Requirement 3: /article/<slug> for a non-existent slug must return HTTP 404 with Mongolian "Нийтлэл олдсонгүй" page and a link to home
+      if (!article || article.status !== 'PUBLISHED') {
+        res.status(404);
+        res.setHeader('Content-Type', 'text/html; charset=utf-8');
+        res.setHeader('Cross-Origin-Opener-Policy', 'same-origin-allow-popups');
+        return res.send(renderNotFoundHtml(slug));
+      }
 
       const templatePath = isProduction 
         ? path.join(distPath, 'index.html') 
@@ -495,23 +697,26 @@ async function startServer() {
         }
       }
 
-      const forwardedProto = req.get('x-forwarded-proto');
-      const proto = (forwardedProto && forwardedProto.split(',')[0].trim()) || req.protocol || 'https';
-      const host = req.get('host') || 'localhost:3000';
-      const origin = (process.env.SITE_URL || process.env.APP_URL || `${proto}://${host}`).replace(/\/+$/, '');
+      let title = article.title || 'Channel Mongolia';
+      let description = article.excerpt || (article.content ? article.content.substring(0, 180).replace(/\s+/g, ' ').trim() : 'Channel Mongolia');
+      let pageUrl = `${SITE_URL}/article/${encodeURIComponent(article.slug || article.id)}`;
+      let imageUrl = `${SITE_URL}/placeholder-article.svg`;
 
-      let title = 'Channel Mongolia';
-      let description = 'A modern digital knowledge & media platform sharing interesting knowledge, science, and facts.';
-      let imageUrl = `${origin}/og-image.jpg`;
-      let pageUrl = `${origin}/article/${encodeURIComponent(slug)}`;
-
-      if (article && article.status === 'PUBLISHED') {
-        title = article.title || title;
-        description = article.excerpt || (article.content ? article.content.substring(0, 180).replace(/\s+/g, ' ').trim() : description);
-        pageUrl = `${origin}/article/${encodeURIComponent(article.slug || article.id)}`;
-        if (article.thumbnail) {
-          const thumb = article.thumbnail.trim();
-          imageUrl = (thumb.startsWith('http://') || thumb.startsWith('https://')) ? thumb : `${origin}${thumb.startsWith('/') ? '' : '/'}${thumb}`;
+      if (article.thumbnail && typeof article.thumbnail === 'string' && article.thumbnail.trim()) {
+        const thumb = article.thumbnail.trim();
+        if (thumb.startsWith('http://') || thumb.startsWith('https://')) {
+          imageUrl = thumb;
+        } else if (thumb.startsWith('/uploads/')) {
+          const rel = thumb.replace(/^\//, '');
+          const pubExists = fs.existsSync(path.join(devUploads, rel.replace(/^uploads\//, '')));
+          const distExists = fs.existsSync(path.join(distUploads, rel.replace(/^uploads\//, '')));
+          if (pubExists || distExists) {
+            imageUrl = `${SITE_URL}${thumb}`;
+          } else {
+            imageUrl = `${SITE_URL}/placeholder-article.svg`;
+          }
+        } else {
+          imageUrl = `${SITE_URL}${thumb.startsWith('/') ? '' : '/'}${thumb}`;
         }
       }
 
@@ -530,6 +735,7 @@ async function startServer() {
 
       const metaTags = `
     <!-- Dynamic OpenGraph & Twitter Meta Tags (Server-Rendered for Social Crawlers) -->
+    <link rel="canonical" href="${safeUrl}" />
     <meta name="description" content="${safeDesc}" />
     <meta property="og:site_name" content="Channel Mongolia" />
     <meta property="og:type" content="article" />
@@ -565,6 +771,12 @@ async function startServer() {
         res.setHeader('Cross-Origin-Opener-Policy', 'same-origin-allow-popups');
       }
     }));
+
+    // Requirement 3: Missing static files must return 404, not index.html
+    app.all(/\.(jpg|jpeg|png|gif|webp|svg|ico|css|js|map|woff|woff2|ttf|json|xml|txt)$/i, (_req, res) => {
+      res.status(404).type('text/plain').send('Static Asset Not Found');
+    });
+
     app.get('*all', (_req, res) => {
       res.setHeader('Cross-Origin-Opener-Policy', 'same-origin-allow-popups');
       res.sendFile(path.join(distPath, 'index.html'));
@@ -579,6 +791,11 @@ async function startServer() {
     // Serve real article paths with OpenGraph tags even in dev
     app.get(['/article/:slug', '/niitlel/:slug'], (req, res, next) => {
       renderArticleWithMeta(req, res, next, vite);
+    });
+
+    // Requirement 3: Missing static image/asset files must return 404, not index.html
+    app.all(/\.(jpg|jpeg|png|gif|webp|ico|woff|woff2|ttf)$/i, (_req, res) => {
+      res.status(404).type('text/plain').send('Static Asset Not Found');
     });
 
     app.use(vite.middlewares);

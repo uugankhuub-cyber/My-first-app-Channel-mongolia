@@ -85,8 +85,11 @@ export const ArticlePhotoGallery: React.FC<ArticlePhotoGalleryProps> = ({ images
             className="group relative aspect-4/3 rounded-2xl overflow-hidden bg-surfaceHighlight border border-border/70 cursor-pointer shadow-sm hover:shadow-md"
           >
             <img
-              src={img.url}
+              src={img.url || '/placeholder-article.svg'}
               alt={img.caption || `${title || 'Нийтлэл'} - Зураг ${idx + 1}`}
+              onError={(e) => {
+                (e.currentTarget as HTMLImageElement).src = '/placeholder-article.svg';
+              }}
               className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
               loading="lazy"
             />
@@ -151,8 +154,11 @@ export const ArticlePhotoGallery: React.FC<ArticlePhotoGalleryProps> = ({ images
                 initial={{ opacity: 0, scale: 0.96 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.2 }}
-                src={normalizedImages[lightboxIndex].url}
+                src={normalizedImages[lightboxIndex].url || '/placeholder-article.svg'}
                 alt={normalizedImages[lightboxIndex].caption || 'Enlarged image'}
+                onError={(e) => {
+                  (e.currentTarget as HTMLImageElement).src = '/placeholder-article.svg';
+                }}
                 className="max-h-[78vh] max-w-[90vw] object-contain rounded-2xl shadow-2xl"
               />
 

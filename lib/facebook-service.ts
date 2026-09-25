@@ -68,9 +68,9 @@ export async function postArticleToFacebook(
     };
   }
 
-  // Clean site origin (e.g. https://domain.com)
-  const baseOrigin = (siteOrigin || 'https://channelmongolia.mn').replace(/\/+$/, '');
-  const articleUrl = `${baseOrigin}/article/${encodeURIComponent(article.slug || article.id)}`;
+  // Clean site origin from process.env.SITE_URL with required fallback
+  const SITE_URL = (process.env.SITE_URL || siteOrigin || 'https://my-first-app-channel-mongolia-production.up.railway.app').replace(/\/+$/, '');
+  const articleUrl = `${SITE_URL}/article/${article.slug || article.id}`;
 
   // Construct caption exactly as specified:
   // title + "\n\n" + excerpt + "\n\n👉 Дэлгэрэнгүй: " + article URL + "\n\n#ChannelMongolia #Мэдээ"
@@ -85,7 +85,7 @@ export async function postArticleToFacebook(
     if (thumb.startsWith('http://') || thumb.startsWith('https://')) {
       photoUrl = thumb;
     } else if (thumb.startsWith('/')) {
-      photoUrl = `${baseOrigin}${thumb}`;
+      photoUrl = `${SITE_URL}${thumb}`;
     }
   }
 

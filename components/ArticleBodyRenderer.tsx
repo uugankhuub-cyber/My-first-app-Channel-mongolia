@@ -187,8 +187,11 @@ export const ArticleBodyRenderer: React.FC<ArticleBodyRendererProps> = ({ conten
           img: ({ src, alt }) => (
             <figure className="my-10">
               <img
-                src={typeof src === 'string' ? src : ''}
-                alt={alt || ''}
+                src={(typeof src === 'string' && src.trim()) ? src : '/placeholder-article.svg'}
+                alt={alt || 'Article image'}
+                onError={(e) => {
+                  (e.currentTarget as HTMLImageElement).src = '/placeholder-article.svg';
+                }}
                 className="rounded-2xl w-full max-h-[550px] object-cover shadow-xl border border-border"
                 loading="lazy"
               />
