@@ -367,7 +367,8 @@ export const DetailPage: React.FC = () => {
             >
                <img 
                  src={content.thumbnailUrl || '/placeholder-article.svg'} 
-                 alt={title} 
+                 alt={title || 'Channel Mongolia'} 
+                 loading="lazy"
                  onError={(e) => {
                    (e.currentTarget as HTMLImageElement).src = '/placeholder-article.svg';
                  }}

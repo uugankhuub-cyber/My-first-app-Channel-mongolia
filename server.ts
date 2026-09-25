@@ -485,60 +485,133 @@ async function startServer() {
     });
   });
 
-  // Dynamic Sitemap & RSS using process.env.SITE_URL with required fallback
+  // Dynamic Sitemap, Robots.txt & RSS using process.env.SITE_URL with required fallback
   const SITE_URL = (process.env.SITE_URL || 'https://my-first-app-channel-mongolia-production.up.railway.app').replace(/\/+$/, '');
 
+  // 1. GET /robots.txt - Allow all, disallow /admin and /api, include Sitemap
+  app.get('/robots.txt', (_req, res) => {
+    res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+    res.send(`User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /admin/
+Disallow: /api
+Disallow: /api/
+
+Sitemap: ${SITE_URL}/sitemap.xml
+`);
+  });
+
+  // 2. GET /sitemap.xml - Real XML (home, each category page, every PUBLISHED article with <lastmod>)
   app.get('/sitemap.xml', async (_req, res) => {
     try {
-      const articles = await db.getArticles({ status: 'PUBLISHED' });
+      const allArticles = await db.getArticles();
+      const publishedArticles = allArticles.filter(a => a.status === 'PUBLISHED');
+      const categories = await db.getCategories();
       const now = new Date().toISOString().split('T')[0];
+
       let xml = `<?xml version="1.0" encoding="UTF-8"?>\n`;
       xml += `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n`;
+      
+      // Home
       xml += `  <url><loc>${SITE_URL}/</loc><changefreq>daily</changefreq><priority>1.0</priority></url>\n`;
+      
+      // Category pages
       xml += `  <url><loc>${SITE_URL}/categories</loc><changefreq>daily</changefreq><priority>0.8</priority></url>\n`;
+      for (const cat of categories) {
+        if (cat.slug) {
+          xml += `  <url><loc>${SITE_URL}/${encodeURIComponent(cat.slug)}</loc><changefreq>daily</changefreq><priority>0.8</priority></url>\n`;
+          xml += `  <url><loc>${SITE_URL}/category/${encodeURIComponent(cat.slug)}</loc><changefreq>daily</changefreq><priority>0.8</priority></url>\n`;
+        }
+      }
+
+      // Other public pages
       xml += `  <url><loc>${SITE_URL}/video</loc><changefreq>daily</changefreq><priority>0.8</priority></url>\n`;
       xml += `  <url><loc>${SITE_URL}/privacy</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>\n`;
-      for (const art of articles) {
-        const artUrl = `${SITE_URL}/article/${encodeURIComponent(art.slug || art.id)}`;
-        const lastMod = (art.updatedAt || art.publishedAt || now).split('T')[0];
+
+      // Every PUBLISHED article (never drafts)
+      for (const art of publishedArticles) {
+        const slug = art.slug || art.id;
+        const artUrl = `${SITE_URL}/article/${encodeURIComponent(slug)}`;
+        const lastMod = (art.updatedAt || art.publishedAt || art.createdAt || now).split('T')[0];
         xml += `  <url><loc>${artUrl}</loc><lastmod>${lastMod}</lastmod><changefreq>weekly</changefreq><priority>0.9</priority></url>\n`;
       }
+
       xml += `</urlset>`;
       res.setHeader('Content-Type', 'application/xml; charset=utf-8');
       res.send(xml);
     } catch (err: any) {
-      res.status(500).send('Error generating sitemap');
+      console.error('[SEO] Error generating sitemap.xml:', err);
+      res.status(500).type('text/plain').send('Error generating sitemap');
     }
   });
 
+  // 3. GET /rss.xml - RSS 2.0 of the latest 30 PUBLISHED articles with image enclosures
   app.get(['/rss.xml', '/feed.xml'], async (_req, res) => {
     try {
-      const articles = await db.getArticles({ status: 'PUBLISHED' });
+      const allArticles = await db.getArticles();
+      const published = allArticles.filter(a => a.status === 'PUBLISHED');
+
+      // Sort latest 30 published articles
+      published.sort((a, b) => {
+        const timeA = new Date(a.publishedAt || a.createdAt).getTime();
+        const timeB = new Date(b.publishedAt || b.createdAt).getTime();
+        return timeB - timeA;
+      });
+
+      const latest30 = published.slice(0, 30);
+
       let xml = `<?xml version="1.0" encoding="UTF-8"?>\n`;
       xml += `<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">\n`;
       xml += `  <channel>\n`;
       xml += `    <title>Channel Mongolia</title>\n`;
       xml += `    <link>${SITE_URL}</link>\n`;
-      xml += `    <description>A modern digital knowledge &amp; media platform</description>\n`;
+      xml += `    <description>Channel Mongolia – шинжлэх ухаан, түүх, байгаль, спорт, урлагийн сонирхолтой мэдээ, мэдлэгийг монгол хэлээр.</description>\n`;
       xml += `    <language>mn</language>\n`;
       xml += `    <atom:link href="${SITE_URL}/rss.xml" rel="self" type="application/rss+xml" />\n`;
-      for (const art of articles.slice(0, 30)) {
-        const artUrl = `${SITE_URL}/article/${encodeURIComponent(art.slug || art.id)}`;
-        const pubDate = art.publishedAt ? new Date(art.publishedAt).toUTCString() : new Date().toUTCString();
+
+      for (const art of latest30) {
+        const slug = art.slug || art.id;
+        const artUrl = `${SITE_URL}/article/${encodeURIComponent(slug)}`;
+        const pubDate = art.publishedAt ? new Date(art.publishedAt).toUTCString() : (art.createdAt ? new Date(art.createdAt).toUTCString() : new Date().toUTCString());
+        const lead = art.excerpt || (art.content ? art.content.substring(0, 200).replace(/\s+/g, ' ').trim() : art.title);
+
+        let imgUrl = `${SITE_URL}/placeholder-article.svg`;
+        let imgType = 'image/svg+xml';
+        if (art.thumbnail && typeof art.thumbnail === 'string' && art.thumbnail.trim()) {
+          const thumb = art.thumbnail.trim();
+          if (thumb.startsWith('http://') || thumb.startsWith('https://')) {
+            imgUrl = thumb;
+          } else if (thumb.startsWith('/')) {
+            imgUrl = `${SITE_URL}${thumb}`;
+          } else {
+            imgUrl = `${SITE_URL}/${thumb}`;
+          }
+
+          if (thumb.includes('.png')) imgType = 'image/png';
+          else if (thumb.includes('.webp')) imgType = 'image/webp';
+          else if (thumb.includes('.gif')) imgType = 'image/gif';
+          else if (thumb.includes('.svg')) imgType = 'image/svg+xml';
+          else imgType = 'image/jpeg';
+        }
+
         xml += `    <item>\n`;
         xml += `      <title><![CDATA[${art.title}]]></title>\n`;
         xml += `      <link>${artUrl}</link>\n`;
         xml += `      <guid isPermaLink="true">${artUrl}</guid>\n`;
         xml += `      <pubDate>${pubDate}</pubDate>\n`;
-        xml += `      <description><![CDATA[${art.excerpt || art.title}]]></description>\n`;
+        xml += `      <description><![CDATA[${lead}]]></description>\n`;
+        xml += `      <enclosure url="${imgUrl.replace(/&/g, '&amp;')}" type="${imgType}" length="0" />\n`;
         xml += `    </item>\n`;
       }
+
       xml += `  </channel>\n`;
       xml += `</rss>`;
       res.setHeader('Content-Type', 'application/xml; charset=utf-8');
       res.send(xml);
     } catch (err: any) {
-      res.status(500).send('Error generating RSS');
+      console.error('[SEO] Error generating rss.xml:', err);
+      res.status(500).type('text/plain').send('Error generating RSS');
     }
   });
 
@@ -697,8 +770,9 @@ async function startServer() {
         }
       }
 
+      const defaultDesc = 'Channel Mongolia – шинжлэх ухаан, түүх, байгаль, спорт, урлагийн сонирхолтой мэдээ, мэдлэгийг монгол хэлээр.';
       let title = article.title || 'Channel Mongolia';
-      let description = article.excerpt || (article.content ? article.content.substring(0, 180).replace(/\s+/g, ' ').trim() : 'Channel Mongolia');
+      let description = article.excerpt || (article.content ? article.content.substring(0, 180).replace(/\s+/g, ' ').trim() : defaultDesc);
       let pageUrl = `${SITE_URL}/article/${encodeURIComponent(article.slug || article.id)}`;
       let imageUrl = `${SITE_URL}/placeholder-article.svg`;
 

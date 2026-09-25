@@ -177,7 +177,8 @@ export const CategoriesPage: React.FC<CategoriesPageProps> = ({ categorySlug, fi
                         <div className="relative aspect-video rounded-2xl overflow-hidden bg-slate-900 border border-white/5">
                           <img 
                             src={item.thumbnailUrl || '/placeholder-article.svg'} 
-                            alt={title} 
+                            alt={title || 'Channel Mongolia'} 
+                            loading="lazy"
                             onError={(e) => {
                               (e.currentTarget as HTMLImageElement).src = '/placeholder-article.svg';
                             }}
