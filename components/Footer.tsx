@@ -5,11 +5,13 @@ import { Facebook, Instagram, Twitter, Youtube } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 import * as ReactRouterDOM from 'react-router-dom';
 import { Container } from './ui/Container';
+import { getContactEmail } from '../lib/site-config';
 
 const { Link } = ReactRouterDOM;
 
 export const Footer: React.FC = () => {
   const { t } = useLanguage();
+  const contactEmail = getContactEmail();
 
   const containerVariants = {
     hidden: { opacity: 0, y: 20 },
@@ -72,6 +74,7 @@ export const Footer: React.FC = () => {
             <ul className="space-y-3 text-sm text-text-muted">
               <li><Link to="/bidnii-tukhai" className="hover:text-brand-purple transition-colors block">{t('nav_about')}</Link></li>
               <li><Link to="/holboo-barikh" className="hover:text-brand-purple transition-colors block">{t('contact')}</Link></li>
+              <li><a href={`mailto:${contactEmail}`} className="hover:text-brand-purple transition-colors block break-all">{contactEmail}</a></li>
               <li><Link to="/contact" className="hover:text-brand-purple transition-colors block">{t('ad_space')}</Link></li>
             </ul>
           </motion.div>

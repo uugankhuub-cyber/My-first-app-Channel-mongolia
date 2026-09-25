@@ -9,17 +9,20 @@ export interface FacebookPostResult {
 }
 
 /**
- * Posts a published article to the Facebook Page via Facebook Graph API v26.0.
+ * Posts a published article to the Facebook Page via Facebook Graph API v21.0 as a link card.
  *
  * Rules:
  * 1. Drafts are NEVER posted.
  * 2. An article is posted ONCE. If it has already succeeded (fbPostId or fbShareStatus === 'ok'),
  *    it will not be posted again unless forced retry on failure.
  * 3. A Facebook error must never block publishing on our site. Errors are saved to `fbShareStatus`.
- * 4. If thumbnail exists: POST https://graph.facebook.com/v26.0/{FB_PAGE_ID}/photos
- *    with url = article thumbnail, caption = ..., access_token = FB_PAGE_TOKEN.
- * 5. If no thumbnail: POST https://graph.facebook.com/v26.0/{FB_PAGE_ID}/feed
- *    with message = ..., link = article URL, access_token = FB_PAGE_TOKEN.
+ * 4. Right before posting, refresh Facebook's cache:
+ *    POST https://graph.facebook.com/v21.0/?id=<article url>&scrape=true&access_token=FB_PAGE_TOKEN
+ * 5. Post article as a LINK post (not a photo post):
+ *    POST https://graph.facebook.com/v21.0/{FB_PAGE_ID}/feed
+ *    params: message = title + "\n\n" + excerpt + "\n\n#ChannelMongolia",
+ *            link = ${SITE_URL}/article/${slug},
+ *            access_token = FB_PAGE_TOKEN
  */
 export async function postArticleToFacebook(
   article: db.Article,
@@ -70,64 +73,43 @@ export async function postArticleToFacebook(
 
   // Clean site origin from process.env.SITE_URL with required fallback
   const SITE_URL = (process.env.SITE_URL || siteOrigin || 'https://my-first-app-channel-mongolia-production.up.railway.app').replace(/\/+$/, '');
-  const articleUrl = `${SITE_URL}/article/${article.slug || article.id}`;
+  const slug = article.slug || article.id;
+  const articleUrl = `${SITE_URL}/article/${slug}`;
 
-  // Construct caption exactly as specified:
-  // title + "\n\n" + excerpt + "\n\n👉 Дэлгэрэнгүй: " + article URL + "\n\n#ChannelMongolia #Мэдээ"
+  // Message: title + "\n\n" + excerpt + "\n\n#ChannelMongolia"
   const title = article.title || '';
   const excerpt = article.excerpt || (article.content ? article.content.substring(0, 160).replace(/\s+/g, ' ').trim() : '');
-  const caption = `${title}\n\n${excerpt}\n\n👉 Дэлгэрэнгүй: ${articleUrl}\n\n#ChannelMongolia #Мэдээ`;
+  const message = `${title}\n\n${excerpt}\n\n#ChannelMongolia`;
 
-  // Determine whether we have an accessible thumbnail URL
-  let photoUrl: string | null = null;
-  if (article.thumbnail && typeof article.thumbnail === 'string' && article.thumbnail.trim()) {
-    const thumb = article.thumbnail.trim();
-    if (thumb.startsWith('http://') || thumb.startsWith('https://')) {
-      photoUrl = thumb;
-    } else if (thumb.startsWith('/')) {
-      photoUrl = `${SITE_URL}${thumb}`;
-    }
+  console.log(`[FACEBOOK] Publishing link card for article "${title}" to FB Page ${FB_PAGE_ID}...`);
+
+  // Step 1: Right before posting, refresh Facebook's scraper cache (ignore any error)
+  try {
+    const scrapeUrl = `https://graph.facebook.com/v21.0/?id=${encodeURIComponent(articleUrl)}&scrape=true&access_token=${encodeURIComponent(FB_PAGE_TOKEN)}`;
+    console.log(`[FACEBOOK] Refreshing scrape cache: ${scrapeUrl}`);
+    await fetch(scrapeUrl, {
+      method: 'POST'
+    });
+  } catch (scrapeErr: any) {
+    console.warn('[FACEBOOK] Scrape cache refresh ignored error:', scrapeErr?.message);
   }
 
-  console.log(`[FACEBOOK] Publishing article "${title}" to FB Page ${FB_PAGE_ID}... Photo: ${photoUrl || 'none'}`);
-
+  // Step 2: Post as a LINK post: POST https://graph.facebook.com/v21.0/${FB_PAGE_ID}/feed
   try {
-    let response: globalThis.Response;
-    let endpointUrl = '';
+    const feedEndpoint = `https://graph.facebook.com/v21.0/${FB_PAGE_ID}/feed`;
+    const body = new URLSearchParams();
+    body.append('message', message);
+    body.append('link', articleUrl);
+    body.append('access_token', FB_PAGE_TOKEN);
 
-    if (photoUrl) {
-      // POST https://graph.facebook.com/v26.0/{FB_PAGE_ID}/photos
-      endpointUrl = `https://graph.facebook.com/v26.0/${FB_PAGE_ID}/photos`;
-      const body = new URLSearchParams();
-      body.append('url', photoUrl);
-      body.append('caption', caption);
-      body.append('access_token', FB_PAGE_TOKEN);
-
-      response = await fetch(endpointUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-          'Accept': 'application/json'
-        },
-        body: body.toString()
-      });
-    } else {
-      // POST https://graph.facebook.com/v26.0/{FB_PAGE_ID}/feed
-      endpointUrl = `https://graph.facebook.com/v26.0/${FB_PAGE_ID}/feed`;
-      const body = new URLSearchParams();
-      body.append('message', caption);
-      body.append('link', articleUrl);
-      body.append('access_token', FB_PAGE_TOKEN);
-
-      response = await fetch(endpointUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-          'Accept': 'application/json'
-        },
-        body: body.toString()
-      });
-    }
+    const response = await fetch(feedEndpoint, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'Accept': 'application/json'
+      },
+      body: body.toString()
+    });
 
     const data: any = await response.json();
     console.log(`[FACEBOOK] Graph API result [status ${response.status}]:`, JSON.stringify(data));

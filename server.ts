@@ -510,31 +510,43 @@ Sitemap: ${SITE_URL}/sitemap.xml
       const categories = await db.getCategories();
       const now = new Date().toISOString().split('T')[0];
 
+      const seenUrls = new Set<string>();
+
       let xml = `<?xml version="1.0" encoding="UTF-8"?>\n`;
       xml += `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n`;
       
       // Home
+      seenUrls.add(`${SITE_URL}/`);
       xml += `  <url><loc>${SITE_URL}/</loc><changefreq>daily</changefreq><priority>1.0</priority></url>\n`;
       
-      // Category pages
-      xml += `  <url><loc>${SITE_URL}/categories</loc><changefreq>daily</changefreq><priority>0.8</priority></url>\n`;
+      // One URL per category (the one the menu uses: /${cat.slug}, excluding video)
       for (const cat of categories) {
-        if (cat.slug) {
-          xml += `  <url><loc>${SITE_URL}/${encodeURIComponent(cat.slug)}</loc><changefreq>daily</changefreq><priority>0.8</priority></url>\n`;
-          xml += `  <url><loc>${SITE_URL}/category/${encodeURIComponent(cat.slug)}</loc><changefreq>daily</changefreq><priority>0.8</priority></url>\n`;
+        const slug = (cat.slug || '').trim().toLowerCase();
+        if (slug && slug !== 'video' && slug !== 'categories' && slug !== 'news') {
+          const catUrl = `${SITE_URL}/${encodeURIComponent(slug)}`;
+          if (!seenUrls.has(catUrl)) {
+            seenUrls.add(catUrl);
+            xml += `  <url><loc>${catUrl}</loc><changefreq>daily</changefreq><priority>0.8</priority></url>\n`;
+          }
         }
       }
 
-      // Other public pages
-      xml += `  <url><loc>${SITE_URL}/video</loc><changefreq>daily</changefreq><priority>0.8</priority></url>\n`;
-      xml += `  <url><loc>${SITE_URL}/privacy</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>\n`;
+      // /video once
+      const videoUrl = `${SITE_URL}/video`;
+      if (!seenUrls.has(videoUrl)) {
+        seenUrls.add(videoUrl);
+        xml += `  <url><loc>${videoUrl}</loc><changefreq>daily</changefreq><priority>0.8</priority></url>\n`;
+      }
 
       // Every PUBLISHED article (never drafts)
       for (const art of publishedArticles) {
         const slug = art.slug || art.id;
         const artUrl = `${SITE_URL}/article/${encodeURIComponent(slug)}`;
-        const lastMod = (art.updatedAt || art.publishedAt || art.createdAt || now).split('T')[0];
-        xml += `  <url><loc>${artUrl}</loc><lastmod>${lastMod}</lastmod><changefreq>weekly</changefreq><priority>0.9</priority></url>\n`;
+        if (!seenUrls.has(artUrl)) {
+          seenUrls.add(artUrl);
+          const lastMod = (art.updatedAt || art.publishedAt || art.createdAt || now).split('T')[0];
+          xml += `  <url><loc>${artUrl}</loc><lastmod>${lastMod}</lastmod><changefreq>weekly</changefreq><priority>0.9</priority></url>\n`;
+        }
       }
 
       xml += `</urlset>`;
@@ -576,23 +588,29 @@ Sitemap: ${SITE_URL}/sitemap.xml
         const pubDate = art.publishedAt ? new Date(art.publishedAt).toUTCString() : (art.createdAt ? new Date(art.createdAt).toUTCString() : new Date().toUTCString());
         const lead = art.excerpt || (art.content ? art.content.substring(0, 200).replace(/\s+/g, ' ').trim() : art.title);
 
-        let imgUrl = `${SITE_URL}/placeholder-article.svg`;
-        let imgType = 'image/svg+xml';
+        let imgUrl = `${SITE_URL}/og-default.jpg`;
+        let imgType = 'image/jpeg';
         if (art.thumbnail && typeof art.thumbnail === 'string' && art.thumbnail.trim()) {
           const thumb = art.thumbnail.trim();
-          if (thumb.startsWith('http://') || thumb.startsWith('https://')) {
+          if (thumb.endsWith('.svg') || thumb.includes('.svg?')) {
+            imgUrl = `${SITE_URL}/og-default.jpg`;
+            imgType = 'image/jpeg';
+          } else if (thumb.startsWith('http://') || thumb.startsWith('https://')) {
             imgUrl = thumb;
+            if (thumb.includes('.png')) imgType = 'image/png';
+            else if (thumb.includes('.webp')) imgType = 'image/webp';
+            else if (thumb.includes('.gif')) imgType = 'image/gif';
+            else imgType = 'image/jpeg';
           } else if (thumb.startsWith('/')) {
             imgUrl = `${SITE_URL}${thumb}`;
+            if (thumb.includes('.png')) imgType = 'image/png';
+            else if (thumb.includes('.webp')) imgType = 'image/webp';
+            else if (thumb.includes('.gif')) imgType = 'image/gif';
+            else imgType = 'image/jpeg';
           } else {
             imgUrl = `${SITE_URL}/${thumb}`;
+            imgType = 'image/jpeg';
           }
-
-          if (thumb.includes('.png')) imgType = 'image/png';
-          else if (thumb.includes('.webp')) imgType = 'image/webp';
-          else if (thumb.includes('.gif')) imgType = 'image/gif';
-          else if (thumb.includes('.svg')) imgType = 'image/svg+xml';
-          else imgType = 'image/jpeg';
         }
 
         xml += `    <item>\n`;
@@ -774,11 +792,14 @@ Sitemap: ${SITE_URL}/sitemap.xml
       let title = article.title || 'Channel Mongolia';
       let description = article.excerpt || (article.content ? article.content.substring(0, 180).replace(/\s+/g, ' ').trim() : defaultDesc);
       let pageUrl = `${SITE_URL}/article/${encodeURIComponent(article.slug || article.id)}`;
-      let imageUrl = `${SITE_URL}/placeholder-article.svg`;
+      let imageUrl = `${SITE_URL}/og-default.jpg`;
 
       if (article.thumbnail && typeof article.thumbnail === 'string' && article.thumbnail.trim()) {
         const thumb = article.thumbnail.trim();
-        if (thumb.startsWith('http://') || thumb.startsWith('https://')) {
+        // If image is SVG, fallback to JPEG because Facebook ignores SVG
+        if (thumb.endsWith('.svg') || thumb.includes('.svg?')) {
+          imageUrl = `${SITE_URL}/og-default.jpg`;
+        } else if (thumb.startsWith('http://') || thumb.startsWith('https://')) {
           imageUrl = thumb;
         } else if (thumb.startsWith('/uploads/')) {
           const rel = thumb.replace(/^\//, '');
@@ -787,7 +808,7 @@ Sitemap: ${SITE_URL}/sitemap.xml
           if (pubExists || distExists) {
             imageUrl = `${SITE_URL}${thumb}`;
           } else {
-            imageUrl = `${SITE_URL}/placeholder-article.svg`;
+            imageUrl = `${SITE_URL}/og-default.jpg`;
           }
         } else {
           imageUrl = `${SITE_URL}${thumb.startsWith('/') ? '' : '/'}${thumb}`;
@@ -816,6 +837,8 @@ Sitemap: ${SITE_URL}/sitemap.xml
     <meta property="og:title" content="${safeTitle}" />
     <meta property="og:description" content="${safeDesc}" />
     <meta property="og:image" content="${safeImage}" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
     <meta property="og:url" content="${safeUrl}" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="${safeTitle}" />

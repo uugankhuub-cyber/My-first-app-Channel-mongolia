@@ -4,9 +4,11 @@ import { useLanguage } from '../context/LanguageContext';
 import { Mail, Send, MapPin, Phone, CheckCircle, AlertCircle } from 'lucide-react';
 import { Container } from '../components/ui/Container';
 import { Card } from '../components/ui/Card';
+import { getContactEmail } from '../lib/site-config';
 
 export const ContactPage: React.FC = () => {
   const { t, language } = useLanguage();
+  const contactEmail = getContactEmail();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [message, setMessage] = useState('');
@@ -72,7 +74,9 @@ export const ContactPage: React.FC = () => {
                          >
                             <Mail size={20} />
                          </motion.div>
-                         <span className="text-sm font-medium">info@channelmongolia.mn</span>
+                         <a href={`mailto:${contactEmail}`} className="text-sm font-medium hover:text-brand-purple transition-colors">
+                           {contactEmail}
+                         </a>
                       </div>
                       <div className="flex items-center gap-4 text-text-muted">
                          <motion.div 

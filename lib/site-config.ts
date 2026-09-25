@@ -9,8 +9,27 @@
  */
 
 export const FALLBACK_SITE_URL = 'https://my-first-app-channel-mongolia-production.up.railway.app';
+export const FALLBACK_CONTACT_EMAIL = 'uugankhuub@gmail.com';
 
 export const DEFAULT_PLACEHOLDER_IMAGE = '/placeholder-article.svg';
+export const DEFAULT_OG_IMAGE = '/og-default.jpg';
+
+/**
+ * Returns the contact email from process.env.CONTACT_EMAIL (fallback: uugankhuub@gmail.com)
+ */
+export function getContactEmail(): string {
+  if (typeof window !== 'undefined') {
+    const viteEmail = (import.meta as any)?.env?.VITE_CONTACT_EMAIL;
+    if (viteEmail && typeof viteEmail === 'string' && viteEmail.trim()) {
+      return viteEmail.trim();
+    }
+  }
+  const envEmail = typeof process !== 'undefined' ? process.env?.CONTACT_EMAIL : undefined;
+  if (envEmail && typeof envEmail === 'string' && envEmail.trim()) {
+    return envEmail.trim();
+  }
+  return FALLBACK_CONTACT_EMAIL;
+}
 
 /**
  * Returns the cleaned SITE_URL without any trailing slashes.
